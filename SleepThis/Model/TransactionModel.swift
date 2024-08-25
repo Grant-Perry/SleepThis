@@ -1,10 +1,10 @@
 import Foundation
 
 struct TransactionModel: Identifiable, Codable {
-   var id = UUID() // Unique ID for SwiftUI Identifiable conformance
-   let status: String
-   let type: String
+   var id: String { transaction_id }
    let transaction_id: String
+   let type: String
+   let status: String
    let status_updated: Int
    let created: Int
    let leg: Int
@@ -36,8 +36,6 @@ struct TransactionModel: Identifiable, Codable {
    }
 
    struct Settings: Codable {
-	  let seq: Int?
 	  let waiver_bid: Int?
-	  let priority: Int?
    }
 }

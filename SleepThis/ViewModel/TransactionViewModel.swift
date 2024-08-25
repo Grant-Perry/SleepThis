@@ -8,22 +8,36 @@ class TransactionViewModel: ObservableObject {
 
    func fetchTransactions(leagueID: String, round: Int) {
 	  isLoading = true
-	  // Implement your transaction fetching logic here
-	  fetchTransactionsFromAPI(leagueID: leagueID, round: round) { result in
+
+//	  let urlString = "https://api.sleeper.app/v1/league/1051207774316683264/transactions/1"
+	  let urlString = "https://api.sleeper.app/v1/league/\(leagueID)/transactions/\(round)"
+	  print("urlString: \(urlString)")
+	  guard let url = URL(string: urlString) else {
+		 self.errorMessage = "Invalid URL"
+		 return
+	  }
+
+	  URLSession.shared.dataTask(with: url) { data, response, error in
 		 DispatchQueue.main.async {
 			self.isLoading = false
-			switch result {
-			   case .success(let transactions):
-				  self.transactions = transactions
-			   case .failure(let error):
-				  self.errorMessage = error.localizedDescription
+
+			if let error = error {
+			   self.errorMessage = "\(error.localizedDescription), not kidding"
+			   return
+			}
+
+			guard let data = data else {
+			   self.errorMessage = "No data received, bitch"
+			   return
+			}
+
+			do {
+			   let transactions = try JSONDecoder().decode([TransactionModel].self, from: data)
+			   self.transactions = transactions
+			} catch {
+			   self.errorMessage = "Failed to decode transaction data - ass"
 			}
 		 }
-	  }
-   }
-
-   private func fetchTransactionsFromAPI(leagueID: String, round: Int, completion: @escaping (Result<[TransactionModel], Error>) -> Void) {
-	  // Implement the API fetching logic here
-	  // Example: completion(.success(mockTransactions))
+	  }.resume()
    }
 }

@@ -49,50 +49,48 @@ class PlayerViewModel: ObservableObject {
 	  isLoading = true
 	  errorMessage = nil
 
-	  // Example API URL to fetch a player by ID or name
-	  let urlString = "https://example.com/api/players/\(playerLookup)"
-	  guard let url = URL(string: urlString) else {
-		 self.errorMessage = "Invalid URL"
+	  // Perform the lookup in the cache
+	  guard let cachedData = UserDefaults.standard.data(forKey: playersCacheKey) else {
+		 self.errorMessage = "No cached data available"
+		 self.isLoading = false
 		 return
 	  }
 
-	  URLSession.shared.dataTask(with: url) { data, response, error in
-		 DispatchQueue.main.async {
-			self.isLoading = false
-
-			if let error = error {
-			   self.errorMessage = error.localizedDescription
-			   return
-			}
-
-			guard let data = data else {
-			   self.errorMessage = "No data received"
-			   return
-			}
-
-			do {
-			   let player = try JSONDecoder().decode(PlayerModel.self, from: data)
-			   self.players = [player]  // Assuming fetch by a single player
-			} catch {
-			   self.errorMessage = "Failed to decode player data"
-			}
+	  do {
+		 let allPlayers = try JSONDecoder().decode([String: PlayerModel].self, from: cachedData)
+		 if let player = allPlayers[playerLookup] ?? allPlayers.values.first(where: { $0.fullName?.lowercased().contains(playerLookup.lowercased()) == true }) {
+			self.players = [player]
+		 } else {
+			self.errorMessage = "Player not found in cache"
 		 }
-	  }.resume()
+	  } catch {
+		 self.errorMessage = "Failed to decode cached players: \(error)"
+		 print("Failed to decode cached players: \(error)")
+	  }
+
+	  self.isLoading = false
    }
 
    func reloadCache() {
-	  loadCachedPlayers()
+	  fetchAndCachePlayersFromSleeper()
    }
 
-    func loadCachedPlayers() {
-	  if let cachedData = UserDefaults.standard.data(forKey: playersCacheKey) {
-		 do {
-			let players = try JSONDecoder().decode([PlayerModel].self, from: cachedData)
-			self.players = players
-		 } catch {
-			self.errorMessage = "Failed to decode cached players"
-		 }
-	  } else {
+   func loadCachedPlayers() {
+	  guard let cachedData = UserDefaults.standard.data(forKey: playersCacheKey) else {
+		 errorMessage = "No cached data available"
+		 print("No cached data found.")
+		 fetchAndCachePlayersFromSleeper()
+		 return
+	  }
+
+	  do {
+		 let players = try JSONDecoder().decode([String: PlayerModel].self, from: cachedData)
+		 self.players = Array(players.values)
+		 print("Successfully loaded players from cache.")
+	  } catch {
+		 self.errorMessage = "Failed to decode cached players: \(error)"
+		 print("Error decoding cached players: \(error)")
+		 // If cache decoding fails, try to reload from the API
 		 fetchAndCachePlayersFromSleeper()
 	  }
    }
@@ -101,10 +99,10 @@ class PlayerViewModel: ObservableObject {
 	  isLoading = true
 	  errorMessage = nil
 
-	  // Replace with actual Sleeper API URL
 	  let urlString = "https://api.sleeper.app/v1/players/nfl"
 	  guard let url = URL(string: urlString) else {
 		 self.errorMessage = "Invalid URL"
+		 print("Invalid URL: \(urlString)")
 		 return
 	  }
 
@@ -114,11 +112,13 @@ class PlayerViewModel: ObservableObject {
 
 			if let error = error {
 			   self.errorMessage = error.localizedDescription
+			   print("Error fetching data from Sleeper: \(error.localizedDescription)")
 			   return
 			}
 
 			guard let data = data else {
 			   self.errorMessage = "No data received"
+			   print("No data received from Sleeper API.")
 			   return
 			}
 
@@ -126,8 +126,10 @@ class PlayerViewModel: ObservableObject {
 			   let players = try JSONDecoder().decode([String: PlayerModel].self, from: data)
 			   self.players = Array(players.values)
 			   self.savePlayersToCache(data)
+			   print("Successfully fetched and cached players from Sleeper API.")
 			} catch {
-			   self.errorMessage = "Failed to decode player data"
+			   self.errorMessage = "Failed to decode player data: \(error)"
+			   print("Failed to decode player data: \(error)")
 			}
 		 }
 	  }.resume()
@@ -137,14 +139,16 @@ class PlayerViewModel: ObservableObject {
 	  let defaults = UserDefaults.standard
 	  defaults.set(data, forKey: playersCacheKey)
 	  defaults.set(Date(), forKey: cacheDateKey)
+	  print("Players data saved to cache successfully.")
    }
 
    func fetchMatchups(leagueID: String, week: Int) {
 	  isLoading = true
 
-	  let urlString = "https://example.com/api/league/\(leagueID)/week/\(week)/matchups" // Replace with actual API endpoint
+	  let urlString = "https://api.sleeper.app/v1/league/\(leagueID)/matchups/\(week)"
 	  guard let url = URL(string: urlString) else {
 		 self.errorMessage = "Invalid URL"
+		 print("Invalid URL: \(urlString)")
 		 return
 	  }
 
@@ -154,11 +158,13 @@ class PlayerViewModel: ObservableObject {
 
 			if let error = error {
 			   self.errorMessage = error.localizedDescription
+			   print("Error fetching matchups: \(error.localizedDescription)")
 			   return
 			}
 
 			guard let data = data else {
 			   self.errorMessage = "No data received"
+			   print("No data received for matchups.")
 			   return
 			}
 
@@ -166,15 +172,18 @@ class PlayerViewModel: ObservableObject {
 			   let matchups = try JSONDecoder().decode([MatchupModel].self, from: data)
 			   self.matchups = matchups
 			   self.saveMatchupsToCache(matchups: matchups)
+			   print("Successfully fetched and cached matchups.")
 			} catch {
-			   self.errorMessage = "Failed to decode matchup data"
+			   self.errorMessage = "Failed to decode matchup data: \(error)"
+			   print("Failed to decode matchup data: \(error)")
 			}
 		 }
 	  }.resume()
    }
 
-   private func saveMatchupsToCache(matchups: [MatchupModel]) {
-	  // Cache saving logic for matchups
+   func saveMatchupsToCache(matchups: [MatchupModel]) {
+	  // Implement cache saving logic for matchups if needed
+	  print("Matchups data saved to cache (implement saving logic).")
    }
 
    func convertHeightToFeetAndInches(height: String?) -> String {
