@@ -1,21 +1,37 @@
 import SwiftUI
 
-struct MatchupDetailView: View {
-   let matchup: MatchupModel
-   let playerViewModel: PlayerViewModel
+struct TransactionDetailView: View {
+   let transaction: TransactionModel
+   @ObservedObject var playerViewModel: PlayerViewModel
 
    var body: some View {
-	  ScrollView {
-		 VStack(alignment: .leading, spacing: 10) {
-			Text("Matchup ID: \(matchup.matchup_id)")
-			   .font(.title)
-			Text("Points: \(matchup.points)")
-			Text("Starters: \(playerViewModel.getPlayerNames(from: matchup.starters))")
-			Text("Bench: \(playerViewModel.getPlayerNames(from: matchup.players.filter { !matchup.starters.contains($0) }))")
-			Spacer()
+	  VStack(alignment: .leading) {
+		 Text("Transaction ID: \(transaction.transaction_id)")
+			.font(.headline)
+
+		 Text("Type: \(transaction.type)")
+			.font(.subheadline)
+
+		 Text("Status: \(transaction.status)")
+			.font(.subheadline)
+
+		 if let adds = transaction.adds {
+			let addedPlayerNames = playerViewModel.getPlayerNames(from: Array(adds.keys))
+			Text("Added Players: \(addedPlayerNames)")
+		 } else {
+			Text("No players added.")
 		 }
-		 .padding()
-		 .navigationTitle("Matchup Details")
+
+		 if let drops = transaction.drops {
+			let droppedPlayerNames = playerViewModel.getPlayerNames(from: Array(drops.keys))
+			Text("Dropped Players: \(droppedPlayerNames)")
+		 } else {
+			Text("No players dropped.")
+		 }
+
+		 Spacer()
 	  }
+	  .padding()
+	  .navigationTitle("Transaction Details")
    }
 }

@@ -16,6 +16,11 @@ struct SleepThisApp: App {
 			   .tabItem {
 				  Label("Matchups", systemImage: "list.bullet")
 			   }
+
+			TransactionView()
+			   .tabItem {
+				  Label("Transactions", systemImage: "swatchpalette")
+			   }
 		 }
 	  }
    }

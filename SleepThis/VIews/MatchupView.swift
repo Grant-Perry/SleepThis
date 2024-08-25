@@ -1,84 +1,45 @@
 import SwiftUI
 
 struct MatchupView: View {
-   @StateObject private var playerViewModel = PlayerViewModel()
-   @State private var weekNumber: String = "1" // Default to week 1
+   @ObservedObject var playViewModel = PlayerViewModel()
+
+   @State private var week: String = "1"
+   private let leagueID = AppConstants.leagueID  
 
    var body: some View {
 	  NavigationView {
 		 VStack {
-			if playerViewModel.isLoading {
-			   ProgressView("LOADING DATA...")
-				  .padding()
-				  .onAppear {
-					 print("Loading data...")
-				  }
-			}
-
-			HStack {
-			   if let cacheAge = playerViewModel.cacheAgeDescription,
-				  let cacheSize = playerViewModel.cacheSize {
-				  Text("\(cacheAge) \(cacheSize)")
-					 .font(.caption)
-					 .onAppear {
-						print("Cache age and size: \(cacheAge) \(cacheSize)")
-					 }
-			   }
-			   Spacer()
-			   Button(action: {
-				  print("Reload cache button tapped.")
-				  playerViewModel.reloadCache()
-			   }) {
-				  Image(systemName: "arrow.clockwise.circle.fill")
-					 .font(.title2)
-			   }
-			}
-			.padding()
-
-			HStack {
-			   TextField("Enter Week Number", text: $weekNumber)
-				  .keyboardType(.numberPad)
-				  .textFieldStyle(RoundedBorderTextFieldStyle())
-				  .frame(width: 100)
-			   Button(action: {
-				  print("Fetching matchups for week: \(weekNumber)")
-				  playerViewModel.fetchMatchups(week: Int(weekNumber) ?? 1)
-			   }) {
-				  Text("Go")
-			   }
-			   .disabled(weekNumber.isEmpty)
-			}
-			.padding()
-
-			if !playerViewModel.matchups.isEmpty {
-			   List(playerViewModel.matchups) { matchup in
-				  NavigationLink(destination: MatchupDetailView(matchup: matchup, playerViewModel: playerViewModel)) {
-					 VStack(alignment: .leading) {
-						Text("Matchup ID: \(matchup.matchup_id)")
-						   .font(.headline)
-						Text("Points: \(matchup.points)")
-					 }
-				  }
-			   }
-			   .onAppear {
-				  print("Matchups loaded: \(playerViewModel.matchups.count) matchups")
-			   }
-			} else if let errorMessage = playerViewModel.errorMessage {
-			   Text("Error: \(errorMessage)")
-				  .foregroundColor(.red)
-				  .onAppear {
-					 print("Error fetching data: \(errorMessage)")
-				  }
+			if let cacheAge = playViewModel.cacheAgeDescription {
+			   Text("Cache Age: \(cacheAge)")
+				  .font(.caption)
+				  .padding(.bottom, 10)
 			} else {
-			   Text("No matchups data available.")
-				  .onAppear {
-					 print("No matchups data available.")
-				  }
+			   Text("Cache Age: Not available")
+				  .font(.caption)
+				  .foregroundColor(.gray)
+				  .padding(.bottom, 10)
 			}
+
+			if playViewModel.isLoading {
+			   ProgressView("Loading Matchups...")
+				  .padding()
+			} else if playViewModel.matchups.isEmpty {
+			   Text("No matchups data available.")
+				  .foregroundColor(.red)
+			} else {
+			   List(playViewModel.matchups) { matchup in
+				  VStack(alignment: .leading) {
+					 Text("Roster ID: \(matchup.roster_id)")
+					 Text("Points: \(matchup.points)")
+				  }
+			   }
+			}
+
+			Spacer()
 		 }
 		 .navigationTitle("Matchups")
 		 .onAppear {
-			print("MatchupView appeared.")
+			playViewModel.fetchMatchups(leagueID: leagueID, week: Int(week) ?? 1)
 		 }
 	  }
    }
