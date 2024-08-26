@@ -16,6 +16,7 @@ struct TransactionModel: Identifiable, Codable {
    let metadata: Metadata?
    let settings: Settings?
    let consenter_ids: [Int]?
+   let creator: String // Make sure this matches the key from the JSON
 
    struct DraftPick: Codable {
 	  let season: String?

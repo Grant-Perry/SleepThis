@@ -12,6 +12,11 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "magnifyingglass")
 			   }
 
+			UserSearchView()
+			   .tabItem {
+				  Label("User Search", systemImage: "plus.magnifyingglass")
+			   }
+
 			MatchupView()
 			   .tabItem {
 				  Label("Matchups", systemImage: "list.bullet")
