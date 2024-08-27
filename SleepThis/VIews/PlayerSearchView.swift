@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct PlayerSearchView: View {
-   @ObservedObject private var playViewModel = PlayerViewModel()
+   @StateObject private var playerViewModel = PlayerViewModel()
    @State private var playerLookup: String = ""
 
    var body: some View {
 	  NavigationView {
 		 VStack {
-			if playViewModel.isLoading {
+			if playerViewModel.isLoading {
 			   ProgressView("LOADING DATA...")
 				  .padding()
 			}
@@ -15,8 +15,8 @@ struct PlayerSearchView: View {
 			// Fixed header section
 			VStack {
 			   HStack {
-				  if let cacheAge = playViewModel.cacheAgeDescription,
-					 let cacheSize = playViewModel.cacheSize {
+				  if let cacheAge = playerViewModel.cacheAgeDescription,
+					 let cacheSize = playerViewModel.cacheSize {
 					 Text("\(cacheAge) ")
 						.font(.footnote)
 						.foregroundColor(.cyan)
@@ -29,7 +29,8 @@ struct PlayerSearchView: View {
 				  }
 				  Spacer()
 				  Button(action: {
-					 playViewModel.reloadCache()
+					 print("[PlayerSearchView:reloadCache] Reloading cache...")
+					 playerViewModel.reloadCache()
 				  }) {
 					 Image(systemName: "arrow.clockwise.circle.fill")
 						.font(.title2)
@@ -44,7 +45,8 @@ struct PlayerSearchView: View {
 					 .padding(.horizontal)
 
 				  Button(action: {
-					 playViewModel.fetchPlayers(playerLookup: playerLookup)
+					 print("[PlayerSearchView:searchPlayer] Searching player with lookup: \(playerLookup)")
+					 playerViewModel.fetchPlayersByLookup(playerLookup: playerLookup)
 				  }) {
 					 Text("Go")
 				  }
@@ -55,22 +57,18 @@ struct PlayerSearchView: View {
 			}
 
 			// Scrollable List Section
-			if !playViewModel.players.isEmpty {
-			   List(playViewModel.players) { player in
-				  NavigationLink(destination: PlayerDetailView(player: player, playerViewModel: playViewModel)) {
+			if !playerViewModel.players.isEmpty {
+			   List(playerViewModel.players) { player in
+				  NavigationLink(destination: PlayerDetailView(player: player, playerViewModel: playerViewModel)) {
 					 VStack(alignment: .leading) {
-						Text("\(player.fullName ?? "Unknown"): ")
-						   .font(.headline) +
-						Text("\(player.id)")
-						   .font(.footnote)
-						   .foregroundColor(.gray)
-
+						Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
+						   .font(.headline)
 						Text("Team: \(player.team ?? "Unknown")")
 						Text("Position: \(player.position ?? "Unknown")")
 					 }
 				  }
 			   }
-			} else if let errorMessage = playViewModel.errorMessage {
+			} else if let errorMessage = playerViewModel.errorMessage {
 			   Text("Error: \(errorMessage)")
 				  .foregroundColor(.red)
 			} else {
@@ -79,7 +77,11 @@ struct PlayerSearchView: View {
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
-			playViewModel.loadCachedPlayers()
+			print("[PlayerSearchView:onAppear] Loading cache or fetching players if needed.")
+			playerViewModel.loadPlayersFromCache()
+			if playerViewModel.players.isEmpty {
+			   playerViewModel.fetchAllPlayers()
+			}
 		 }
 	  }
    }

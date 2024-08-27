@@ -6,19 +6,19 @@ class UserViewModel: ObservableObject {
    @Published var isLoading = false
    @Published var errorMessage: String?
 
-   private let userCacheKey = "cachedUser"
-   private let cacheDateKey = "userCacheDateKey"
-
-   func fetchUser(by lookup: String, completion: @escaping () -> Void) {
+   func fetchUser(by lookup: String, completion: @escaping () -> Void = {}) {
 	  isLoading = true
 	  errorMessage = nil
 
-	  let urlString: String
-	  if lookup.allSatisfy(\.isNumber) {
-		 urlString = "https://api.sleeper.app/v1/user/\(lookup)"
-	  } else {
-		 urlString = "https://api.sleeper.app/v1/user/\(lookup)"
+	  // Try to load from cache first
+	  if let cachedUser = CacheManager.shared.loadFromCache(lookup, as: UserModel.self) {
+		 self.user = cachedUser
+		 self.isLoading = false
+		 completion()
+		 return
 	  }
+
+	  let urlString = "https://api.sleeper.app/v1/user/\(lookup)"
 
 	  guard let url = URL(string: urlString) else {
 		 self.errorMessage = "Invalid URL"
@@ -45,38 +45,14 @@ class UserViewModel: ObservableObject {
 			do {
 			   let user = try JSONDecoder().decode(UserModel.self, from: data)
 			   self.user = user
-			   self.saveUserToCache(user)
+			   CacheManager.shared.saveToCache(user, as: lookup)
+			   completion()
 			} catch {
 			   self.errorMessage = "Failed to decode user data: \(error)"
+			   completion()
 			}
-			completion()
 		 }
 	  }.resume()
    }
-
-   func loadCachedUser() {
-	  guard let cachedData = UserDefaults.standard.data(forKey: userCacheKey) else {
-		 errorMessage = "No cached user data available"
-		 return
-	  }
-
-	  do {
-		 let cachedUser = try JSONDecoder().decode(UserModel.self, from: cachedData)
-		 self.user = cachedUser
-	  } catch {
-		 self.errorMessage = "Failed to decode cached user data: \(error)"
-	  }
-   }
-
-   func reloadCache() {
-	  loadCachedUser()
-   }
-
-   private func saveUserToCache(_ user: UserModel) {
-	  let defaults = UserDefaults.standard
-	  if let data = try? JSONEncoder().encode(user) {
-		 defaults.set(data, forKey: userCacheKey)
-		 defaults.set(Date(), forKey: cacheDateKey)
-	  }
-   }
 }
+

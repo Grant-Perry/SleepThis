@@ -1,16 +1,16 @@
 import SwiftUI
 
 struct TransactionDetailView: View {
-   let transaction: TransactionModel
-   @ObservedObject var userViewModel = UserViewModel()
-   @ObservedObject var playerViewModel = PlayerViewModel()
+   let transactionModel: TransactionModel
+   var userViewModel = UserViewModel()
+   var playerViewModel = PlayerViewModel()
 
    var body: some View {
 	  VStack(alignment: .leading) {
-		 Text("Transaction ID: \(transaction.transaction_id)")
+		 Text("Transaction ID: \(transactionModel.id)")
 			.font(.headline)
 
-		 Text("Type: \(transaction.type)")
+		 Text("Type: \(transactionModel.type)")
 			.font(.subheadline)
 
 		 // Creator Information
@@ -34,18 +34,18 @@ struct TransactionDetailView: View {
 					 .font(.body)
 			   }
 			} else {
-			   Text("Creator: \(transaction.creator)")
+			   Text("Creator: \(transactionModel.creator)")
 				  .font(.body)
 			}
 		 }
 
 		 // Handling Adds
-		 if let adds = transaction.adds {
+		 if let adds = transactionModel.adds {
 			Text("Added Players:")
 			   .font(.headline)
 			ForEach(adds.keys.sorted(), id: \.self) { playerID in
 			   if let player = playerViewModel.players.first(where: { $0.id == playerID }) {
-				  Text("\(player.fullName ?? "Unknown") (\(player.team ?? "Unknown Team"))")
+				  Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown") (\(player.team ?? "Unknown Team"))")
 					 .font(.subheadline)
 			   } else {
 				  Text("Player ID \(playerID)")
@@ -55,12 +55,12 @@ struct TransactionDetailView: View {
 		 }
 
 		 // Handling Drops
-		 if let drops = transaction.drops {
+		 if let drops = transactionModel.drops {
 			Text("Dropped Players:")
 			   .font(.headline)
 			ForEach(drops.keys.sorted(), id: \.self) { playerID in
 			   if let player = playerViewModel.players.first(where: { $0.id == playerID }) {
-				  Text("\(player.fullName ?? "Unknown") (\(player.team ?? "Unknown Team"))")
+				  Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown") (\(player.team ?? "Unknown Team"))")
 					 .font(.subheadline)
 			   } else {
 				  Text("Player ID \(playerID)")
@@ -73,7 +73,7 @@ struct TransactionDetailView: View {
 		 }
 
 		 // Handling Draft Picks
-		 if let draftPicks = transaction.draft_picks, !draftPicks.isEmpty {
+		 if let draftPicks = transactionModel.draft_picks, !draftPicks.isEmpty {
 			Text("Draft Picks:")
 			   .font(.headline)
 			ForEach(draftPicks, id: \.round) { pick in
@@ -89,7 +89,7 @@ struct TransactionDetailView: View {
 	  }
 	  .padding()
 	  .onAppear {
-		 userViewModel.fetchUser(by: transaction.creator) {
+		 userViewModel.fetchUser(by: transactionModel.creator) {
 			// Any additional code to run after fetching the user
 		 }
 	  }
