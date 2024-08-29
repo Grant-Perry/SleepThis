@@ -7,32 +7,33 @@ struct PlayerDetailView: View {
    var body: some View {
 	  ScrollView {
 		 VStack(alignment: .leading, spacing: 10) {
-			Text("Name: \(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
-			   .font(.title)
-			Text("ID: \(player.id)")
-			Text("Team: \(player.team ?? "Unknown")")
-			Text("Position: \(player.position ?? "Unknown")")
-			Text("Age: \(player.age?.description ?? "Unknown")")
-			Text("Height: \(player.height ?? "Unknown")") // Height is now directly stored in the correct format
-			Text("Weight: \(player.weight ?? "Unknown")")
-			Text("Status: \(player.status ?? "Unknown")")
-			Text("College: \(player.college ?? "Unknown")")
-			//			Text("Birth City: \(player.birthCity ?? "Unknown")")
-			//			Text("Birth State: \(player.birthState ?? "Unknown")")
-			Text("Birth Country: \(player.birthCountry ?? "Unknown")")
-			//			Text("Birth Date: \(player.birthDate ?? "Unknown")")
-			Text("Years Experience: \(player.yearsExp?.description ?? "Unknown")")
-			//			Text("High School: \(player.highSchool ?? "Unknown")")
-			Text("Fantasy Positions: \(player.fantasyPositions?.joined(separator: ", ") ?? "Unknown")")
-			//			Text("Metadata: \(player.metadata?.map { "\($0.key): \($0.value)" }.joined(separator: ", ") ?? "None")")
-			//			Text("News Updated: \(player.newsUpdated?.description ?? "Unknown")")
-			Text("Number: \(player.number?.description ?? "Unknown")")
-			Text("Depth Chart Position: \(player.depthChartPosition?.description ?? "Unknown")")
-			Text("Depth Chart Order: \(player.depthChartOrder?.description ?? "Unknown")")
-			//			Text("Rookie Year: \(player.rookieYear?.description ?? "Unknown")")
+
+			playerInfoRow(label: "Name", value: "\(player.firstName ?? "") \(player.lastName ?? "")")
+			playerInfoRow(label: "ID", value: player.id)
+			playerInfoRow(label: "Team", value: player.team)
+			playerInfoRow(label: "Position", value: player.position)
+			playerInfoRow(label: "Age", value: player.age?.description)
+			playerInfoRow(label: "Height", value: player.height)
+			playerInfoRow(label: "Weight", value: player.weight)
+			playerInfoRow(label: "Status", value: player.status)
+			playerInfoRow(label: "College", value: player.college)
+			playerInfoRow(label: "Birth Country", value: player.birthCountry)
+			playerInfoRow(label: "Years Experience", value: player.yearsExp?.description)
+			playerInfoRow(label: "Fantasy Positions", value: player.fantasyPositions?.joined(separator: ", "))
+			playerInfoRow(label: "Number", value: player.number?.description)
+			playerInfoRow(label: "Depth Chart Position", value: player.depthChartPosition)
+			playerInfoRow(label: "Depth Chart Order", value: player.depthChartOrder?.description)
+
 		 }
 		 .padding()
 		 .navigationTitle("\(player.firstName ?? "Player") \(player.lastName ?? "Details")")
+	  }
+   }
+
+   @ViewBuilder
+   private func playerInfoRow(label: String, value: String?) -> some View {
+	  if let value = value, !value.isEmpty {
+		 Text("\(label): \(value)")
 	  }
    }
 }

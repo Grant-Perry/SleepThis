@@ -27,6 +27,20 @@ struct PlayerModel: Codable, Identifiable {
    let depthChartOrder: Int?
    let rookieYear: String?
    let statsId: String?
+   let searchLastName: String?  // New
+   let searchFirstName: String? // New
+   let searchFullName: String?  // New
+   let hashtag: String?         // New
+   let injuryStartDate: String? // New
+   let practiceParticipation: String? // New
+   let sportradarId: String?    // New
+   let fantasyDataId: Int?      // New
+   let injuryStatus: String?    // New
+   let yahooId: String?         // New
+   let rotowireId: Int?         // New
+   let rotoworldId: Int?        // New
+   let espnId: String?          // New
+   let searchRank: Int?         // New
 
    enum CodingKeys: String, CodingKey {
 	  case id = "player_id"
@@ -54,42 +68,19 @@ struct PlayerModel: Codable, Identifiable {
 	  case depthChartOrder = "depth_chart_order"
 	  case rookieYear = "rookie_year"
 	  case statsId = "stats_id"
-   }
-
-   init(from decoder: Decoder) throws {
-	  let container = try decoder.container(keyedBy: CodingKeys.self)
-	  id = try container.decode(String.self, forKey: .id)
-	  firstName = try container.decodeIfPresent(String.self, forKey: .firstName)
-	  lastName = try container.decodeIfPresent(String.self, forKey: .lastName)
-	  fullName = try container.decodeIfPresent(String.self, forKey: .fullName)
-	  team = try container.decodeIfPresent(String.self, forKey: .team)
-	  position = try container.decodeIfPresent(String.self, forKey: .position)
-	  age = try container.decodeIfPresent(Int.self, forKey: .age)
-	  height = try container.decodeIfPresent(String.self, forKey: .height)
-	  weight = try container.decodeIfPresent(String.self, forKey: .weight)
-	  status = try container.decodeIfPresent(String.self, forKey: .status)
-	  college = try container.decodeIfPresent(String.self, forKey: .college)
-	  birthCity = try container.decodeIfPresent(String.self, forKey: .birthCity)
-	  birthState = try container.decodeIfPresent(String.self, forKey: .birthState)
-	  birthCountry = try container.decodeIfPresent(String.self, forKey: .birthCountry)
-	  birthDate = try container.decodeIfPresent(String.self, forKey: .birthDate)
-	  yearsExp = try container.decodeIfPresent(Int.self, forKey: .yearsExp)
-	  highSchool = try container.decodeIfPresent(String.self, forKey: .highSchool)
-	  fantasyPositions = try container.decodeIfPresent([String].self, forKey: .fantasyPositions)
-	  metadata = try container.decodeIfPresent([String: String].self, forKey: .metadata)
-	  newsUpdated = try container.decodeIfPresent(Int.self, forKey: .newsUpdated)
-	  number = try container.decodeIfPresent(Int.self, forKey: .number)
-	  depthChartPosition = try container.decodeIfPresent(String.self, forKey: .depthChartPosition)
-	  depthChartOrder = try container.decodeIfPresent(Int.self, forKey: .depthChartOrder)
-	  rookieYear = try container.decodeIfPresent(String.self, forKey: .rookieYear)
-
-	  // Decode statsId as either String or Number
-	  if let statsIdString = try? container.decode(String.self, forKey: .statsId) {
-		 statsId = statsIdString
-	  } else if let statsIdInt = try? container.decode(Int.self, forKey: .statsId) {
-		 statsId = String(statsIdInt)
-	  } else {
-		 statsId = nil
-	  }
+	  case searchLastName = "search_last_name"  // New
+	  case searchFirstName = "search_first_name" // New
+	  case searchFullName = "search_full_name"  // New
+	  case hashtag         // New
+	  case injuryStartDate = "injury_start_date" // New
+	  case practiceParticipation = "practice_participation" // New
+	  case sportradarId = "sportradar_id"    // New
+	  case fantasyDataId = "fantasy_data_id" // New
+	  case injuryStatus = "injury_status"    // New
+	  case yahooId = "yahoo_id"              // New
+	  case rotowireId = "rotowire_id"        // New
+	  case rotoworldId = "rotoworld_id"      // New
+	  case espnId = "espn_id"                // New
+	  case searchRank = "search_rank"        // New
    }
 }

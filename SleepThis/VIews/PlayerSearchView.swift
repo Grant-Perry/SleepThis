@@ -40,7 +40,7 @@ struct PlayerSearchView: View {
 					 +
 					 Text("(\(cacheSize))")
 						.font(.caption2)
-						.foregroundColor(.pink)
+						.foregroundColor(.gpGreen)
 				  }
 				  Spacer()
 				  Button(action: {
@@ -113,9 +113,9 @@ struct PlayerSearchView: View {
 
 			// Version Number in Safe Area
 			Text("Version: \(AppConstants.getVersion())")
-			   .font(.system(size: 8))
-			   .foregroundColor(.teal)
-			   .padding(.bottom, 2)
+			   .font(.system(size: AppConstants.verSize))
+			   .foregroundColor(AppConstants.verColor)
+//			   .padding(.bottom, 2)
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
@@ -134,7 +134,8 @@ struct PlayerSearchView: View {
 		 return ["QB", "RB", "WR", "TE", "K", "DST"].contains(position)
 	  }
 
-	  if positionFilter != .qb {
+	  // Filter players based on the selected position
+	  if positionFilter != .te {  // Replace .te with the position you don't want as default, if any
 		 filteredPlayers = filteredPlayers.filter { $0.position == positionFilter.rawValue }
 	  }
 
@@ -155,7 +156,7 @@ struct PlayerSearchView: View {
 			return depthOrder1 < depthOrder2
 		 }
 
-		 // Finally sort by the chosen sort option
+		 // Finally, sort by the chosen sort option
 		 switch sortOption {
 			case .name:
 			   let name1 = "\(player1.lastName ?? "zzz") \(player1.firstName ?? "zzz")"
@@ -164,9 +165,10 @@ struct PlayerSearchView: View {
 			case .team:
 			   return team1.localizedStandardCompare(team2) == .orderedAscending
 			case .position:
-			   return player1.position ?? "zzz" < player2.position ?? "zzz"
+			   return (player1.position ?? "zzz") < (player2.position ?? "zzz")
 		 }
 	  }
    }
+
 
 }
