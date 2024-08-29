@@ -33,6 +33,13 @@ struct TransactionView: View {
 				  }
 			   }
 			}
+			Spacer()
+
+			// Version Number in Safe Area
+			Text("Version: \(AppConstants.getVersion())")
+			   .font(.system(size: 9))
+			   .foregroundColor(.teal)
+			   .padding(.bottom, 2)
 		 }
 		 .onAppear {
 			transactionViewModel.fetchTransactions(leagueID: leagueID, round: Int(week) ?? 1)

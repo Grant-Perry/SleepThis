@@ -49,8 +49,22 @@ class PlayerViewModel: ObservableObject {
 			do {
 			   // Attempt to decode as a dictionary
 			   let playersDictionary = try JSONDecoder().decode([String: PlayerModel].self, from: data)
-			   self.players = Array(playersDictionary.values)
-			   print("[fetchAllPlayers:] Successfully decoded player data as dictionary")
+
+			   // Filter the players to only include desired positions and remove those with "Unknown" values
+			   self.players = Array(playersDictionary.values).filter { player in
+				  guard let position = player.position,
+						let team = player.team,
+						let depthChartOrder = player.depthChartOrder,
+						let depthChartPosition = player.depthChartPosition else { return false }
+				  // Remove players with "Unknown" in any of these fields
+				  return ["QB", "RB", "WR", "TE", "K", "DST"].contains(position) &&
+				  team.lowercased() != "unknown" &&
+				  position.lowercased() != "unknown" &&
+				  depthChartPosition.lowercased() != "unknown" &&
+				  depthChartOrder != Int.max // Adjust if "Unknown" is represented differently
+			   }
+
+			   print("[fetchAllPlayers:] Successfully decoded and filtered player data.")
 
 			   // Check if there's actually data before saving
 			   print("[fetchAllPlayers:] Data length before saving: \(data.count) bytes")
@@ -58,11 +72,8 @@ class PlayerViewModel: ObservableObject {
 			   CacheManager.shared.saveToCache(self.players, as: self.cacheFileName)
 			   print("[fetchAllPlayers:] Successfully saved data to cache.")
 
-			   // Update cache size and age after saving
 			   self.cacheSize = self.calculateCacheSize()
-			   self.cacheAgeDescription = self.calculateCacheAge()
 			   print("[fetchAllPlayers:] Cache size: \(self.cacheSize ?? "Unknown")")
-			   print("[fetchAllPlayers:] Cache age: \(self.cacheAgeDescription ?? "Unknown")")
 			} catch {
 			   print("[fetchAllPlayers:] Failed to decode player data: \(error)")
 			   self.errorMessage = "Failed to decode player data: \(error)"
@@ -70,6 +81,7 @@ class PlayerViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
+
 
    // Fetch players based on a lookup query (name or ID)
    func fetchPlayersByLookup(playerLookup: String) {

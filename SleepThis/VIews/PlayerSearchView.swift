@@ -63,7 +63,9 @@ struct PlayerSearchView: View {
 					 print("[PlayerSearchView:searchPlayer] Searching player with lookup: \(playerLookup)")
 					 playerViewModel.fetchPlayersByLookup(playerLookup: playerLookup)
 				  }) {
-					 Text("Go")
+					 Image(systemName: "plus.magnifyingglass")
+//
+//					 Text("Go")
 				  }
 				  .disabled(playerLookup.isEmpty)
 				  .padding(.trailing)
@@ -110,10 +112,10 @@ struct PlayerSearchView: View {
 			Spacer()
 
 			// Version Number in Safe Area
-			Text("Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")")
-			   .font(.footnote)
-			   .foregroundColor(.black)
-			   .padding(.bottom, 10)
+			Text("Version: \(AppConstants.getVersion())")
+			   .font(.system(size: 8))
+			   .foregroundColor(.teal)
+			   .padding(.bottom, 2)
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
@@ -143,12 +145,12 @@ struct PlayerSearchView: View {
 		 let depthOrder1 = player1.depthChartOrder ?? Int.max
 		 let depthOrder2 = player2.depthChartOrder ?? Int.max
 
-		 // First sort by team (place known teams first)
-		 if team1 != team2 {
-			return team1.isEmpty ? false : (team2.isEmpty ? true : team1.localizedStandardCompare(team2) == .orderedAscending)
+		 // Sort by valid teams first
+		 if team1.isEmpty != team2.isEmpty {
+			return !team1.isEmpty
 		 }
 
-		 // Then sort by depth chart order
+		 // Then sort by depth chart order within the position
 		 if depthOrder1 != depthOrder2 {
 			return depthOrder1 < depthOrder2
 		 }
@@ -166,4 +168,5 @@ struct PlayerSearchView: View {
 		 }
 	  }
    }
+
 }
