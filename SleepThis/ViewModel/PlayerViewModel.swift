@@ -13,7 +13,7 @@ class PlayerViewModel: ObservableObject {
    let cacheFileName = "cachedPlayers.json"
 
    init() {
-	  print("PlayerViewModel initialized")
+	  print("[PlayerViewModel:init] PlayerViewModel initialized")
 	  loadPlayersFromCache()
    }
 
@@ -47,7 +47,7 @@ class PlayerViewModel: ObservableObject {
 			}
 
 			do {
-			   // Attempt to decode as a dictionary first
+			   // Attempt to decode as a dictionary
 			   let playersDictionary = try JSONDecoder().decode([String: PlayerModel].self, from: data)
 			   self.players = Array(playersDictionary.values)
 			   print("[fetchAllPlayers:] Successfully decoded player data as dictionary")
@@ -58,8 +58,11 @@ class PlayerViewModel: ObservableObject {
 			   CacheManager.shared.saveToCache(self.players, as: self.cacheFileName)
 			   print("[fetchAllPlayers:] Successfully saved data to cache.")
 
+			   // Update cache size and age after saving
 			   self.cacheSize = self.calculateCacheSize()
+			   self.cacheAgeDescription = self.calculateCacheAge()
 			   print("[fetchAllPlayers:] Cache size: \(self.cacheSize ?? "Unknown")")
+			   print("[fetchAllPlayers:] Cache age: \(self.cacheAgeDescription ?? "Unknown")")
 			} catch {
 			   print("[fetchAllPlayers:] Failed to decode player data: \(error)")
 			   self.errorMessage = "Failed to decode player data: \(error)"
@@ -68,12 +71,9 @@ class PlayerViewModel: ObservableObject {
 	  }.resume()
    }
 
-
-
-
    // Fetch players based on a lookup query (name or ID)
    func fetchPlayersByLookup(playerLookup: String) {
-	  print("Performing player lookup with query: \(playerLookup)")
+	  print("[fetchPlayersByLookup:] Performing player lookup with query: \(playerLookup)")
 	  loadPlayersFromCache()
 
 	  if playerLookup.allSatisfy({ $0.isNumber }) {
@@ -83,15 +83,15 @@ class PlayerViewModel: ObservableObject {
 		 self.players = players.filter {
 			let fullName = "\($0.firstName ?? "") \($0.lastName ?? "")".lowercased()
 			return fullName.contains(lookupLowercased)
-		 }	  }
-	  print("Found \(self.players.count) players matching the query.")
+		 }
+	  }
+	  print("[fetchPlayersByLookup:] Found \(self.players.count) players matching the query.")
    }
 
    func getPlayerNames(from ids: [String]) -> String {
 	  let matchedPlayers = players.filter { ids.contains($0.id) }
 	  return matchedPlayers.compactMap { "\($0.firstName ?? "") \($0.lastName ?? "")" }.joined(separator: ", ")
    }
-
 
    func loadPlayersFromCache() {
 	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
@@ -108,10 +108,16 @@ class PlayerViewModel: ObservableObject {
 		 let cachedPlayers = try Data(contentsOf: cacheURL)
 		 let decodedPlayers = try JSONDecoder().decode([PlayerModel].self, from: cachedPlayers)
 		 self.players = decodedPlayers
+
+		 // Update cache size and age
 		 self.cacheSize = calculateCacheSize()
-		 print("Loaded \(self.players.count) players from cache.")
+		 self.cacheAgeDescription = calculateCacheAge()
+
+		 print("[loadPlayersFromCache:] Loaded \(self.players.count) players from cache.")
+		 print("[loadPlayersFromCache:] Cache size: \(self.cacheSize ?? "Unknown")")
+		 print("[loadPlayersFromCache:] Cache age: \(self.cacheAgeDescription ?? "Unknown")")
 	  } catch {
-		 print("Failed to load data from cache: \(error.localizedDescription). Fetching data from network as fallback.")
+		 print("[loadPlayersFromCache:] Failed to load data from cache: \(error.localizedDescription). \nFetching data from network as fallback.")
 		 fetchAllPlayers() // Fetch from network if loading from cache fails
 	  }
    }
@@ -121,15 +127,26 @@ class PlayerViewModel: ObservableObject {
 	  if let attributes = try? FileManager.default.attributesOfItem(atPath: cacheURL.path),
 		 let fileSize = attributes[.size] as? UInt64 {
 		 let fileSizeInMB = Double(fileSize) / (1024 * 1024)
-		 print("Cache size: \(fileSizeInMB) MB")
+		 print("[calculateCacheSize:] Cache size: \(fileSizeInMB) MB")
 		 return String(format: "%.2f MB", fileSizeInMB)
 	  }
-	  print("Failed to calculate cache size.")
+	  print("[calculateCacheSize:] Failed to calculate cache size.")
 	  return nil
    }
 
+   func calculateCacheAge() -> String? {
+	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
+	  if let attributes = try? FileManager.default.attributesOfItem(atPath: cacheURL.path),
+		 let modificationDate = attributes[.modificationDate] as? Date {
+		 let currentDate = Date()
+		 let ageInDays = Calendar.current.dateComponents([.day], from: modificationDate, to: currentDate).day ?? 0
+		 return "Cache Age: \(ageInDays) day(s)"
+	  }
+	  return "Cache Age: Unknown"
+   }
+
    func reloadCache() {
-	  print("Reloading cache...")
+	  print("[reloadCache:] Reloading cache...")
 	  fetchAllPlayers()
    }
 

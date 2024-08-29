@@ -9,13 +9,13 @@ struct SleepThisApp: App {
 		 TabView {
 			PlayerSearchView()
 			   .tabItem {
-				  Label("Player Search", systemImage: "magnifyingglass")
+				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-			UserSearchView()
-			   .tabItem {
-				  Label("User Search", systemImage: "plus.magnifyingglass")
-			   }
+//			UserSearchView()
+//			   .tabItem {
+//				  Label("User Search", systemImage: "magnifyingglass")
+//			   }
 
 			MatchupView()
 			   .tabItem {

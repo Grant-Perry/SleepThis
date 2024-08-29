@@ -16,7 +16,7 @@ struct TransactionModel: Identifiable, Codable {
    let metadata: Metadata?
    let settings: Settings?
    let consenter_ids: [Int]?
-   let creator: String // Make sure this matches the key from the JSON
+   let creator: String 
 
    struct DraftPick: Codable {
 	  let season: String?
@@ -38,5 +38,7 @@ struct TransactionModel: Identifiable, Codable {
 
    struct Settings: Codable {
 	  let waiver_bid: Int?
+	  let priority: Int?
+	  let seq: Int?
    }
 }

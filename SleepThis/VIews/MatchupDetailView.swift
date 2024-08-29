@@ -1,23 +1,23 @@
 import SwiftUI
 
 struct MatchupDetailView: View {
-   let thisMatchup: MatchupModel
+   let matchup: MatchupModel
    var playerViewModel = PlayerViewModel()
 
    var body: some View {
 	  VStack(alignment: .leading) {
-		 Text("Matchup ID: \(thisMatchup.matchup_id)")
+		 Text("Matchup ID: \(matchup.matchup_id)")
 			.font(.headline)
 
-		 if !thisMatchup.starters.isEmpty {
-			let playerNames = playerViewModel.getPlayerNames(from: thisMatchup.starters)
+		 if !matchup.starters.isEmpty {
+			let playerNames = playerViewModel.getPlayerNames(from: matchup.starters)
 			Text("Starters: \(playerNames)")
 		 } else {
 			Text("No starters available.")
 		 }
 
-		 if !thisMatchup.players.isEmpty {
-			let playerNames = playerViewModel.getPlayerNames(from: thisMatchup.players)
+		 if !matchup.players.isEmpty {
+			let playerNames = playerViewModel.getPlayerNames(from: matchup.players)
 			Text("Players: \(playerNames)")
 		 } else {
 			Text("No players available.")

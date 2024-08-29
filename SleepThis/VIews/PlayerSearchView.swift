@@ -3,6 +3,13 @@ import SwiftUI
 struct PlayerSearchView: View {
    @StateObject private var playerViewModel = PlayerViewModel()
    @State private var playerLookup: String = ""
+   @State private var sortOption: SortOption = .name
+
+   enum SortOption: String, CaseIterable {
+	  case name = "Player"
+	  case team = "Team"
+	  case position = "Position"
+   }
 
    var body: some View {
 	  NavigationView {
@@ -21,11 +28,9 @@ struct PlayerSearchView: View {
 						.font(.footnote)
 						.foregroundColor(.cyan)
 					 +
-
 					 Text("(\(cacheSize))")
 						.font(.caption2)
 						.foregroundColor(.pink)
-
 				  }
 				  Spacer()
 				  Button(action: {
@@ -53,12 +58,21 @@ struct PlayerSearchView: View {
 				  .disabled(playerLookup.isEmpty)
 				  .padding(.trailing)
 			   }
+
+			   // Sort Options Picker
+			   Picker("Sort By", selection: $sortOption) {
+				  ForEach(SortOption.allCases, id: \.self) { option in
+					 Text(option.rawValue).tag(option)
+				  }
+			   }
+			   .pickerStyle(SegmentedPickerStyle())
+			   .padding(.horizontal)
 			   .padding(.bottom)
 			}
 
 			// Scrollable List Section
 			if !playerViewModel.players.isEmpty {
-			   List(playerViewModel.players) { player in
+			   List(sortedPlayers) { player in
 				  NavigationLink(destination: PlayerDetailView(player: player, playerViewModel: playerViewModel)) {
 					 VStack(alignment: .leading) {
 						Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
@@ -74,6 +88,13 @@ struct PlayerSearchView: View {
 			} else {
 			   Text("No player data available.")
 			}
+			Spacer()
+
+			// Version Number in Safe Area
+			Text("Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")")
+			   .font(.system(size: 10))
+			   .foregroundColor(.gray)
+			   .padding(.bottom, 10)
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
@@ -83,6 +104,23 @@ struct PlayerSearchView: View {
 			   playerViewModel.fetchAllPlayers()
 			}
 		 }
+	  }
+   }
+
+   private var sortedPlayers: [PlayerModel] {
+	  switch sortOption {
+		 case .name:
+			return playerViewModel.players.sorted {
+			   ("\($0.lastName ?? "zzz") \($0.firstName ?? "zzz")").localizedStandardCompare("\($1.lastName ?? "zzz") \($1.firstName ?? "zzz")") == .orderedAscending
+			}
+		 case .team:
+			return playerViewModel.players.sorted {
+			   ($0.team ?? "zzz").localizedStandardCompare($1.team ?? "zzz") == .orderedAscending
+			}
+		 case .position:
+			return playerViewModel.players.sorted {
+			   ($0.position ?? "zzz").localizedStandardCompare($1.position ?? "zzz") == .orderedAscending
+			}
 	  }
    }
 }

@@ -7,9 +7,9 @@ struct TransactionDetailView: View {
 
    var body: some View {
 	  VStack(alignment: .leading) {
+		 // Transaction ID and Type
 		 Text("Transaction ID: \(transactionModel.id)")
 			.font(.headline)
-
 		 Text("Type: \(transactionModel.type)")
 			.font(.subheadline)
 
@@ -39,7 +39,7 @@ struct TransactionDetailView: View {
 			}
 		 }
 
-		 // Handling Adds
+		 // Adds Section
 		 if let adds = transactionModel.adds {
 			Text("Added Players:")
 			   .font(.headline)
@@ -54,7 +54,7 @@ struct TransactionDetailView: View {
 			}
 		 }
 
-		 // Handling Drops
+		 // Drops Section
 		 if let drops = transactionModel.drops {
 			Text("Dropped Players:")
 			   .font(.headline)
@@ -72,7 +72,7 @@ struct TransactionDetailView: View {
 			   .font(.subheadline)
 		 }
 
-		 // Handling Draft Picks
+		 // Draft Picks Section
 		 if let draftPicks = transactionModel.draft_picks, !draftPicks.isEmpty {
 			Text("Draft Picks:")
 			   .font(.headline)
@@ -82,6 +82,40 @@ struct TransactionDetailView: View {
 			}
 		 } else {
 			Text("No draft picks")
+			   .font(.subheadline)
+		 }
+
+		 // Waiver Budget Section
+		 if let waiverBudgets = transactionModel.waiver_budget, !waiverBudgets.isEmpty {
+			Text("Waiver Budgets:")
+			   .font(.headline)
+			ForEach(waiverBudgets.indices, id: \.self) { index in
+			   let budget = waiverBudgets[index]
+			   Text("Sender: \(budget.sender?.description ?? "Unknown"), Receiver: \(budget.receiver?.description ?? "Unknown"), Amount: \(budget.amount?.description ?? "Unknown")")
+				  .font(.subheadline)
+			}
+		 } else {
+			Text("No waiver budget transactions")
+			   .font(.subheadline)
+		 }
+
+		 // Metadata Section
+		 if let metadata = transactionModel.metadata {
+			Text("Metadata:")
+			   .font(.headline)
+			Text("Notes: \(metadata.notes ?? "None")")
+			   .font(.subheadline)
+		 }
+
+		 // Settings Section
+		 if let settings = transactionModel.settings {
+			Text("Settings:")
+			   .font(.headline)
+			Text("Priority: \(settings.priority?.description ?? "Unknown")")
+			   .font(.subheadline)
+			Text("Sequence: \(settings.seq?.description ?? "Unknown")")
+			   .font(.subheadline)
+			Text("Waiver Bid: \(settings.waiver_bid?.description ?? "Unknown")")
 			   .font(.subheadline)
 		 }
 
