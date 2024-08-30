@@ -7,28 +7,31 @@ struct PlayerDetailView: View {
    var body: some View {
 	  ScrollView {
 		 VStack(alignment: .leading, spacing: 10) {
+			PlayerInfoRowView(label: "Name", value: "\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
+			   .font(.title)
+			   .padding(.top)
 
-			playerInfoRow(label: "Name", value: "\(player.firstName ?? "") \(player.lastName ?? "")")
-			playerInfoRow(label: "ID", value: player.id)
-			playerInfoRow(label: "Team", value: player.team)
-			playerInfoRow(label: "Position", value: player.position)
-			playerInfoRow(label: "Age", value: player.age?.description)
-			playerInfoRow(label: "Height", value: player.height)
-			playerInfoRow(label: "Weight", value: player.weight)
-			playerInfoRow(label: "Status", value: player.status)
-			playerInfoRow(label: "College", value: player.college)
-			playerInfoRow(label: "Birth Country", value: player.birthCountry)
-			playerInfoRow(label: "Years Experience", value: player.yearsExp?.description)
-			playerInfoRow(label: "Fantasy Positions", value: player.fantasyPositions?.joined(separator: ", "))
-			playerInfoRow(label: "Number", value: player.number?.description)
-			playerInfoRow(label: "Depth Chart Position", value: player.depthChartPosition)
-			playerInfoRow(label: "Depth Chart Order", value: player.depthChartOrder?.description)
-
+			PlayerInfoRowView(label: "ID", value: player.id)
+			PlayerInfoRowView(label: "Team", value: player.team)
+			PlayerInfoRowView(label: "Position", value: player.position)
+			PlayerInfoRowView(label: "Age", value: player.age?.description)
+			PlayerInfoRowView(label: "Height", value: player.height)
+			PlayerInfoRowView(label: "Weight", value: player.weight)
+			PlayerInfoRowView(label: "Status", value: player.status)
+			PlayerInfoRowView(label: "College", value: player.college)
+			PlayerInfoRowView(label: "Birth Country", value: player.birthCountry)
+			PlayerInfoRowView(label: "Years Experience", value: player.yearsExp?.description)
+			PlayerInfoRowView(label: "Fantasy Positions", value: player.fantasyPositions?.joined(separator: ", "))
+			PlayerInfoRowView(label: "Number", value: player.number?.description)
+			PlayerInfoRowView(label: "Depth Chart Position", value: player.depthChartPosition?.description)
+			PlayerInfoRowView(label: "Depth Chart Order", value: player.depthChartOrder?.description)
 		 }
 		 .padding()
 		 .navigationTitle("\(player.firstName ?? "Player") \(player.lastName ?? "Details")")
 	  }
    }
+
+
 
    @ViewBuilder
    private func playerInfoRow(label: String, value: String?) -> some View {

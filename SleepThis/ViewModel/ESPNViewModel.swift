@@ -1,35 +1,47 @@
 import Foundation
-import Combine
 
 class ESPNViewModel: ObservableObject {
-   @Published var playerDetails: ESPNPlayerModel?
+   @Published var espnPlayerData: ESPNPlayerModel?
+   @Published var isLoading = false
+   @Published var errorMessage: String?
 
-   private var cancellables = Set<AnyCancellable>()
+   func fetchESPNPlayerData(for player: PlayerModel) {
+	  isLoading = true
+	  errorMessage = nil
 
-   func fetchPlayerDetails(by name: String) {
-	  let query = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-	  let urlString = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/athletes/\(query)"
+	  let urlString = "https://site.api.espn.com/apis/common/v3/sports/football/nfl/players/\(player.id)"
 
 	  guard let url = URL(string: urlString) else {
-		 print("[fetchPlayerDetails:] Invalid URL")
+		 self.errorMessage = "Invalid URL"
+		 self.isLoading = false
 		 return
 	  }
 
-	  URLSession.shared.dataTaskPublisher(for: url)
-		 .map(\.data)
-		 .decode(type: ESPNPlayerModel.self, decoder: JSONDecoder())
-		 .receive(on: DispatchQueue.main)
-		 .sink(receiveCompletion: { completion in
-			switch completion {
-			   case .failure(let error):
-				  print("[fetchPlayerDetails:] Error: \(error.localizedDescription)")
-			   case .finished:
-				  break
+	  URLSession.shared.dataTask(with: url) { data, response, error in
+		 DispatchQueue.main.async {
+			self.isLoading = false
+
+			if let error = error {
+			   self.errorMessage = error.localizedDescription
+			   print("[ESPNViewModel:fetchESPNPlayerData] Error: \(error.localizedDescription)")
+			   return
 			}
-		 }, receiveValue: { [weak self] playerDetails in
-			self?.playerDetails = playerDetails
-			print("[fetchPlayerDetails:] Successfully fetched player details for \(playerDetails.fullName)")
-		 })
-		 .store(in: &cancellables)
+
+			guard let data = data else {
+			   self.errorMessage = "No data received"
+			   print("[ESPNViewModel:fetchESPNPlayerData] No data received")
+			   return
+			}
+
+			do {
+			   let decodedPlayer = try JSONDecoder().decode(ESPNPlayerModel.self, from: data)
+			   self.espnPlayerData = decodedPlayer
+			   print("[ESPNViewModel:fetchESPNPlayerData] Successfully decoded ESPN player data: \(decodedPlayer)")
+			} catch {
+			   self.errorMessage = "Failed to decode ESPN player data: \(error)"
+			   print("[ESPNViewModel:fetchESPNPlayerData] Decoding error: \(error)")
+			}
+		 }
+	  }.resume()
    }
 }
