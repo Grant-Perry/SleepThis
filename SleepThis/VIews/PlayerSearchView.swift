@@ -64,8 +64,6 @@ struct PlayerSearchView: View {
 					 playerViewModel.fetchPlayersByLookup(playerLookup: playerLookup)
 				  }) {
 					 Image(systemName: "plus.magnifyingglass")
-//
-//					 Text("Go")
 				  }
 				  .disabled(playerLookup.isEmpty)
 				  .padding(.trailing)
@@ -95,11 +93,27 @@ struct PlayerSearchView: View {
 			if !playerViewModel.players.isEmpty {
 			   List(filteredSortedPlayers) { player in
 				  NavigationLink(destination: PlayerDetailView(player: player, playerViewModel: playerViewModel)) {
-					 VStack(alignment: .leading) {
-						Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
-						   .font(.headline)
-						Text("Team: \(player.team ?? "Unknown")")
-						Text("Position: \(player.position ?? "Unknown")")
+					 HStack {
+						// Display player thumbnail
+						if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg") {
+						   AsyncImage(url: url) { image in
+							  image.resizable()
+								 .aspectRatio(contentMode: .fit)
+								 .frame(width: 150, height: 150)
+								 .clipShape(Circle())
+						   } placeholder: {
+							  Image(systemName: "person.crop.circle.fill")
+								 .resizable()
+								 .frame(width: 50, height: 50)
+						   }
+						}
+
+						VStack(alignment: .leading) {
+						   Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
+							  .font(.headline)
+						   Text("Team: \(player.team ?? "Unknown")")
+						   Text("Position: \(player.position ?? "Unknown")")
+						}
 					 }
 				  }
 			   }
@@ -115,7 +129,6 @@ struct PlayerSearchView: View {
 			Text("Version: \(AppConstants.getVersion())")
 			   .font(.system(size: AppConstants.verSize))
 			   .foregroundColor(AppConstants.verColor)
-//			   .padding(.bottom, 2)
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
@@ -135,7 +148,7 @@ struct PlayerSearchView: View {
 	  }
 
 	  // Filter players based on the selected position
-	  if positionFilter != .te {  // Replace .te with the position you don't want as default, if any
+	  if positionFilter != .te {
 		 filteredPlayers = filteredPlayers.filter { $0.position == positionFilter.rawValue }
 	  }
 
@@ -169,6 +182,4 @@ struct PlayerSearchView: View {
 		 }
 	  }
    }
-
-
 }
