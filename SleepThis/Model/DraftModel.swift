@@ -1,8 +1,8 @@
 import Foundation
 
 struct DraftModel: Identifiable, Codable {
-   var id: String { pick_id }
-   let pick_id: String
+   var id: String { "\(pick_no)" }  // Used pick_no as a unique identifier
+   let pick_no: Int  // Correctly mapped as an Int per JSON
    let round: Int
    let roster_id: Int
    let player_id: String
@@ -13,7 +13,7 @@ struct DraftModel: Identifiable, Codable {
    var managerAvatar: URL?
 
    struct DraftMetadata: Codable {
-	  let years_exp: Int?
+	  let years_exp: String?  // Correctly mapped as String
 	  let birth_country: String?
 	  let birth_date: String?
 	  let college: String?
@@ -21,14 +21,14 @@ struct DraftModel: Identifiable, Codable {
 	  let last_name: String?
 	  let position: String?
 	  let team: String?
-	  let number: Int?
+	  let number: String?  // Correctly mapped as String
 	  let status: String?
-	  let depth_chart_order: String? // Ensure this matches the JSON response
-	  let depth_chart_position: String? // If applicable, include this
+	  let depth_chart_order: String?
+	  let depth_chart_position: String?
    }
 
    enum CodingKeys: String, CodingKey {
-	  case pick_id
+	  case pick_no
 	  case round
 	  case roster_id
 	  case player_id

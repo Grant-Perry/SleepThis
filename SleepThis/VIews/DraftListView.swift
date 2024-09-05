@@ -6,10 +6,9 @@ struct DraftListView: View {
    var body: some View {
 	  NavigationView {
 		 List {
-			// Iterate over sorted manager IDs and group by manager
+			// Sort manager IDs and iterate over them
 			ForEach(draftViewModel.groupedPicks.keys.sorted(), id: \.self) { managerID in
 			   Section(header: Text(draftViewModel.managerName(for: managerID))) {
-				  // Retrieve the picks for each manager
 				  if let picks = draftViewModel.groupedPicks[managerID] {
 					 ForEach(picks) { draft in
 						NavigationLink(destination: DraftDetailView(draftPick: draft)) {
@@ -22,8 +21,9 @@ struct DraftListView: View {
 		 }
 		 .navigationTitle("Draft Picks")
 		 .onAppear {
-			// Pass the correct draftID when calling the fetch method
-			draftViewModel.fetchDraftData(draftID: "your_draft_id_here")
+			print("------------------------------------\n\(#file) \(#line):[DraftListView]: DraftListView appeared")
+			// Make sure to pass the correct draftID
+			draftViewModel.fetchDraftData(draftID: AppConstants.DraftID)
 		 }
 	  }
    }

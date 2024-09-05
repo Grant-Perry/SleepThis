@@ -5,14 +5,11 @@ struct DraftDetailView: View {
 
    var body: some View {
 	  VStack(alignment: .leading, spacing: 15) {
-		 // Manager Name
 		 Text("Manager: \(draftPick.managerName ?? "Unknown Manager")")
 			.font(.title2)
 			.padding(.top)
 
-		 // Player Image and Information
 		 VStack(alignment: .leading) {
-			// Player Image from Sleeper CDN
 			if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(draftPick.player_id).jpg") {
 			   AsyncImage(url: url) { image in
 				  image.resizable()
@@ -26,7 +23,6 @@ struct DraftDetailView: View {
 			   }
 			}
 
-			// Player Details from Draft Metadata
 			Text("\(draftPick.metadata?.first_name ?? "Unknown") \(draftPick.metadata?.last_name ?? "Player")")
 			   .font(.headline)
 			Text("Team: \(draftPick.metadata?.team ?? "Unknown Team")")
@@ -36,7 +32,6 @@ struct DraftDetailView: View {
 		 }
 		 .padding(.leading, 10)
 
-		 // Divider to separate sections
 		 Divider()
 	  }
 	  .padding()
