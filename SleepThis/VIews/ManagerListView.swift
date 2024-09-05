@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ManagerListView: View {
-   @ObservedObject var draftViewModel = DraftViewModel()
+   @ObservedObject var draftViewModel: DraftViewModel
 
    let pastelColors: [Color] = [
 	  .init(red: 0.8, green: 0.9, blue: 1.0),
@@ -11,26 +11,23 @@ struct ManagerListView: View {
 	  .init(red: 1.0, green: 1.0, blue: 0.8)
    ]
 
+   var sortedManagerIDs: [String] {
+	  draftViewModel.groupedPicks.keys.sorted {
+		 let firstSlot = draftViewModel.groupedPicks[$0]?.first?.draft_slot ?? 0
+		 let secondSlot = draftViewModel.groupedPicks[$1]?.first?.draft_slot ?? 0
+		 return firstSlot < secondSlot
+	  }
+   }
+
    var body: some View {
 	  NavigationView {
 		 List {
-			// Sort managerIDs by draft_slot
-			let sortedManagerIDs = draftViewModel.groupedPicks.keys.sorted {
-			   let firstPick1 = draftViewModel.groupedPicks[$0]?.first?.draft_slot ?? 0
-			   let firstPick2 = draftViewModel.groupedPicks[$1]?.first?.draft_slot ?? 0
-			   return firstPick1 < firstPick2
-			}
-
 			ForEach(sortedManagerIDs, id: \.self) { managerID in
 			   let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
 			   let backgroundColor = pastelColors[managerIndex % pastelColors.count]
 
 			   NavigationLink(destination: DraftListView(managerID: managerID, draftViewModel: draftViewModel)) {
-				  Text(draftViewModel.managerName(for: managerID))
-					 .padding()
-					 .frame(maxWidth: .infinity, alignment: .leading)
-					 .background(backgroundColor.cornerRadius(8))
-					 .foregroundColor(.black)
+				  ManagerRowView(managerID: managerID, draftViewModel: draftViewModel, backgroundColor: backgroundColor)
 			   }
 			   .listRowBackground(backgroundColor)
 			}
@@ -42,3 +39,5 @@ struct ManagerListView: View {
 	  }
    }
 }
+
+

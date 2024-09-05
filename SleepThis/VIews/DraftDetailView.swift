@@ -5,7 +5,7 @@ struct DraftDetailView: View {
 
    var body: some View {
 	  VStack(alignment: .leading, spacing: 15) {
-		 Text("Manager: \(draftPick.managerName ?? "Unknown Manager")")
+		 Text("Future Player Metrics: \(draftPick.managerName ?? "Unknown Manager")")
 			.font(.title2)
 			.padding(.top)
 
