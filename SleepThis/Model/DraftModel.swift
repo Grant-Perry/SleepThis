@@ -7,6 +7,7 @@ struct DraftModel: Identifiable, Codable {
    let roster_id: Int
    let player_id: String
    let picked_by: String
+   let draft_slot: Int  // Add this to match the draft_slot in the JSON
    let metadata: DraftMetadata?
 
    var managerName: String?
@@ -33,6 +34,7 @@ struct DraftModel: Identifiable, Codable {
 	  case roster_id
 	  case player_id
 	  case picked_by
+	  case draft_slot  // Ensure this matches the JSON key
 	  case metadata
    }
 }

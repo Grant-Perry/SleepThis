@@ -10,7 +10,7 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-			DraftListView(draftViewModel: DraftViewModel())
+			ManagerListView(draftViewModel: DraftViewModel())
 			   .tabItem {
 				  Label("Draft", systemImage: "list.clipboard")
 			   }
