@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9B1B0CBE2C892BD700D3C8A8 /* DraftRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9B4B88362C753A2A0026E11B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftRowView.swift; sourceTree = "<group>"; };
 		9B4B88252C753A290026E11B /* SleepThis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SleepThis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B88352C753A2A0026E11B /* SleepThisTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B883F2C753A2A0026E11B /* SleepThisUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +93,7 @@
 		9B4B881C2C753A290026E11B = {
 			isa = PBXGroup;
 			children = (
+				9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */,
 				9B4B88272C753A290026E11B /* SleepThis */,
 				9B4B88382C753A2A0026E11B /* SleepThisTests */,
 				9B4B88422C753A2A0026E11B /* SleepThisUITests */,
@@ -249,6 +255,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B1B0CBE2C892BD700D3C8A8 /* DraftRowView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -423,7 +430,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.86;
+				MARKETING_VERSION = 1.86.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -454,7 +461,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.86;
+				MARKETING_VERSION = 1.86.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

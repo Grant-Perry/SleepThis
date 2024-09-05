@@ -52,7 +52,9 @@ struct PlayerDetailView: View {
 		 }
 		 .padding(.top, 10)
 	  }
+	  .preferredColorScheme(.dark)
    }
+
 
    @ViewBuilder
    private func PlayerInfoRowView(label: String, value: String?) -> some View {

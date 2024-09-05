@@ -111,8 +111,13 @@ struct PlayerSearchView: View {
 						VStack(alignment: .leading) {
 						   Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
 							  .font(.headline)
-						   Text("Team: \(player.team ?? "Unknown")")
-						   Text("Position: \(player.position ?? "Unknown")")
+						   VStack {
+						  	Text("Team: \(player.team ?? "Unknown")")
+							  Text("Position: \(player.position ?? "Unknown")")
+							  Text("Depth: #\(player.depthChartOrder ?? 0)")
+						   }
+						   .font(.caption)
+						   .padding(.leading, 1)
 						}
 					 }
 				  }
@@ -139,6 +144,7 @@ struct PlayerSearchView: View {
 			}
 		 }
 	  }
+	  .preferredColorScheme(.dark)
    }
 
    private var filteredSortedPlayers: [PlayerModel] {

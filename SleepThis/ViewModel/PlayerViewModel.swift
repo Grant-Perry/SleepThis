@@ -17,6 +17,16 @@ class PlayerViewModel: ObservableObject {
 	  loadPlayersFromCache()
    }
 
+   // Fetch player details by ID - used by DraftViewModel
+   func fetchPlayerDetails(playerID: String, completion: @escaping (PlayerModel?) -> Void) {
+	  if let player = players.first(where: { $0.id == playerID }) {
+		 completion(player)
+	  } else {
+		 errorMessage = "Player not found."
+		 completion(nil)
+	  }
+   }
+
    func fetchAllPlayers() {
 	  print("[fetchAllPlayers:] Starting network fetch for players...")
 	  isLoading = true

@@ -54,5 +54,15 @@ class UserViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
+
+   func fetchUserPublisher(by userID: String) -> AnyPublisher<UserModel?, Error> {
+	  // Assuming you have a method to fetch user data from an API
+	  let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)")!
+	  return URLSession.shared.dataTaskPublisher(for: url)
+		 .map { $0.data }
+		 .decode(type: UserModel?.self, decoder: JSONDecoder())
+		 .receive(on: DispatchQueue.main)
+		 .eraseToAnyPublisher()
+   }
 }
 

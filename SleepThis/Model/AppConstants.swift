@@ -5,7 +5,8 @@ struct AppConstants {
    static let verSize = 10.0
    static let verColor = Color.teal
    static let leagueID = "1051207774316683264"
-   static let ourLeagueID = "1044844006657982464"
+   static let TwoBrothersID = "1044844006657982464"
+   static let DraftID = "1044844007601504256"
 
 
    static func getVersion() -> String {

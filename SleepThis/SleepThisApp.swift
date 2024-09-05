@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 @main
@@ -12,10 +10,10 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-//			UserSearchView()
-//			   .tabItem {
-//				  Label("User Search", systemImage: "magnifyingglass")
-//			   }
+			DraftListView(draftViewModel: DraftViewModel())
+			   .tabItem {
+				  Label("Draft", systemImage: "list.clipboard")
+			   }
 
 			MatchupView()
 			   .tabItem {
@@ -30,4 +28,3 @@ struct SleepThisApp: App {
 	  }
    }
 }
-
