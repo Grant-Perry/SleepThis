@@ -45,8 +45,8 @@ struct DraftRowView: View {
 		 Spacer()
 
 		 // Round information on the right
-		 Text("Round \(draft.round)")
-			.font(.subheadline)
+		 Text("\(draft.round).\(draft.pick_no)")
+			.font(.footnote)
 	  }
 	  .padding(.vertical, 4)
 //	  .background(PositionColor.fromPosition(draft.metadata?.position).color)

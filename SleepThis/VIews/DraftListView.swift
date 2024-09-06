@@ -28,7 +28,7 @@ struct DraftListView: View {
 					 .bold()
 
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
-					 Text("Pick #: \(draftSlot)")
+					 Text("Pick #: \(draftSlot) pick")
 						.font(.subheadline)
 				  } else {
 					 Text("Pick #: N/A")
