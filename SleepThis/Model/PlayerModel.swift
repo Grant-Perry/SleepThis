@@ -27,20 +27,20 @@ struct PlayerModel: Codable, Identifiable {
    let depthChartOrder: Int?
    let rookieYear: String?
    let statsId: String?
-   let searchLastName: String?  // New
-   let searchFirstName: String? // New
-   let searchFullName: String?  // New
-   let hashtag: String?         // New
-   let injuryStartDate: String? // New
-   let practiceParticipation: String? // New
-   let sportradarId: String?    // New
-   let fantasyDataId: Int?      // New
-   let injuryStatus: String?    // New
-   let yahooId: String?         // New
-   let rotowireId: Int?         // New
-   let rotoworldId: Int?        // New
-   let espnId: String?          // New
-   let searchRank: Int?         // New
+   let searchLastName: String?
+   let searchFirstName: String?
+   let searchFullName: String?
+   let hashtag: String?
+   let injuryStartDate: String?
+   let practiceParticipation: String?
+   let sportradarId: String?
+   let fantasyDataId: Int?
+   let injuryStatus: String?
+   let yahooId: String?
+   let rotowireId: Int?
+   let rotoworldId: Int?
+   let espnId: String?
+   let searchRank: Int?
 
    enum CodingKeys: String, CodingKey {
 	  case id = "player_id"

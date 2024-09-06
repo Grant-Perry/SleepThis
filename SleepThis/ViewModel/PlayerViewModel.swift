@@ -13,7 +13,7 @@ class PlayerViewModel: ObservableObject {
    let cacheFileName = "cachedPlayers.json"
 
    init() {
-	  print("[PlayerViewModel:init] PlayerViewModel initialized")
+//	  print("[PlayerViewModel:init] PlayerViewModel initialized")
 	  loadPlayersFromCache()
    }
 
@@ -117,7 +117,7 @@ class PlayerViewModel: ObservableObject {
 
    func loadPlayersFromCache() {
 	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
-	  print("[loadPlayersFromCache:] Loading players from cache...")
+//	  print("[loadPlayersFromCache:] Loading players from cache...")
 
 	  // Check if the cache file exists before attempting to load
 	  guard FileManager.default.fileExists(atPath: cacheURL.path) else {
@@ -135,9 +135,9 @@ class PlayerViewModel: ObservableObject {
 		 self.cacheSize = calculateCacheSize()
 		 self.cacheAgeDescription = calculateCacheAge()
 
-		 print("[loadPlayersFromCache:] Loaded \(self.players.count) players from cache.")
-		 print("[loadPlayersFromCache:] Cache size: \(self.cacheSize ?? "Unknown")")
-		 print("[loadPlayersFromCache:] Cache age: \(self.cacheAgeDescription ?? "Unknown")")
+//		 print("[loadPlayersFromCache:] Loaded \(self.players.count) players from cache.")
+//		 print("[loadPlayersFromCache:] Cache size: \(self.cacheSize ?? "Unknown")")
+//		 print("[loadPlayersFromCache:] Cache age: \(self.cacheAgeDescription ?? "Unknown")")
 	  } catch {
 		 print("[loadPlayersFromCache:] Failed to load data from cache: \(error.localizedDescription). \nFetching data from network as fallback.")
 		 fetchAllPlayers() // Fetch from network if loading from cache fails
@@ -149,10 +149,10 @@ class PlayerViewModel: ObservableObject {
 	  if let attributes = try? FileManager.default.attributesOfItem(atPath: cacheURL.path),
 		 let fileSize = attributes[.size] as? UInt64 {
 		 let fileSizeInMB = Double(fileSize) / (1024 * 1024)
-		 print("[calculateCacheSize:] Cache size: \(fileSizeInMB) MB")
+//		 print("[calculateCacheSize:] Cache size: \(fileSizeInMB) MB")
 		 return String(format: "%.2f MB", fileSizeInMB)
 	  }
-	  print("[calculateCacheSize:] Failed to calculate cache size.")
+//	  print("[calculateCacheSize:] Failed to calculate cache size.")
 	  return nil
    }
 

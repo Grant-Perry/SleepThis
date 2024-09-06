@@ -94,10 +94,10 @@
 			isa = PBXGroup;
 			children = (
 				9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */,
+				9B4B88262C753A290026E11B /* Products */,
 				9B4B88272C753A290026E11B /* SleepThis */,
 				9B4B88382C753A2A0026E11B /* SleepThisTests */,
 				9B4B88422C753A2A0026E11B /* SleepThisUITests */,
-				9B4B88262C753A290026E11B /* Products */,
 			);
 			sourceTree = "<group>";
 		};

@@ -2,10 +2,11 @@ import SwiftUI
 
 struct DraftDetailView: View {
    let draftPick: DraftModel
+   let draftViewModel = DraftViewModel()
 
    var body: some View {
 	  VStack(alignment: .leading, spacing: 15) {
-		 Text("Future Player Metrics: \(draftPick.managerName ?? "Unknown Manager")")
+		 Text("Future Player Metrics: \(draftViewModel.managerName(for: draftPick.picked_by))")
 			.font(.title2)
 			.padding(.top)
 

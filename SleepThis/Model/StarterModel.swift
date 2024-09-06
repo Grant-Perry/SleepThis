@@ -1,10 +1,14 @@
-//   StarterModel.swift
-//   SleepThis
-//
-//   Created by: Gp. on 9/6/24 at 2:07 PM
-//     Modified: 
-//
-//  Copyright © 2024 Delicious Studios, LLC. - Grant Perry
-//
-
 import Foundation
+
+struct StarterModel: Identifiable {
+   let id: String  // This should be the player's ID
+   let playerName: String
+   let position: String
+   let team: String
+   let jerseyNumber: String?
+   let points: Double  // Fantasy points
+
+   var playerID: String {
+	  return id
+   }
+}

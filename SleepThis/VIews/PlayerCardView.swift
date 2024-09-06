@@ -1,10 +1,35 @@
-//   PlayerCardView.swift
-//   SleepThis
-//
-//   Created by: Gp. on 9/6/24 at 1:39 PM
-//     Modified: 
-//
-//  Copyright © 2024 Delicious Studios, LLC. - Grant Perry
-//
+import SwiftUI
 
-import Foundation
+struct PlayerCardView: View {
+   let playerModel: PlayerModel
+
+   var body: some View {
+	  HStack {
+		 // Player Thumbnail
+		 if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(playerModel.id).jpg") {
+			AsyncImage(url: url) { image in
+			   image.resizable()
+				  .frame(width: 50, height: 50)
+				  .clipShape(Circle())
+			} placeholder: {
+			   Image(systemName: "person.crop.circle.fill")
+				  .resizable()
+				  .frame(width: 50, height: 50)
+			}
+		 }
+
+		 // Player Details
+		 VStack(alignment: .leading) {
+			Text("\(playerModel.firstName ?? "") \(playerModel.lastName ?? "")")
+			   .font(.headline)
+			Text("\(playerModel.position ?? "") - \(playerModel.team ?? "") (\(playerModel.number ?? 0))")
+			   .font(.subheadline)
+			   .foregroundColor(.secondary)
+		 }
+		 Spacer()
+
+		 // Metrics (if any) can be displayed here
+	  }
+	  .padding(.vertical, 8)
+   }
+}

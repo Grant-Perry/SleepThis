@@ -41,27 +41,38 @@ class DraftViewModel: ObservableObject {
 
    // Function to fetch manager details from the Sleeper API
    func fetchManagerDetails(managerID: String) {
-	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(managerID)") else { return }
+	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(managerID)") else {
+		 print("[fetchManagerDetails]: Invalid manager URL for ID: \(managerID)")
+		 return
+	  }
+
+	  print("[fetchManagerDetails]: Fetching manager details for ID: \(managerID)")
 
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
 		 guard let self = self else { return }
 
 		 if let data = data {
 			do {
-			   let json = try JSONDecoder().decode(ManagerModel.self, from: data) // Assume ManagerModel is created for decoding the JSON
+			   let json = try JSONDecoder().decode(ManagerModel.self, from: data)
 			   DispatchQueue.main.async {
 				  self.managerDetails[managerID] = (name: json.display_name ?? json.username, avatar: json.avatar)
+				  print("[fetchManagerDetails]: Successfully fetched manager details for ID: \(managerID)")
 			   }
 			} catch {
-			   print("Error decoding manager data for \(managerID): \(error)")
+			   print("[fetchManagerDetails]: Error decoding manager data for \(managerID): \(error)")
 			}
+		 } else {
+			print("[fetchManagerDetails]: No data received for manager ID: \(managerID)")
 		 }
 	  }.resume()
    }
 
+
+
    // Fetch all manager details
    func fetchAllManagerDetails() {
 	  for managerID in groupedPicks.keys {
+		 print("Fetching manager details for managerID: \(managerID) [fetchAllManagerDetails]")
 		 fetchManagerDetails(managerID: managerID)
 	  }
    }

@@ -20,16 +20,16 @@ struct DraftListView: View {
 					 Image(systemName: "person.crop.circle")
 						.resizable()
 						.frame(width: 50, height: 50)
-				  }
-			   }
+				  } 			   }
 			   VStack(alignment: .leading) {
 				  Text(user.display_name ?? user.username)
 					 .font(.title2)
 					 .bold()
 
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
-					 Text("Pick #: \(draftSlot) pick")
+					 Text("Pick #: \(draftSlot)")
 						.font(.subheadline)
+						.padding(.trailing)
 				  } else {
 					 Text("Pick #: N/A")
 						.font(.subheadline)
