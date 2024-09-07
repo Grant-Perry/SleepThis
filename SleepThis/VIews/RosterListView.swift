@@ -2,24 +2,36 @@ import SwiftUI
 
 struct RosterListView: View {
    @ObservedObject var rosterViewModel = RosterViewModel(leagueID: AppConstants.TwoBrothersID)
-   let draftViewModel = DraftViewModel()
-   let pastelColors: [Color] = [
-	  .init(red: 0.8, green: 0.9, blue: 1.0),
-	  .init(red: 0.9, green: 1.0, blue: 0.8),
-	  .init(red: 1.0, green: 0.8, blue: 0.9),
-	  .init(red: 0.9, green: 0.8, blue: 1.0),
-	  .init(red: 1.0, green: 1.0, blue: 0.8)
-   ]
+   let draftViewModel = DraftViewModel()  // Use this to fetch manager names and avatars
 
    var body: some View {
 	  NavigationView {
 		 List {
 			ForEach(rosterViewModel.rosters, id: \.ownerID) { roster in
-			   let managerIndex = rosterViewModel.rosters.firstIndex(where: { $0.ownerID == roster.ownerID }) ?? 0
-			   let backgroundColor = pastelColors[managerIndex % pastelColors.count]
+			   let managerID = roster.ownerID
 
 			   NavigationLink(destination: RosterDetailView(managerID: roster.ownerID, rosterViewModel: rosterViewModel)) {
-				  RosterRowView(roster: roster, draftViewModel: draftViewModel, backgroundColor: backgroundColor)
+				  HStack {
+					 if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
+						AsyncImage(url: avatarURL) { image in
+						   image.resizable()
+							  .aspectRatio(contentMode: .fill)
+							  .frame(width: 50, height: 50)
+							  .clipShape(Circle())
+						} placeholder: {
+						   Image(systemName: "person.crop.circle")
+							  .resizable()
+							  .frame(width: 50, height: 50)
+						}
+					 }
+
+					 VStack(alignment: .leading) {
+						Text(draftViewModel.managerName(for: managerID))  // Fetch manager name
+						   .font(.headline)
+						Text("Owner ID: \(roster.ownerID)")
+						   .font(.subheadline)
+					 }
+				  }
 			   }
 			}
 		 }

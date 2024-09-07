@@ -4,6 +4,7 @@ struct ManagerRowView: View {
    let managerID: String
    @ObservedObject var draftViewModel: DraftViewModel
    let backgroundColor: Color
+   let viewType: ManagerViewType  // Enum to switch between draft and roster
 
    var body: some View {
 	  HStack {
@@ -28,8 +29,8 @@ struct ManagerRowView: View {
 			Text(draftViewModel.managerName(for: managerID))
 			   .font(.title2)
 			   .bold()
-			if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot
-			   {
+
+			if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 			   Text("Pick #:\(draftSlot)")
 				  .font(.subheadline)
 			} else {
@@ -39,14 +40,22 @@ struct ManagerRowView: View {
 		 }
 	  }
 	  .padding()
-	  .background(
-		 LinearGradient(gradient: Gradient(colors: [backgroundColor.opacity(0.8), .clear]),
-						startPoint: .leading,
-						endPoint: .trailing)
-		 .cornerRadius(8)
-	  )
-
-
+	  .background(backgroundColor)
+	  .cornerRadius(8)
 	  .foregroundColor(.black)
+
+	  NavigationLink(destination: {
+		 if viewType == .draft {
+			if let draftPick = draftViewModel.groupedPicks[managerID]?.first {
+			   DraftDetailView(managerID: managerID, draftPick: draftPick, draftViewModel: draftViewModel)
+			} else {
+			   Text("No Draft Pick Available")
+			}
+		 } else {
+			RosterDetailView(managerID: managerID, rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
+		 }
+	  }) {
+		 EmptyView()  // Invisible tap target, the whole row is tappable
+	  }
    }
 }

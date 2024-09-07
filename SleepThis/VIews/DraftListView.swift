@@ -20,7 +20,8 @@ struct DraftListView: View {
 					 Image(systemName: "person.crop.circle")
 						.resizable()
 						.frame(width: 50, height: 50)
-				  } 			   }
+				  }
+			   }
 			   VStack(alignment: .leading) {
 				  Text(user.display_name ?? user.username)
 					 .font(.title2)
@@ -43,7 +44,9 @@ struct DraftListView: View {
 		 List {
 			if let picks = draftViewModel.groupedPicks[managerID] {
 			   ForEach(picks) { draft in
-				  NavigationLink(destination: DraftDetailView(draftPick: draft)) {
+				  NavigationLink(
+					 destination: DraftDetailView(managerID: managerID, draftPick: draft, draftViewModel: draftViewModel)  // Pass managerID, draftPick, and draftViewModel
+				  ) {
 					 DraftRowView(draft: draft)
 				  }
 			   }

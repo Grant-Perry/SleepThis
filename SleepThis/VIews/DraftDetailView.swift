@@ -1,8 +1,11 @@
 import SwiftUI
 
 struct DraftDetailView: View {
-   let draftPick: DraftModel
-   let draftViewModel = DraftViewModel()
+
+   let managerID: String
+   let draftPick: DraftModel  // Only expecting managerID and draftPick
+   @ObservedObject var draftViewModel: DraftViewModel
+//   let draftViewModel = DraftViewModel()
 
    var body: some View {
 	  VStack(alignment: .leading, spacing: 15) {

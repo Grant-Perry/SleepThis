@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ManagerListView: View {
    @ObservedObject var draftViewModel: DraftViewModel
+   let viewType: ManagerViewType  // Add viewType to toggle between Rosters and Drafts
 
    let pastelColors: [Color] = [
 	  .init(red: 0.8, green: 0.9, blue: 1.0),
@@ -26,18 +27,13 @@ struct ManagerListView: View {
 			   let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
 			   let backgroundColor = pastelColors[managerIndex % pastelColors.count]
 
-			   NavigationLink(destination: DraftListView(managerID: managerID, draftViewModel: draftViewModel)) {
-				  ManagerRowView(managerID: managerID, draftViewModel: draftViewModel, backgroundColor: backgroundColor)
-			   }
-			   .listRowBackground(backgroundColor)
+			   ManagerRowView(managerID: managerID, draftViewModel: draftViewModel, backgroundColor: backgroundColor, viewType: viewType)
 			}
 		 }
-		 .navigationTitle("Managers")
+		 .navigationTitle(viewType == .draft ? "Draft Managers" : "Roster Managers")
 		 .onAppear {
 			draftViewModel.fetchDraftData(draftID: AppConstants.DraftID)
 		 }
 	  }
    }
 }
-
-

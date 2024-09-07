@@ -10,25 +10,24 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-			ManagerListView(draftViewModel: DraftViewModel())
+			ManagerListView(draftViewModel: DraftViewModel(), viewType: .draft)
+
 			   .tabItem {
 				  Label("Draft", systemImage: "list.clipboard")
 			   }
 
-//			MatchupView()
-//			   .tabItem {
-//				  Label("Matchups", systemImage: "list.bullet")
-//			   }
+			ManagerListView(draftViewModel: DraftViewModel(), viewType: .roster)
+			   .tabItem {
+				  Label("Rosters", systemImage: "pencil.and.list.clipboard")
+			   }
 
 //			TransactionView()
 //			   .tabItem {
 //				  Label("Transactions", systemImage: "swatchpalette")
 //			   }
 
-			RosterListView(rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
-			   .tabItem {
-				  Label("Rosters", systemImage: "pencil.and.list.clipboard")
-			   }
+//			RosterListView(rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
+
 		 }
 	  }
    }
