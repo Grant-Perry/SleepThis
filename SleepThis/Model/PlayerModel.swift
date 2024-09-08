@@ -1,7 +1,7 @@
 import SwiftUI
 import Foundation
 
-struct PlayerModel: Codable, Identifiable {
+struct PlayerModel: Codable, Identifiable, Hashable {
    let id: String
    let firstName: String?
    let lastName: String?
@@ -82,5 +82,14 @@ struct PlayerModel: Codable, Identifiable {
 	  case rotoworldId = "rotoworld_id"
 	  case espnId = "espn_id"
 	  case searchRank = "search_rank"
+   }
+
+   // Conformance to Hashable
+   func hash(into hasher: inout Hasher) {
+	  hasher.combine(id)
+   }
+
+   static func == (lhs: PlayerModel, rhs: PlayerModel) -> Bool {
+	  lhs.id == rhs.id
    }
 }

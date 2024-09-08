@@ -26,9 +26,6 @@ struct RosterDetailView: View {
 			   VStack(alignment: .leading) {
 				  Text(managerName)
 					 .font(.title2)
-//					 .bold()
-//				  Text("Manager ID: \(managerID)")
-//					 .font(.subheadline)
 			   }
 			}
 			.padding(.bottom, 10)
@@ -72,9 +69,14 @@ struct RosterDetailView: View {
 			   .padding(.top, 16)
 			}
 
-			// Pass the starters to the new StarterListView
+			// Starters Section
 			let starters = rosterViewModel.managerStarters(managerID: managerID)
 			StarterListView(starters: starters, playerViewModel: playerViewModel)
+
+			// Bench Players Section
+			let allPlayers = rosterViewModel.rosters.first(where: { $0.ownerID == managerID })?.players ?? []
+			let benchPlayers = allPlayers.filter { !starters.contains($0) }
+			BenchView(benchPlayers: benchPlayers, playerViewModel: playerViewModel)
 		 }
 		 .padding()
 	  }
