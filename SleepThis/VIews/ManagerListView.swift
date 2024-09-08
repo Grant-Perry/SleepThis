@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ManagerListView: View {
    @ObservedObject var draftViewModel: DraftViewModel
-   let viewType: ManagerViewType  // Add viewType to toggle between Rosters and Drafts
+   let viewType: ManagerViewType
 
    let pastelColors: [Color] = [
 	  .init(red: 0.8, green: 0.9, blue: 1.0),
@@ -22,12 +22,15 @@ struct ManagerListView: View {
 
    var body: some View {
 	  NavigationView {
-		 List {
-			ForEach(sortedManagerIDs, id: \.self) { managerID in
-			   let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
-			   let backgroundColor = pastelColors[managerIndex % pastelColors.count]
+		 ScrollView {  // Replaced List with ScrollView to customize row alignment
+			VStack(spacing: 0) {  // No spacing between rows
+			   ForEach(sortedManagerIDs, id: \.self) { managerID in
+				  let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
+				  let backgroundColor = pastelColors[managerIndex % pastelColors.count]
 
-			   ManagerRowView(managerID: managerID, draftViewModel: draftViewModel, backgroundColor: backgroundColor, viewType: viewType)
+				  ManagerRowView(managerID: managerID, draftViewModel: draftViewModel, backgroundColor: backgroundColor, viewType: viewType)
+					 .padding(.horizontal, 0)  // Ensure the row spans edge to edge
+			   }
 			}
 		 }
 		 .navigationTitle(viewType == .draft ? "Draft Managers" : "Roster Managers")

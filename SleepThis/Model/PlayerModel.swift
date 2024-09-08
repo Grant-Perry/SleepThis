@@ -68,19 +68,19 @@ struct PlayerModel: Codable, Identifiable {
 	  case depthChartOrder = "depth_chart_order"
 	  case rookieYear = "rookie_year"
 	  case statsId = "stats_id"
-	  case searchLastName = "search_last_name"  // New
-	  case searchFirstName = "search_first_name" // New
-	  case searchFullName = "search_full_name"  // New
-	  case hashtag         // New
-	  case injuryStartDate = "injury_start_date" // New
-	  case practiceParticipation = "practice_participation" // New
-	  case sportradarId = "sportradar_id"    // New
-	  case fantasyDataId = "fantasy_data_id" // New
-	  case injuryStatus = "injury_status"    // New
-	  case yahooId = "yahoo_id"              // New
-	  case rotowireId = "rotowire_id"        // New
-	  case rotoworldId = "rotoworld_id"      // New
-	  case espnId = "espn_id"                // New
-	  case searchRank = "search_rank"        // New
+	  case searchLastName = "search_last_name"
+	  case searchFirstName = "search_first_name"
+	  case searchFullName = "search_full_name"
+	  case hashtag
+	  case injuryStartDate = "injury_start_date"
+	  case practiceParticipation = "practice_participation"
+	  case sportradarId = "sportradar_id"
+	  case fantasyDataId = "fantasy_data_id"
+	  case injuryStatus = "injury_status"
+	  case yahooId = "yahoo_id"
+	  case rotowireId = "rotowire_id"
+	  case rotoworldId = "rotoworld_id"
+	  case espnId = "espn_id"
+	  case searchRank = "search_rank"
    }
 }

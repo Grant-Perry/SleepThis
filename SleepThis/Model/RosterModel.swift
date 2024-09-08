@@ -32,6 +32,7 @@ struct RosterModel: Identifiable, Codable {
 struct RosterSettings: Codable {
    let division: Int
    let fpts: Int
+   let fptsAgainst: Int?
    let losses: Int
    let ties: Int
    let totalMoves: Int
@@ -42,6 +43,7 @@ struct RosterSettings: Codable {
    enum CodingKeys: String, CodingKey {
 	  case division
 	  case fpts
+	  case fptsAgainst = "fpts_against"
 	  case losses
 	  case ties
 	  case totalMoves = "total_moves"

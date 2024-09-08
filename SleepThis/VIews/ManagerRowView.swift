@@ -4,58 +4,75 @@ struct ManagerRowView: View {
    let managerID: String
    @ObservedObject var draftViewModel: DraftViewModel
    let backgroundColor: Color
-   let viewType: ManagerViewType  // Enum to switch between draft and roster
+   let viewType: ManagerViewType
 
    var body: some View {
-	  HStack {
-		 if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
-			AsyncImage(url: avatarURL) { image in
-			   image.resizable()
-				  .aspectRatio(contentMode: .fill)
-				  .frame(width: 50, height: 50)
-				  .clipShape(Circle())
-			} placeholder: {
+	  NavigationLink(destination: destinationView) {
+		 HStack {
+			// Manager's avatar
+			if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
+			   AsyncImage(url: avatarURL) { image in
+				  image.resizable()
+					 .aspectRatio(contentMode: .fill)
+					 .frame(width: 60, height: 60)
+					 .clipShape(Circle())
+					 .padding(.leading, 16)
+			   } placeholder: {
+				  Image(systemName: "person.crop.circle")
+					 .resizable()
+					 .frame(width: 60, height: 60)
+					 .padding(.leading, 16)
+			   }
+			} else {
 			   Image(systemName: "person.crop.circle")
 				  .resizable()
-				  .frame(width: 50, height: 50)
+				  .frame(width: 60, height: 60)
+				  .padding(.leading, 16)
 			}
-		 } else {
-			Image(systemName: "person.crop.circle")
-			   .resizable()
-			   .frame(width: 50, height: 50)
-		 }
 
-		 VStack(alignment: .leading) {
-			Text(draftViewModel.managerName(for: managerID))
-			   .font(.title2)
-			   .bold()
-
-			if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
-			   Text("Pick #:\(draftSlot)")
-				  .font(.subheadline)
-			} else {
-			   Text("Pick #: N/A")
-				  .font(.subheadline)
+			// Manager's name and draft pick
+			VStack(alignment: .leading) {
+			   Text(draftViewModel.managerName(for: managerID))
+				  .font(.title2)
+				  .bold()
+			   if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
+				  Text("Pick #:\(draftSlot)")
+					 .font(.subheadline)
+					 .padding(.leading, 10)
+			   } else {
+				  Text("Pick #: N/A")
+					 .font(.subheadline)
+					 .padding(.leading, 10)
+			   }
 			}
+
+			Spacer()
 		 }
+		 .padding(.vertical, 15)  // Vertical padding for card height
+		 .padding(.horizontal, 16)  // Horizontal padding inside the card
+		 .background(
+			RoundedRectangle(cornerRadius: 15)  // Rounded corners
+			   .fill(backgroundColor)
+			   .shadow(radius: 4)
+		 )
+		 .padding(.vertical, 4)  // Padding between the cards
+		 .padding(.horizontal, 4)  // Padding to prevent cards from touching screen edges
 	  }
-	  .padding()
-	  .background(backgroundColor)
-	  .cornerRadius(8)
-	  .foregroundColor(.black)
+   }
 
-	  NavigationLink(destination: {
-		 if viewType == .draft {
-			if let draftPick = draftViewModel.groupedPicks[managerID]?.first {
-			   DraftDetailView(managerID: managerID, draftPick: draftPick, draftViewModel: draftViewModel)
-			} else {
-			   Text("No Draft Pick Available")
-			}
+   // Dynamic destination view based on the view type
+   @ViewBuilder
+   var destinationView: some View {
+	  if viewType == .draft {
+		 if let draftPick = draftViewModel.groupedPicks[managerID]?.first {
+			DraftDetailView(managerID: managerID, draftPick: draftPick, draftViewModel: draftViewModel)
 		 } else {
-			RosterDetailView(managerID: managerID, rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
+			Text("No Draft Pick Available")
 		 }
-	  }) {
-		 EmptyView()  // Invisible tap target, the whole row is tappable
+	  } else {
+		 let managerName = draftViewModel.managerName(for: managerID)
+		 let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
+		 RosterDetailView(managerID: managerID, managerName: managerName, managerAvatarURL: managerAvatarURL, rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
 	  }
    }
 }

@@ -37,19 +37,8 @@ struct RosterRowView: View {
 		 Spacer()
 	  }
 	  .padding()
-	  .background(
-		 RoundedRectangle(cornerRadius: 8)
-			.fill(backgroundColor)
-			.shadow(radius: 4)
-	  )
+	  .frame(maxWidth: .infinity)  // Ensures full width
+	  .background(RoundedRectangle(cornerRadius: 8).fill(backgroundColor))  // Rounded corners with background
 	  .foregroundColor(.black)
-	  .background(
-		 NavigationLink(
-			destination: RosterDetailView(managerID: roster.ownerID, rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
-		 ) {
-			EmptyView()
-		 }
-			.opacity(0)
-	  )
    }
 }
