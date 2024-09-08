@@ -65,7 +65,7 @@ struct ManagerRowView: View {
    var destinationView: some View {
 	  if viewType == .draft {
 		 if let draftPick = draftViewModel.groupedPicks[managerID]?.first {
-			DraftDetailView(managerID: managerID, draftPick: draftPick, draftViewModel: draftViewModel)
+			DraftListView(managerID: managerID, draftViewModel: draftViewModel)
 		 } else {
 			Text("No Draft Pick Available")
 		 }

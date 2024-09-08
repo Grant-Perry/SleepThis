@@ -28,7 +28,10 @@ struct ManagerListView: View {
 				  let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
 				  let backgroundColor = pastelColors[managerIndex % pastelColors.count]
 
-				  ManagerRowView(managerID: managerID, draftViewModel: draftViewModel, backgroundColor: backgroundColor, viewType: viewType)
+				  ManagerRowView(managerID: managerID,
+								 draftViewModel: draftViewModel,
+								 backgroundColor: backgroundColor,
+								 viewType: viewType)
 					 .padding(.horizontal, 0)  // Ensure the row spans edge to edge
 			   }
 			}
