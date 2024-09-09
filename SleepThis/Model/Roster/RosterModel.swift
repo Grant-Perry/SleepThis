@@ -30,7 +30,7 @@ struct RosterModel: Identifiable, Codable {
 }
 
 struct RosterSettings: Codable {
-   let division: Int
+   let division: Int?
    let fpts: Int
    let fptsAgainst: Int?
    let losses: Int

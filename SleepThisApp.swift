@@ -21,6 +21,12 @@ struct SleepThisApp: App {
 				  Label("Rosters", systemImage: "pencil.and.list.clipboard")
 			   }
 
+			NFLRosterView()  // Adding the NFL Roster tab
+			   .tabItem {
+				  Label("NFL Roster", systemImage: "person.3.fill")
+			   }
+
+
 //			TransactionView()
 //			   .tabItem {
 //				  Label("Transactions", systemImage: "swatchpalette")
