@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9B1B0CBE2C892BD700D3C8A8 /* DraftRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */; };
+		9BA8B7802C8BA5DF00726D3F /* SleepThisApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,10 +28,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftRowView.swift; sourceTree = "<group>"; };
 		9B4B88252C753A290026E11B /* SleepThis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SleepThis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B88352C753A2A0026E11B /* SleepThisTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B883F2C753A2A0026E11B /* SleepThisUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepThisApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -93,7 +93,7 @@
 		9B4B881C2C753A290026E11B = {
 			isa = PBXGroup;
 			children = (
-				9B1B0CBD2C892BD700D3C8A8 /* DraftRowView.swift */,
+				9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */,
 				9B4B88262C753A290026E11B /* Products */,
 				9B4B88272C753A290026E11B /* SleepThis */,
 				9B4B88382C753A2A0026E11B /* SleepThisTests */,
@@ -255,7 +255,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B1B0CBE2C892BD700D3C8A8 /* DraftRowView.swift in Sources */,
+				9BA8B7802C8BA5DF00726D3F /* SleepThisApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

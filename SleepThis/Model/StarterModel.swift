@@ -1,6 +1,6 @@
 import Foundation
 
-struct StarterModel: Identifiable {
+struct StarterModels: Identifiable {
    let id: String  // This should be the player's ID
    let playerName: String
    let position: String

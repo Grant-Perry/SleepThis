@@ -19,7 +19,6 @@ struct UserSearchView: View {
 
 			   Button(action: {
 				  userViewModel.fetchUser(by: userLookup) {
-					 // Handle any additional UI updates after fetching the user
 				  }
 			   }) {
 				  Image(systemName: "plus.magnifyingglass")

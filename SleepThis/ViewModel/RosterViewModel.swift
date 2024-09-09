@@ -5,7 +5,7 @@ class RosterViewModel: ObservableObject {
    @Published var rosters: [RosterModel] = []
    @Published var selectedRosterSettings: RosterSettings?
 
-   var leagueID = AppConstants.TwoBrothersID
+   var leagueID = AppConstants.leagueID // TwoBrothersID
 
    init(leagueID: String) {
 	  self.leagueID = leagueID
