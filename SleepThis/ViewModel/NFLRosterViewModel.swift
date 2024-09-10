@@ -10,6 +10,17 @@ class NFLRosterViewModel: ObservableObject {
 	  loadCacheOrFetch()
    }
 
+   func extractPlayerId(from uid: String) -> String {
+	  if let lastPart = uid.split(separator: ":").last {
+		 return String(lastPart)
+	  }
+	  return uid // Return the original string if we can't extract the ID
+   }
+
+   func getPlayerImageURL(for player: NFLRosterModel.NFLPlayer) -> URL? {
+	  let playerId = extractPlayerId(from: player.uid)
+	  return URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(playerId).png")
+   }
    func fetchPlayersForAllTeams() {
 	  print("[fetchPlayersForAllTeams:] Fetching players for all teams")
 	  let teamIDs = Array(1...33)
@@ -19,10 +30,8 @@ class NFLRosterViewModel: ObservableObject {
 	  for teamID in teamIDs {
 		 group.enter()
 		 let rosterURL = URL(string: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/\(teamID)/roster")!
-
 		 URLSession.shared.dataTask(with: rosterURL) { data, _, error in
 			defer { group.leave() }
-
 			if let error = error {
 			   print("[fetchPlayersForAllTeams:] Failed to fetch roster for team \(teamID): \(error.localizedDescription)")
 			   return
@@ -34,13 +43,10 @@ class NFLRosterViewModel: ObservableObject {
 			}
 
 			do {
-			   let rosterResponse = try JSONDecoder().decode([String: [NFLRosterModel.NFLPlayer]].self, from: data)
-			   if let players = rosterResponse["players"] {
-				  print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
-				  allPlayers.append(contentsOf: players)
-			   } else {
-				  print("[fetchPlayersForAllTeams:] No players found for team \(teamID).")
-			   }
+			   let rosterResponse = try JSONDecoder().decode(NFLRosterModel.TeamRosterResponse.self, from: data)
+			   let players = rosterResponse.athletes.flatMap { $0.items }
+			   print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
+			   allPlayers.append(contentsOf: players)
 			} catch {
 			   print("[fetchPlayersForAllTeams:] Failed to parse roster for team \(teamID): \(error)")
 			}
@@ -67,7 +73,6 @@ class NFLRosterViewModel: ObservableObject {
 
    private func loadCacheOrFetch() {
 	  let cacheURL = getCacheURL()
-
 	  if FileManager.default.fileExists(atPath: cacheURL.path) {
 		 do {
 			let data = try Data(contentsOf: cacheURL)

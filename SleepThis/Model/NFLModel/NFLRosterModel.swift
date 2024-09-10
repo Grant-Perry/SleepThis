@@ -1,64 +1,82 @@
 import Foundation
 
 enum NFLRosterModel {
-   // A custom type to handle both string and integer values in the statsID
-   enum StringOrInt: Codable {
-	  case string(String)
-	  case int(Int)
+   struct TeamRosterResponse: Codable {
+	  let timestamp: String
+	  let status: String
+	  let season: Season
+	  let athletes: [AthleteGroup]
+   }
 
-	  init(from decoder: Decoder) throws {
-		 let container = try decoder.singleValueContainer()
-		 if let intValue = try? container.decode(Int.self) {
-			self = .int(intValue)
-			return
-		 }
-		 if let stringValue = try? container.decode(String.self) {
-			self = .string(stringValue)
-			return
-		 }
-		 throw DecodingError.typeMismatch(StringOrInt.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected string or int value"))
-	  }
+   struct Season: Codable {
+	  let year: Int
+	  let displayName: String
+	  let type: Int
+	  let name: String
+   }
 
-	  func encode(to encoder: Encoder) throws {
-		 var container = encoder.singleValueContainer()
-		 switch self {
-			case .string(let value):
-			   try container.encode(value)
-			case .int(let value):
-			   try container.encode(value)
-		 }
-	  }
+   struct AthleteGroup: Codable {
+	  let position: String
+	  let items: [NFLPlayer]
    }
 
    struct NFLPlayer: Codable, Identifiable {
-	  var id: String { playerID }
-	  let playerID: String
+	  var id: String { uid }
+	  let uid: String
+	  let guid: String
+	  let firstName: String
+	  let lastName: String
 	  let fullName: String
-	  let teamName: String
-	  let statsID: StringOrInt // Use the flexible enum here
-	  let position: String?     // Optional position of the player
-	  let jerseyNumber: String? // Optional jersey number
-	  let height: String?       // Optional height of the player
-	  let weight: String?       // Optional weight of the player
-	  let age: Int?             // Optional age
-	  let experience: String?   // Optional experience level (e.g., "3rd season")
-	  let college: String?      // Optional college information
+	  let displayName: String
+	  let shortName: String
+	  let weight: Double?
+	  let displayWeight: String?
+	  let height: Double?
+	  let displayHeight: String?
+	  let age: Int?
+	  let dateOfBirth: String?
+	  let links: [Link]?
+	  let birthPlace: BirthPlace?
+	  let college: College?
+//	  var position: String?
+
+	  // Add any other fields that are present in the JSON
    }
 
-   struct NFLTeam: Codable {
+   struct Link: Codable {
+	  let language: String
+	  let rel: [String]
+	  let href: String
+	  let text: String
+	  let shortText: String
+	  let isExternal: Bool
+	  let isPremium: Bool
+   }
+
+   struct BirthPlace: Codable {
+	  let city: String?
+	  let state: String?
+	  let country: String?
+   }
+
+   struct College: Codable {
 	  let id: String
-	  let abbreviation: String?
-	  let location: String?  // Make this optional
-	  let nickname: String?
-	  let displayName: String?
-	  let logos: [Logo]?     // Optional logo information
-	  let color: String?     // Team's main color
-	  let alternateColor: String? // Team's alternate color
+	  let mascot: String?
+	  let name: String
+	  let shortName: String
+	  let abbrev: String
+	  let logos: [Logo]?
    }
 
    struct Logo: Codable {
 	  let href: String
 	  let width: Int
 	  let height: Int
+	  let alt: String?
+	  let rel: [String]?
+	  let lastUpdated: String?
    }
+
+   // This enum is no longer needed as we're using optionals for potentially missing fields
+   // enum StringOrInt: Codable { ... }
 }

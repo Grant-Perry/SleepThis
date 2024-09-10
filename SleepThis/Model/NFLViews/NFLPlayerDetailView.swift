@@ -1,49 +1,55 @@
 import SwiftUI
 
+
 struct NFLPlayerDetailView: View {
    let player: NFLRosterModel.NFLPlayer
+   let nflRosterViewModel: NFLRosterViewModel
 
    var body: some View {
-	  VStack(alignment: .leading, spacing: 16) {
-		 Text(player.fullName)
-			.font(.largeTitle)
-			.fontWeight(.bold)
-		 Text("Team: \(player.teamName)")
-			.font(.title2)
-			.foregroundColor(.secondary)
+	  ScrollView {
+		 VStack(alignment: .leading, spacing: 16) {
+			// Player Large Image
+			AsyncImage(url: nflRosterViewModel.getPlayerImageURL(for: player)) { image in
+			   image.resizable()
+				  .aspectRatio(contentMode: .fit)
+				  .frame(width: 200, height: 200)
+				  .clipShape(Circle())
+			} placeholder: {
+			   Image(systemName: "person.crop.circle.fill")
+				  .resizable()
+				  .aspectRatio(contentMode: .fit)
+				  .frame(width: 200, height: 200)
+			}
+			.padding(.bottom)
 
-		 // Show optional player details
-		 if let position = player.position {
-			Text("Position: \(position)")
-			   .font(.headline)
+			Text(player.fullName)
+			   .font(.largeTitle)
+			   .fontWeight(.bold)
+
+			if let height = player.displayHeight {
+			   Text("Height: \(height)")
+				  .font(.subheadline)
+			}
+
+			if let weight = player.displayWeight {
+			   Text("Weight: \(weight)")
+				  .font(.subheadline)
+			}
+
+			if let age = player.age {
+			   Text("Age: \(age)")
+				  .font(.subheadline)
+			}
+
+			if let college = player.college?.name {
+			   Text("College: \(college)")
+				  .font(.subheadline)
+			}
+
+			Spacer()
 		 }
-		 if let jerseyNumber = player.jerseyNumber {
-			Text("Jersey Number: #\(jerseyNumber)")
-			   .font(.subheadline)
-		 }
-		 if let height = player.height {
-			Text("Height: \(height)")
-			   .font(.subheadline)
-		 }
-		 if let weight = player.weight {
-			Text("Weight: \(weight) lbs")
-			   .font(.subheadline)
-		 }
-		 if let age = player.age {
-			Text("Age: \(age)")
-			   .font(.subheadline)
-		 }
-		 if let experience = player.experience {
-			Text("Experience: \(experience)")
-			   .font(.subheadline)
-		 }
-		 if let college = player.college {
-			Text("College: \(college)")
-			   .font(.subheadline)
-		 }
-		 Spacer()
+		 .padding()
 	  }
-	  .padding()
 	  .navigationTitle(player.fullName)
    }
 }
