@@ -11,8 +11,8 @@ struct AppConstants {
    static let TwoBrothersLeagueID = "1044844006657982464"
    static let TwoBrothersDraftID = "1044844007601504256"
 
-   static let leagueID = BigBoysLeagueID
-   static let draftID = BigBoysDraftID
+   static let leagueID = TwoBrothersLeagueID
+   static let draftID = TwoBrothersDraftID
 
    static func getVersion() -> String {
 	  return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
