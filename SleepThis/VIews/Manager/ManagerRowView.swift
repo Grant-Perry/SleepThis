@@ -3,13 +3,13 @@ import SwiftUI
 struct ManagerRowView: View {
    let managerID: String
    @ObservedObject var draftViewModel: DraftViewModel
-   let backgroundColor: Color
+   let thisBackgroundColor: Color
    let viewType: ManagerViewType
 
    var body: some View {
-	  LazyVStack{
-	     NavigationLink(destination: destinationView) {
-		   HStack {
+	  LazyVStack {
+		 NavigationLink(destination: destinationView) {
+			HStack {
 			   // Manager's avatar
 			   if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
 				  AsyncImage(url: avatarURL) { image in
@@ -54,12 +54,12 @@ struct ManagerRowView: View {
 			.padding(.horizontal, 16)  // Horizontal padding inside the card
 			.background(
 			   RoundedRectangle(cornerRadius: 15)  // Rounded corners
-				  .fill(backgroundColor)
+				  .fill(thisBackgroundColor)
 				  .shadow(radius: 4)
 			)
-			.padding(.vertical, 4)  // Padding between the cards
-			.padding(.horizontal, 4)  // Padding to prevent cards from touching screen edges
 		 }
+		 .padding(.vertical, 4)  // Padding between the cards
+		 .padding(.horizontal, 4)  // Padding to prevent cards from touching screen edges
 	  }
    }
 
@@ -67,15 +67,23 @@ struct ManagerRowView: View {
    @ViewBuilder
    var destinationView: some View {
 	  if viewType == .draft {
-		 if let draftPick = draftViewModel.groupedPicks[managerID]?.first {
+//		var draftPick = draftViewModel.groupedPicks[managerID]?.first
 			DraftListView(managerID: managerID, draftViewModel: draftViewModel)
-		 } else {
-			Text("No Draft Pick Available")
-		 }
+
 	  } else {
 		 let managerName = draftViewModel.managerName(for: managerID)
 		 let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
-		 RosterDetailView(managerID: managerID, managerName: managerName, managerAvatarURL: managerAvatarURL, rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID))
+		 RosterDetailView(
+			managerID: managerID,
+			managerName: managerName,
+			managerAvatarURL: managerAvatarURL,
+			rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: draftViewModel),
+			draftViewModel: draftViewModel,
+			backgroundColor: thisBackgroundColor
+		 )
+		 .preferredColorScheme(.dark)
+
 	  }
    }
+
 }

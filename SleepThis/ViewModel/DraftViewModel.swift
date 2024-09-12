@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 class DraftViewModel: ObservableObject {
    @Published var drafts: [DraftModel] = []
@@ -87,4 +88,17 @@ class DraftViewModel: ObservableObject {
 	  guard let avatar = managerDetails[managerID]?.avatar else { return nil }
 	  return URL(string: "https://sleepercdn.com/avatars/thumbs/\(avatar)")
    }
+
+   // used to get the manager background colors
+   func getmBG(managerID: String) -> Color {
+	  let sortedManagerIDs = groupedPicks.keys.sorted()
+	  let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
+	  let colors = [Color.mBG1, Color.mBG2, Color.mBG3, Color.mBG4, Color.mBG5, Color.mBG6, Color.mBG7, Color.mBG8, Color.mBG9, Color.mBG10, Color.mBG11, Color.mBG12]
+	  return colors[managerIndex % colors.count]
+   }
+
+   func getDraftDetails(for playerID: String) -> (round: Int, pick_no: Int)? {
+	  return drafts.first(where: { $0.player_id == playerID }).map { ($0.round, $0.pick_no) }
+   }
+
 }

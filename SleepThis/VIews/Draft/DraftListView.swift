@@ -45,7 +45,9 @@ struct DraftListView: View {
 			if let picks = draftViewModel.groupedPicks[managerID] {
 			   ForEach(picks) { draft in
 				  NavigationLink(
-					 destination: DraftDetailView(managerID: managerID, draftPick: draft, draftViewModel: draftViewModel)  // Pass managerID, draftPick, and draftViewModel
+					 destination: DraftDetailView(managerID: managerID,
+												  draftPick: draft,
+												  draftViewModel: draftViewModel)  // Pass managerID, draftPick, and draftViewModel
 				  ) {
 					 DraftRowView(draft: draft)
 				  }

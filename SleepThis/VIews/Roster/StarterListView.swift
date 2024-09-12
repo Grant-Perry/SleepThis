@@ -8,11 +8,11 @@ struct StarterListView: View {
    var body: some View {
 	  VStack(alignment: .leading, spacing: 10) {
 		 // Title for the Starters section
-		 Text("Starters")
-			.font(.title)
-			.foregroundColor(.white)
-			.bold()
-			.padding(.bottom, 1)  // Padding below the title for spacing
+//		 Text("StartersP")
+//			.font(.title)
+//			.foregroundColor(.white)
+//			.bold()
+//			.padding(.bottom, 1)  // Padding below the title for spacing
 
 		 // List of starters
 		 ForEach(starters.prefix(9), id: \.self) { starterID in  // Prefix to limit to first 9

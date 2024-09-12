@@ -5,10 +5,6 @@ struct SleepThisApp: App {
    var body: some Scene {
 	  WindowGroup {
 		 TabView {
-			PlayerSearchView()
-			   .tabItem {
-				  Label("Player Search", systemImage: "plus.magnifyingglass")
-			   }
 
 			ManagerListView(draftViewModel: DraftViewModel(), viewType: .draft)
 
@@ -26,6 +22,10 @@ struct SleepThisApp: App {
 				  Label("NFL Roster", systemImage: "person.3.fill")
 			   }
 
+			PlayerSearchView()
+			   .tabItem {
+				  Label("Player Search", systemImage: "plus.magnifyingglass")
+			   }
 
 //			TransactionView()
 //			   .tabItem {
@@ -35,6 +35,8 @@ struct SleepThisApp: App {
 //			RosterListView(rosterViewModel: RosterViewModel(leagueID: AppConstants.TwoBrothersID))
 
 		 }
+		 .preferredColorScheme(.dark)
 	  }
+
    }
 }

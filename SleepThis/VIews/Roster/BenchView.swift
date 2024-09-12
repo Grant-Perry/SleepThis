@@ -3,6 +3,7 @@ import SwiftUI
 struct BenchView: View {
    let benchPlayers: [String]
    @ObservedObject var playerViewModel: PlayerViewModel
+   @ObservedObject var draftViewModel: DraftViewModel
    var playerSize = 50.0
 
    var body: some View {
@@ -48,6 +49,14 @@ struct BenchView: View {
 						.foregroundColor(.gpDeltaPurple)
 					 Text("")
 				  }
+			   }
+
+			   Spacer()
+
+			   if let draftDetails = draftViewModel.getDraftDetails(for: playerID) {
+				  Text("\(draftDetails.round).\(draftDetails.pick_no)")
+					 .font(.footnote)
+					 .foregroundColor(.gray)
 			   }
 			}
 			.padding(.vertical, 8)

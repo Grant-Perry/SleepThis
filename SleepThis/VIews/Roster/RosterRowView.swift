@@ -39,6 +39,6 @@ struct RosterRowView: View {
 	  .padding()
 	  .frame(maxWidth: .infinity)  // Ensures full width
 	  .background(RoundedRectangle(cornerRadius: 8).fill(backgroundColor))  // Rounded corners with background
-	  .foregroundColor(.black)
+//	  .foregroundColor(.black)
    }
 }

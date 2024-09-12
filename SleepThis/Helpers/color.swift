@@ -40,7 +40,21 @@ extension Color {
 
    static let gpFinalTop = Color(#colorLiteral(red: 0.4196078431, green: 0.2901960784, blue: 0.4745098039, alpha: 1))
    static let gpFinalBot = Color(#colorLiteral(red: 0.768627451, green: 0.6078431373, blue: 0.8588235294, alpha: 1))
-   
+
+   static let mBG1 = Color(rgb: 255, 255, 4)   // #FFFF04
+   static let mBG2 = Color(rgb: 1, 255, 0)     // #01FF00
+   static let mBG3 = Color(rgb: 255, 109, 0)   // #FF6D00
+   static let mBG4 = Color(rgb: 1, 255, 255)   // #01FFFF
+   static let mBG5 = Color(rgb: 241, 194, 51)  // #F1C233
+   static let mBG6 = Color(rgb: 166, 77, 121)  // #A64D79
+   static let mBG7 = Color(rgb: 230, 145, 56)  // #E69138
+   static let mBG8 = Color(rgb: 163, 205, 208) // #A3CDD0
+   static let mBG9 = Color(rgb: 255, 0, 255)   // #FF00FF
+   static let mBG10 = Color(rgb: 249, 203, 156) // #F9CB9C
+   static let mBG11 = Color(rgb: 65, 133, 244) // #4185F4
+   static let mBG12 = Color(rgb: 70, 189, 198) // #46BDC6
+
+
 }
 
 // UTILIZATION: Color(rgb: 220, 123, 35)

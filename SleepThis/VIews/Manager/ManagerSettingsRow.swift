@@ -19,7 +19,7 @@ struct ManagerSettingsRow: View {
 
 		 Text(" \(value)")
 			.font(.footnote)
-			.foregroundColor(.gray)
+			.foregroundColor(.gpYellow)
 			.lineLimit(1)
 			.minimumScaleFactor(0.5)
 			.scaledToFit()

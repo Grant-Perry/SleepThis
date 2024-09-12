@@ -31,8 +31,7 @@ struct DraftDetailView: View {
 			   .font(.headline)
 			Text("Team: \(draftPick.metadata?.team ?? "Unknown Team")")
 			Text("Position: \(draftPick.metadata?.position ?? "Unknown Position")")
-			Text("Round: \(draftPick.round)")
-			Text("Depth Chart Position: \(draftPick.metadata?.depth_chart_position ?? "Unknown")")
+			Text("\(draftPick.round).\(draftPick.metadata?.depth_chart_position ?? "Unknown")")
 		 }
 		 .padding(.leading, 10)
 
