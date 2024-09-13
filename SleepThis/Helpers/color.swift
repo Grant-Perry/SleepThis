@@ -12,6 +12,7 @@ extension Color {
    static let gpBlue = Color(#colorLiteral(red: 0.4620226622, green: 0.8382837176, blue: 1, alpha: 1))
    static let gpGreen = Color(#colorLiteral(red: 0.3911147745, green: 0.8800172018, blue: 0.2343971767, alpha: 1))
    static let gpMinty = Color(#colorLiteral(red: 0.5960784314, green: 1, blue: 0.5960784314, alpha: 1))
+   static let gpGray = Color(#colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1))
    static let gpArmyGreen = Color(#colorLiteral(red: 0.4392156863, green: 0.4352941176, blue: 0.1803921569, alpha: 1))
    static let gpOrange = Color(#colorLiteral(red: 1, green: 0.6470588235, blue: 0, alpha: 1))
    static let gpPink = Color(#colorLiteral(red: 1, green: 0.4117647059, blue: 0.7058823529, alpha: 1))
@@ -41,18 +42,51 @@ extension Color {
    static let gpFinalTop = Color(#colorLiteral(red: 0.4196078431, green: 0.2901960784, blue: 0.4745098039, alpha: 1))
    static let gpFinalBot = Color(#colorLiteral(red: 0.768627451, green: 0.6078431373, blue: 0.8588235294, alpha: 1))
 
-   static let mBG1 = Color(rgb: 255, 255, 4)   // #FFFF04
-   static let mBG2 = Color(rgb: 1, 255, 0)     // #01FF00
-   static let mBG3 = Color(rgb: 255, 109, 0)   // #FF6D00
-   static let mBG4 = Color(rgb: 1, 255, 255)   // #01FFFF
-   static let mBG5 = Color(rgb: 241, 194, 51)  // #F1C233
-   static let mBG6 = Color(rgb: 166, 77, 121)  // #A64D79
-   static let mBG7 = Color(rgb: 230, 145, 56)  // #E69138
-   static let mBG8 = Color(rgb: 163, 205, 208) // #A3CDD0
-   static let mBG9 = Color(rgb: 255, 0, 255)   // #FF00FF
-   static let mBG10 = Color(rgb: 249, 203, 156) // #F9CB9C
-   static let mBG11 = Color(rgb: 65, 133, 244) // #4185F4
-   static let mBG12 = Color(rgb: 70, 189, 198) // #46BDC6
+   static let mBG1 = Color(rgb: 70, 189, 198)
+   static let mBG2 = Color(rgb: 66, 133, 244)
+   static let mBG3 = Color(rgb: 249, 203, 156)
+   static let mBG4 = Color(rgb: 255, 0, 255)
+   static let mBG5 = Color(rgb: 164, 205, 208)
+   static let mBG6 = Color(rgb: 230, 145, 56)
+   static let mBG7 = Color(rgb: 166, 77, 121)
+   static let mBG8 = Color(rgb: 241, 194, 50)
+   static let mBG9 = Color(rgb: 0, 255, 255)
+   static let mBG10 = Color(rgb: 255, 109, 1)
+   static let mBG11 = Color(rgb: 0, 255, 0)
+   static let mBG12 = Color(rgb: 255, 255, 0)
+
+   func lighter(by percentage: CGFloat = 0.05) -> Color {
+	  return self.adjustBrightness(by: abs(percentage))
+   }
+
+   func adjustBrightness(by percentage: CGFloat) -> Color {
+	  var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+	  UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
+
+	  return Color(
+		 red: min(r + percentage, 1.0),
+		 green: min(g + percentage, 1.0),
+		 blue: min(b + percentage, 1.0),
+		 opacity: Double(a)
+	  )
+   }
+
+   func blended(withFraction fraction: CGFloat, of color: Color) -> Color {
+	  let uiColor1 = UIColor(self)
+	  let uiColor2 = UIColor(color)
+	  var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+	  var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+
+	  uiColor1.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+	  uiColor2.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+
+	  return Color(
+		 red: r1 + (r2 - r1) * fraction,
+		 green: g1 + (g2 - g1) * fraction,
+		 blue: b1 + (b2 - b1) * fraction,
+		 opacity: a1 + (a2 - a1) * fraction
+	  )
+   }
 
 
 }

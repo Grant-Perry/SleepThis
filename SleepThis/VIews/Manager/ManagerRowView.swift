@@ -35,11 +35,12 @@ struct ManagerRowView: View {
 			   VStack(alignment: .leading) {
 				  Text(draftViewModel.managerName(for: managerID))
 					 .font(.title2)
+					 .foregroundColor(.gpDark2)
 					 .bold()
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 					 Text("Draft Pick #:\(draftSlot)")
 						.font(.caption2)
-						.foregroundColor(.gray)
+						.foregroundColor(.gpDark1)
 						.padding(.leading, 10)
 				  } else {
 					 Text("Pick #: N/A")
@@ -50,17 +51,30 @@ struct ManagerRowView: View {
 
 			   Spacer()
 			}
+			
 			.padding(.vertical, 15)  // Vertical padding for card height
 			.padding(.horizontal, 16)  // Horizontal padding inside the card
-			.background(
-			   RoundedRectangle(cornerRadius: 15)  // Rounded corners
-				  .fill(thisBackgroundColor)
-				  .shadow(radius: 4)
-			)
+
 		 }
+		 .background(
+			RoundedRectangle(cornerRadius: 15)  // Rounded corners
+			   .fill(LinearGradient(
+				  gradient: Gradient(colors: [
+					 thisBackgroundColor,
+					 thisBackgroundColor.blended(withFraction: 0.55, of: .white)  // 55% blend with white
+				  ]),
+				  startPoint: .top,
+				  endPoint: .bottom
+			   ))
+
+
+			   .shadow(radius: 4)
+		 )
+
 		 .padding(.vertical, 4)  // Padding between the cards
 		 .padding(.horizontal, 4)  // Padding to prevent cards from touching screen edges
 	  }
+	  
    }
 
    // Dynamic destination view based on the view type
@@ -68,7 +82,9 @@ struct ManagerRowView: View {
    var destinationView: some View {
 	  if viewType == .draft {
 //		var draftPick = draftViewModel.groupedPicks[managerID]?.first
-			DraftListView(managerID: managerID, draftViewModel: draftViewModel)
+			DraftListView(managerID: managerID,
+						  draftViewModel: draftViewModel,
+						  backgroundColor: thisBackgroundColor)
 
 	  } else {
 		 let managerName = draftViewModel.managerName(for: managerID)

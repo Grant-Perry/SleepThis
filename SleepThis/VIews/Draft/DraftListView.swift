@@ -4,6 +4,8 @@ struct DraftListView: View {
    let managerID: String
    @ObservedObject var draftViewModel: DraftViewModel
    @ObservedObject var userViewModel = UserViewModel()  // Assuming this fetches user info
+   let backgroundColor: Color
+
 
    var body: some View {
 	  VStack {
@@ -27,6 +29,7 @@ struct DraftListView: View {
 					 .font(.title2)
 					 .bold()
 
+
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 					 Text("Pick #: \(draftSlot)")
 						.font(.subheadline)
@@ -36,9 +39,28 @@ struct DraftListView: View {
 						.font(.subheadline)
 				  }
 			   }
+			   Spacer()
 			}
+			.frame(maxWidth: .infinity)
+			.padding(.leading)
+			.background(
+			   RoundedRectangle(cornerRadius: 15)  // Rounded corners
+				  .fill(LinearGradient(
+					 gradient: Gradient(colors: [
+						backgroundColor,
+						backgroundColor.blended(withFraction: 0.55, of: .white)  // 55% blend with white
+					 ]),
+					 startPoint: .top,
+					 endPoint: .bottom
+				  ))
+
+
+				  .shadow(radius: 4)
+			)
 			.padding()
+
 		 }
+
 
 		 // List the draft picks for this manager
 		 List {

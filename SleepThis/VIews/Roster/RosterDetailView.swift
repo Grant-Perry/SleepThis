@@ -26,12 +26,24 @@ struct RosterDetailView: View {
 					 .frame(width: playerSize, height: playerSize)
 			   }
 			   Text(managerName)
-				  .font(.title2)
+				  .font(.title)
 			   Spacer()
 			}
 			.padding(.leading)
-			.background(backgroundColor)
-			.frame(maxWidth: .infinity)
+			.background(
+			   RoundedRectangle(cornerRadius: 15)  // Rounded corners
+				  .fill(LinearGradient(
+					 gradient: Gradient(colors: [
+						backgroundColor,
+						backgroundColor.blended(withFraction: 0.55, of: .white)  // 55% blend with white
+					 ]),
+					 startPoint: .top,
+					 endPoint: .bottom
+				  ))
+
+
+				  .shadow(radius: 4)
+			)			.frame(maxWidth: .infinity)
 
 			// Metrics Section
 			if let settings = rosterViewModel.getManagerSettings(managerID: managerID) {
@@ -97,6 +109,21 @@ struct RosterDetailView: View {
 						.padding(.top, 10)
 				  }
 			   }
+			   .frame(maxWidth: .infinity)
+			   .background(
+				  RoundedRectangle(cornerRadius: 15)  // Rounded corners
+					 .fill(LinearGradient(
+						gradient: Gradient(colors: [
+						   backgroundColor,
+						   backgroundColor.blended(withFraction: 0.55, of: .white)  // 55% blend with white
+						]),
+						startPoint: .top,
+						endPoint: .bottom
+					 ))
+
+
+					 .shadow(radius: 4)
+			   )
 			}
 			.padding(.horizontal)
 
