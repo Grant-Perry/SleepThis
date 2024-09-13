@@ -1,3 +1,4 @@
+import SwiftUI
 import Foundation
 import Combine
 
@@ -81,6 +82,16 @@ class RosterViewModel: ObservableObject {
 		 } else {
 			return false
 		 }
+	  }
+   }
+
+   func getBackgroundColor(for playerID: String, draftViewModel: DraftViewModel) -> Color {
+	  if let draftDetails = draftViewModel.getDraftDetails(for: playerID) {
+		 let managerID = draftDetails.picked_by
+		 return draftViewModel.getManagerColor(for: managerID)
+	  } else {
+		 // If the player was not drafted, return .gpBlueDarkL
+		 return .gpBlueDarkL
 	  }
    }
 }

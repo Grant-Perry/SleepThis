@@ -2,9 +2,9 @@ import SwiftUI
 
 struct AppConstants {
    static let cacheDays = 5.0
-   static let verSize = 10.0
-   static let verColor = Color.teal
-   
+   static let verSize = 9.0
+   static let verColor = Color.gpBlue
+
    static let BigBoysLeagueID = "1136822872179224576"
    static let BigBoysDraftID = "1136822873030782976"
    

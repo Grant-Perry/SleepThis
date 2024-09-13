@@ -5,7 +5,8 @@ import SwiftUI
 class DraftViewModel: ObservableObject {
    @Published var drafts: [DraftModel] = []
    @Published var groupedPicks: [String: [DraftModel]] = [:]
-   @Published var managerDetails: [String: (name: String, avatar: String?)] = [:] // Store manager details
+   @Published var managerDetails: [String: (name: String, avatar: String?)] = [:]
+   @Published var managerIDToColor: [String: Color] = [:]
 
    func fetchDraftData(draftID: String) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/draft/\(draftID)/picks") else {
@@ -31,7 +32,8 @@ class DraftViewModel: ObservableObject {
 			DispatchQueue.main.async {
 			   self.drafts = decodedData
 			   self.groupedPicks = Dictionary(grouping: decodedData) { $0.picked_by }
-			   self.fetchAllManagerDetails() // Fetch manager details after decoding draft data
+			   self.assignManagerColors()  // Assign colors after grouping picks
+			   self.fetchAllManagerDetails()
 			   print("[fetchDraftData]: Successfully fetched and decoded draft data")
 			}
 		 } catch {
@@ -40,7 +42,31 @@ class DraftViewModel: ObservableObject {
 	  }.resume()
    }
 
-   // Function to fetch manager details from the Sleeper API
+   // Assign colors to each manager based on their draft slot order
+   func assignManagerColors() {
+	  let sortedManagerIDs = groupedPicks.keys.sorted {
+		 let firstSlot = groupedPicks[$0]?.first?.draft_slot ?? 0
+		 let secondSlot = groupedPicks[$1]?.first?.draft_slot ?? 0
+		 return firstSlot < secondSlot
+	  }
+
+	  let mgrColors: [Color] = [
+		 .mBG1, .mBG2, .mBG3, .mBG4, .mBG5, .mBG6,
+		 .mBG7, .mBG8, .mBG9, .mBG10, .mBG11, .mBG12
+	  ]
+
+	  for (index, managerID) in sortedManagerIDs.enumerated() {
+		 let color = mgrColors[index % mgrColors.count]
+		 managerIDToColor[managerID] = color
+	  }
+   }
+
+   // Get the color assigned to a manager
+   func getManagerColor(for managerID: String) -> Color {
+	  return managerIDToColor[managerID] ?? .gray
+   }
+
+   // Fetch manager details from the Sleeper API
    func fetchManagerDetails(managerID: String) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(managerID)") else {
 		 print("[fetchManagerDetails]: Invalid manager URL for ID: \(managerID)")
@@ -68,8 +94,6 @@ class DraftViewModel: ObservableObject {
 	  }.resume()
    }
 
-
-
    // Fetch all manager details
    func fetchAllManagerDetails() {
 	  for managerID in groupedPicks.keys {
@@ -89,16 +113,11 @@ class DraftViewModel: ObservableObject {
 	  return URL(string: "https://sleepercdn.com/avatars/thumbs/\(avatar)")
    }
 
-   // used to get the manager background colors
-   func getmBG(managerID: String) -> Color {
-	  let sortedManagerIDs = groupedPicks.keys.sorted()
-	  let managerIndex = sortedManagerIDs.firstIndex(of: managerID) ?? 0
-	  let colors = [Color.mBG1, Color.mBG2, Color.mBG3, Color.mBG4, Color.mBG5, Color.mBG6, Color.mBG7, Color.mBG8, Color.mBG9, Color.mBG10, Color.mBG11, Color.mBG12]
-	  return colors[managerIndex % colors.count]
-   }
-
-   func getDraftDetails(for playerID: String) -> (round: Int, pick_no: Int)? {
-	  return drafts.first(where: { $0.player_id == playerID }).map { ($0.round, $0.pick_no) }
+   // Get draft details for a specific player, including who picked them
+   func getDraftDetails(for playerID: String) -> (round: Int, pick_no: Int, picked_by: String)? {
+	  // Look for the player in the drafts
+	  return drafts.first(where: { $0.player_id == playerID })
+		 .map { ($0.round, $0.pick_no, $0.picked_by) }
    }
 
 }

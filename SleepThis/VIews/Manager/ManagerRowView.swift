@@ -81,10 +81,10 @@ struct ManagerRowView: View {
    @ViewBuilder
    var destinationView: some View {
 	  if viewType == .draft {
-//		var draftPick = draftViewModel.groupedPicks[managerID]?.first
-			DraftListView(managerID: managerID,
-						  draftViewModel: draftViewModel,
-						  backgroundColor: thisBackgroundColor)
+		 // Ensure this is valid
+		 DraftListView(managerID: managerID,
+					   draftViewModel: draftViewModel,
+					   backgroundColor: thisBackgroundColor)
 
 	  } else {
 		 let managerName = draftViewModel.managerName(for: managerID)
@@ -94,12 +94,10 @@ struct ManagerRowView: View {
 			managerName: managerName,
 			managerAvatarURL: managerAvatarURL,
 			rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: draftViewModel),
-			draftViewModel: draftViewModel,
-			backgroundColor: thisBackgroundColor
-		 )
+			draftViewModel: draftViewModel)
 		 .preferredColorScheme(.dark)
-
 	  }
    }
+
 
 }

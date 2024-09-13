@@ -6,7 +6,7 @@ struct RosterDetailView: View {
    let managerAvatarURL: URL?
    @ObservedObject var rosterViewModel: RosterViewModel
    @ObservedObject var draftViewModel: DraftViewModel
-   let backgroundColor: Color
+   @ObservedObject var playerViewModel = PlayerViewModel()
    @State private var sortByDraftOrder = false
    var playerSize = 50.0
 
@@ -34,8 +34,8 @@ struct RosterDetailView: View {
 			   RoundedRectangle(cornerRadius: 15)
 				  .fill(LinearGradient(
 					 gradient: Gradient(colors: [
-						backgroundColor,
-						backgroundColor.blended(withFraction: 0.55, of: .white)
+						draftViewModel.getManagerColor(for: managerID),
+						draftViewModel.getManagerColor(for: managerID).blended(withFraction: 0.55, of: .white)
 					 ]),
 					 startPoint: .top,
 					 endPoint: .bottom
@@ -67,11 +67,16 @@ struct RosterDetailView: View {
 			? rosterViewModel.sortStartersByDraftOrder(managerID: managerID)
 			: rosterViewModel.managerStarters(managerID: managerID)
 
-			RosterListView(players: starters, playerViewModel: PlayerViewModel(), draftViewModel: draftViewModel, showDraftDetails: true, backgroundColor: backgroundColor)
-			   .padding(.horizontal)
+			RosterListView(
+			   players: starters,
+			   playerViewModel: playerViewModel,
+			   draftViewModel: draftViewModel,
+			   rosterViewModel: rosterViewModel,
+			   showDraftDetails: true
+			)
+			.padding(.horizontal)
 
 			// Bench Section Header
-			Spacer()
 			Text("Bench")
 			   .font(.title)
 			   .padding(.leading)
@@ -83,11 +88,20 @@ struct RosterDetailView: View {
 			? rosterViewModel.sortBenchPlayersByDraftOrder(managerID: managerID, allPlayers: allPlayers, starters: starters)
 			: allPlayers.filter { !starters.contains($0) }
 
-			RosterListView(players: benchPlayers, playerViewModel: PlayerViewModel(), draftViewModel: draftViewModel, showDraftDetails: false, backgroundColor: backgroundColor)
-			   .padding(.horizontal)
+			RosterListView(
+			   players: benchPlayers,
+			   playerViewModel: playerViewModel,
+			   draftViewModel: draftViewModel,
+			   rosterViewModel: rosterViewModel,
+			   showDraftDetails: false
+			)
+			.padding(.horizontal)
 		 }
 		 .padding(.horizontal)
 	  }
 	  .navigationTitle("Roster Detail")
+	  .onAppear {
+		 playerViewModel.loadPlayersFromCache()
+	  }
    }
 }
