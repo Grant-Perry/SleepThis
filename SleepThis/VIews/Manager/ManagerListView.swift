@@ -5,9 +5,8 @@ struct ManagerListView: View {
    @State private var isLoading = true // Add loading state
 
    let viewType: ManagerViewType
-   let mgrColors: [Color] = [
-	  .mBG1,.mBG2,.mBG3,.mBG4,.mBG5, .mBG6,
-	  .mBG7, .mBG8, .mBG9, .mBG10, .mBG11, .mBG12]
+   let mgrColors: [Color] = [.mBG1,.mBG2,.mBG3,.mBG4,.mBG5, .mBG6,
+							 .mBG7, .mBG8, .mBG9, .mBG10, .mBG11, .mBG12]
 
    var sortedManagerIDs: [String] {
 	  draftViewModel.groupedPicks.keys.sorted {

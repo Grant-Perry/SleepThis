@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct RosterListView: View {
-   let players: [String]
+struct RosterDetailListView: View {
+   let players: [String] // Ensure this is a plain array, not a Binding
    @ObservedObject var playerViewModel: PlayerViewModel
    @ObservedObject var draftViewModel: DraftViewModel
    @ObservedObject var rosterViewModel: RosterViewModel
@@ -36,15 +36,28 @@ struct RosterListView: View {
 				  VStack(alignment: .leading, spacing: 2) {
 					 Text(player.fullName ?? "Unknown Player")
 						.font(.headline)
+//					 Text("\(player.id)")
+//						.font(.caption)
+						.foregroundColor(.gpDark2)
+
+
 					 HStack(spacing: 5) {
 						Text(player.position ?? "Unknown Position")
 						   .font(.subheadline)
 						   .bold()
 						   .foregroundColor(PositionColor.fromPosition(player.position).color)
+
 						Text(fullTeamName(from: player.team))
+//						   .frame(maxWidth: .infinity)
+						   .padding(.trailing)
+						   .foregroundColor(.gpBlueDarkL)
+						   .lineLimit(1)
+						   .minimumScaleFactor(0.5)
+						   .scaledToFit()
 						   .font(.footnote)
 						   .bold()
-						   .foregroundColor(.secondary)
+
+						Spacer()
 					 }
 				  }
 
@@ -54,8 +67,14 @@ struct RosterListView: View {
 				  if showDraftDetails, let draftDetails = draftViewModel.getDraftDetails(for: playerID) {
 					 Text("\(draftDetails.round).\(draftDetails.pick_no)")
 						.font(.footnote)
-						.foregroundColor(.gray)
+						.foregroundColor(.gpDark1)
+						.padding(.top, 5)
+						.padding(.horizontal)
+						.onAppear {
+						   print("draft details: \(draftDetails)") //\nplayer: \(playerID)")
+						}
 				  }
+
 
 				  // Icon for undrafted players
 				  if isUndrafted {

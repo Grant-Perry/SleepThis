@@ -7,6 +7,9 @@ struct AppConstants {
 
    static let BigBoysLeagueID = "1136822872179224576"
    static let BigBoysDraftID = "1136822873030782976"
+
+   //   static let TwoBrothersLeagueID = "1051207774316683264"
+   //   static let TwoBrothersDraftID = "1116901677971398656"
    
    static let TwoBrothersLeagueID = "1044844006657982464"
    static let TwoBrothersDraftID = "1044844007601504256"

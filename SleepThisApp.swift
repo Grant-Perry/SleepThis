@@ -9,12 +9,12 @@ struct SleepThisApp: App {
 
 			ManagerListView(draftViewModel: DraftViewModel(), viewType: .roster)
 			   .tabItem {
-				  Label("Draft", systemImage: "list.clipboard")
+				  Label("Rosters", systemImage: "pencil.and.list.clipboard")
 			   }
 
 			ManagerListView(draftViewModel: DraftViewModel(), viewType: .draft)
 			   .tabItem {
-				  Label("Rosters", systemImage: "pencil.and.list.clipboard")
+				  Label("Draft", systemImage: "list.clipboard")
 			   }
 
 			PlayerSearchView()

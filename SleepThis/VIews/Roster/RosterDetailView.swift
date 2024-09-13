@@ -25,8 +25,10 @@ struct RosterDetailView: View {
 					 .resizable()
 					 .frame(width: playerSize, height: playerSize)
 			   }
+			   
 			   Text(managerName)
 				  .font(.title)
+				  .foregroundColor(.gpBlueDark)
 			   Spacer()
 			}
 			.padding(.leading)
@@ -52,8 +54,10 @@ struct RosterDetailView: View {
 				  Text("Draft Order")
 					 .foregroundColor(.gpBlue)
 			   }
+			   .font(.title)
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .gpGreen))
+			.scaleEffect(0.6)
 			.padding()
 
 			// Starters Section Header
@@ -67,13 +71,12 @@ struct RosterDetailView: View {
 			? rosterViewModel.sortStartersByDraftOrder(managerID: managerID)
 			: rosterViewModel.managerStarters(managerID: managerID)
 
-			RosterListView(
+			RosterDetailListView(
 			   players: starters,
 			   playerViewModel: playerViewModel,
 			   draftViewModel: draftViewModel,
 			   rosterViewModel: rosterViewModel,
-			   showDraftDetails: true
-			)
+			   showDraftDetails: true)
 			.padding(.horizontal)
 
 			// Bench Section Header
@@ -88,12 +91,12 @@ struct RosterDetailView: View {
 			? rosterViewModel.sortBenchPlayersByDraftOrder(managerID: managerID, allPlayers: allPlayers, starters: starters)
 			: allPlayers.filter { !starters.contains($0) }
 
-			RosterListView(
+			RosterDetailListView(
 			   players: benchPlayers,
 			   playerViewModel: playerViewModel,
 			   draftViewModel: draftViewModel,
 			   rosterViewModel: rosterViewModel,
-			   showDraftDetails: false
+			   showDraftDetails: true
 			)
 			.padding(.horizontal)
 		 }

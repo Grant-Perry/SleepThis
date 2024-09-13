@@ -1,5 +1,5 @@
-import SwiftUI
 import Foundation
+import SwiftUI
 import Combine
 
 class RosterViewModel: ObservableObject {
@@ -37,13 +37,11 @@ class RosterViewModel: ObservableObject {
 			DispatchQueue.main.async {
 			   self?.rosters = decodedRosters
 			   if let firstRoster = decodedRosters.first {
-				  // Debugging: Print the structure of firstRoster.settings
-				  print("firstRoster.settings: \(firstRoster.settings)")
+				  print("DP - firstRoster.settings: \(firstRoster.settings)")
 
-				  // Try to assign settings directly, ensuring the type matches
-					 self?.selectedRosterSettings = firstRoster.settings
-					 print("selectedRosterSettings successfully assigned: \(firstRoster.settings)")
-
+				  // Assign settings directly, ensuring the type matches
+				  self?.selectedRosterSettings = firstRoster.settings
+				  print("DP - selectedRosterSettings successfully assigned: \(firstRoster.settings)")
 			   }
 			}
 		 } catch {
@@ -85,13 +83,17 @@ class RosterViewModel: ObservableObject {
 	  }
    }
 
+
+
    func getBackgroundColor(for playerID: String, draftViewModel: DraftViewModel) -> Color {
 	  if let draftDetails = draftViewModel.getDraftDetails(for: playerID) {
 		 let managerID = draftDetails.picked_by
+		 print("DP - Draft Details: \(draftDetails)\nManagerID: \(managerID)\nPlayerID: \(playerID)\n----------------------------\n ")
 		 return draftViewModel.getManagerColor(for: managerID)
 	  } else {
+		 print("DP - Player \(playerID) was not drafted.")
 		 // If the player was not drafted, return .gpBlueDarkL
-		 return .gpBlueDarkL
+		 return .gpWhite
 	  }
    }
 }
