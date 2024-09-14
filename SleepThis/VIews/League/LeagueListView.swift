@@ -1,39 +1,62 @@
 import SwiftUI
 
 struct LeagueListView: View {
-   @ObservedObject var leagueViewModel = LeagueViewModel()
+   @StateObject var leagueViewModel = LeagueViewModel()
    @ObservedObject var draftViewModel: DraftViewModel
    @State private var showAlert = false
    @State private var alertMessage = ""
    @State private var isLoading = false
-   var managerID: String // Accept the userID (managerID)
+   var managerID: String
+
+   init(managerID: String, draftViewModel: DraftViewModel) {
+	  self.managerID = managerID
+	  self.draftViewModel = draftViewModel
+
+	  // Trigger fetching manager's details right away
+	  draftViewModel.fetchManagerDetails(managerID: managerID)
+   }
+
 
    var body: some View {
 	  NavigationView {
 		 VStack {
 			// Displaying the userID at the top
 			let managerName = draftViewModel.managerName(for: managerID)
-			Text("Leagues for \(managerName)")
-			   .font(.title)
-			   .padding()
+			VStack {
+			   Text("\(managerName)")
+				  .font(.title)
+				  .foregroundColor(.gpBlue)
+				  .padding()
+				  .frame(maxWidth: .infinity)
+				  .lineLimit(1)
+				  .minimumScaleFactor(0.5)
+				  .scaledToFit()
+			}
+			VStack {
+			   Text("Leagues")
+				  .font(.title3)
+				  .frame(maxWidth: .infinity, alignment: .center)
+				  .foregroundColor(.gpBlue2)
+				  .padding(.top, -30)
+			}
 
 			if isLoading {
 			   ProgressView("Loading Leagues...")
 				  .padding()
 			} else {
 			   List(leagueViewModel.leagues) { league in
-				  NavigationLink(destination: LeagueDetailView(leagueID: league.leagueID, draftID: league.draftID ?? AppConstants.draftID)) {
+				  NavigationLink(destination: LeagueDetailView(league: league)) { // Pass the LeagueModel object here
 					 LeagueRowView(league: league)
 				  }
 			   }
 			   .listStyle(PlainListStyle())
 			}
 		 }
-		 .navigationTitle("Your Leagues")
+		 .navigationTitle("")
 		 .alert(isPresented: $showAlert) {
 			Alert(title: Text("Alert"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
 		 }
-		 .onAppear {
+		 .onAppear {draftViewModel.managerName(for: managerID)
 			// Fetch leagues for the passed userID
 			isLoading = true
 			leagueViewModel.fetchLeagues(userID: managerID)

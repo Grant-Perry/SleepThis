@@ -1,16 +1,25 @@
 import SwiftUI
 
 struct RosterDetailView: View {
-   let leagueID: String                    // Added leagueID
+   let leagueID: String
    let managerID: String
    let managerName: String
    let managerAvatarURL: URL?
-   @ObservedObject var rosterViewModel: RosterViewModel
    @ObservedObject var draftViewModel: DraftViewModel
-   @ObservedObject var playerViewModel = PlayerViewModel()
+   @StateObject var rosterViewModel: RosterViewModel
+   @StateObject var playerViewModel = PlayerViewModel()
    @State private var sortByDraftOrder = false
-   @State private var leagueName: String = ""    // Added leagueName
+   @State private var leagueName: String = ""
    var playerSize = 50.0
+
+   init(leagueID: String, managerID: String, managerName: String, managerAvatarURL: URL?, draftViewModel: DraftViewModel) {
+	  self.leagueID = leagueID
+	  self.managerID = managerID
+	  self.managerName = managerName
+	  self.managerAvatarURL = managerAvatarURL
+	  self.draftViewModel = draftViewModel
+	  _rosterViewModel = StateObject(wrappedValue: RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel))
+   }
 
    var body: some View {
 	  ScrollView {
@@ -58,7 +67,7 @@ struct RosterDetailView: View {
 			Toggle(isOn: $sortByDraftOrder) {
 			   HStack {
 				  Text("Sort by: ")
-					 .foregroundColor(.gray) 
+					 .foregroundColor(.gray)
 				  Text("\(sortByDraftOrder ? "Draft" : "Roster") Order")
 					 .foregroundColor(.gpBlue)
 			   }

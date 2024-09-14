@@ -2,84 +2,102 @@ import SwiftUI
 
 struct ManagerRowView: View {
    let managerID: String
-   let leagueID: String // Pass leagueID here
-   @ObservedObject var draftViewModel: DraftViewModel
+   let leagueID: String
+   @StateObject var draftViewModel: DraftViewModel
    let thisBackgroundColor: Color
    let viewType: ManagerViewType
+   @State private var showRosterDetailView = false
+   @State private var showLeagueListView = false
 
    var body: some View {
 	  LazyVStack {
-		 NavigationLink(destination: destinationView) {
-			HStack {
-			   // Manager's avatar
-			   if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
-				  AsyncImage(url: avatarURL) { image in
-					 image.resizable()
-						.aspectRatio(contentMode: .fill)
-						.frame(width: 60, height: 60)
-						.clipShape(Circle())
-						.padding(.leading, 16)
-				  } placeholder: {
-					 Image(systemName: "person.crop.circle")
-						.resizable()
-						.frame(width: 60, height: 60)
-						.padding(.leading, 16)
-				  }
-			   } else {
+		 HStack {
+			// Manager's avatar
+			if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
+			   AsyncImage(url: avatarURL) { image in
+				  image.resizable()
+					 .aspectRatio(contentMode: .fill)
+					 .frame(width: 60, height: 60)
+					 .clipShape(Circle())
+					 .padding(.leading, 16)
+			   } placeholder: {
 				  Image(systemName: "person.crop.circle")
 					 .resizable()
 					 .frame(width: 60, height: 60)
 					 .padding(.leading, 16)
 			   }
+			} else {
+			   Image(systemName: "person.crop.circle")
+				  .resizable()
+				  .frame(width: 60, height: 60)
+				  .padding(.leading, 16)
+			}
 
-			   // Manager's name and draft pick
-			   VStack(alignment: .leading) {
+			// Manager's name and draft pick
+			VStack(alignment: .leading) {
+			   // Use a Button to navigate to RosterDetailView
+			   Button(action: {
+				  showRosterDetailView = true
+			   }) {
 				  Text(draftViewModel.managerName(for: managerID))
 					 .font(.title2)
 					 .foregroundColor(.gpDark2)
 					 .bold()
-
-				  // NavigationLink for managerID to LeagueListView
-				  NavigationLink(destination: LeagueListView(
-					 draftViewModel: draftViewModel, // Passing the draftViewModel
-					 managerID: managerID // Passing the managerID
-				  )) {
-					 Text("\(managerID)")
-						.font(.footnote)
-						.foregroundColor(.blue) // Highlighted as a link
-				  }
-
-				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
-					 Text("Draft Pick #:\(draftSlot)")
-						.font(.caption2)
-						.foregroundColor(.gpDark1)
-						.padding(.leading, 10)
-				  } else {
-					 Text("Pick #: N/A")
-						.font(.subheadline)
-						.padding(.leading, 10)
-				  }
 			   }
 
-			   Spacer()
+			   // Use a Button for managerID to present LeagueListView
+			   Button(action: {
+				  showLeagueListView = true
+			   }) {
+				  Text("\(managerID)")
+					 .font(.footnote)
+					 .foregroundColor(.blue)
+			   }
+
+			   if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
+				  Text("Draft Pick #:\(draftSlot)")
+					 .font(.caption2)
+					 .foregroundColor(.gpDark1)
+					 .padding(.leading, 10)
+			   } else {
+				  Text("Pick #: N/A")
+					 .font(.subheadline)
+					 .padding(.leading, 10)
+			   }
 			}
-			.padding(.vertical, 15)  // Vertical padding for card height
-			.padding(.horizontal, 16)  // Horizontal padding inside the card
+
+			Spacer()
 		 }
+		 .padding(.vertical, 15)
+		 .padding(.horizontal, 16)
 		 .background(
-			RoundedRectangle(cornerRadius: 15)  // Rounded corners
+			RoundedRectangle(cornerRadius: 15)
 			   .fill(LinearGradient(
 				  gradient: Gradient(colors: [
 					 thisBackgroundColor,
-					 thisBackgroundColor.blended(withFraction: 0.55, of: .white)  // 55% blend with white
+					 thisBackgroundColor.blended(withFraction: 0.55, of: .white)
 				  ]),
 				  startPoint: .top,
 				  endPoint: .bottom
 			   ))
 			   .shadow(radius: 4)
 		 )
-		 .padding(.vertical, 4)  // Padding between the cards
-		 .padding(.horizontal, 4)  // Padding to prevent cards from touching screen edges
+		 .padding(.vertical, 4)
+		 .padding(.horizontal, 4)
+	  }
+	  // Navigate to RosterDetailView when showRosterDetailView is true
+	  .background(
+		 NavigationLink(destination: destinationView, isActive: $showRosterDetailView) {
+			EmptyView()
+		 }
+			.hidden()
+	  )
+	  // Present LeagueListView as a sheet
+	  .sheet(isPresented: $showLeagueListView) {
+		 LeagueListView(
+			managerID: managerID,
+			draftViewModel: draftViewModel
+		 )
 	  }
    }
 
@@ -87,10 +105,11 @@ struct ManagerRowView: View {
    @ViewBuilder
    var destinationView: some View {
 	  if viewType == .draft {
-		 DraftListView(managerID: managerID,
-					   draftViewModel: draftViewModel,
-					   backgroundColor: thisBackgroundColor)
-
+		 DraftListView(
+			managerID: managerID,
+			draftViewModel: draftViewModel,
+			backgroundColor: thisBackgroundColor
+		 )
 	  } else {
 		 let managerName = draftViewModel.managerName(for: managerID)
 		 let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
@@ -100,8 +119,8 @@ struct ManagerRowView: View {
 			managerID: managerID,
 			managerName: managerName,
 			managerAvatarURL: managerAvatarURL,
-			rosterViewModel: RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel),
-			draftViewModel: draftViewModel
+			draftViewModel: draftViewModel //,
+//			rosterViewModel: RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel)
 		 )
 		 .preferredColorScheme(.dark)
 	  }

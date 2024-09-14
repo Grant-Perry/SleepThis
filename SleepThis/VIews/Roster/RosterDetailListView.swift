@@ -2,9 +2,9 @@ import SwiftUI
 
 struct RosterDetailListView: View {
    let players: [String] // Ensure this is a plain array, not a Binding
-   @ObservedObject var playerViewModel: PlayerViewModel
-   @ObservedObject var draftViewModel: DraftViewModel
-   @ObservedObject var rosterViewModel: RosterViewModel
+   @StateObject var playerViewModel: PlayerViewModel
+   @StateObject var draftViewModel: DraftViewModel
+   @StateObject var rosterViewModel: RosterViewModel
    var playerSize = 50.0
    var showDraftDetails = false
 

@@ -7,8 +7,8 @@ struct SleepThisApp: App {
 		 TabView {
 
 			LeagueListView(
-			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID), // Pass leagueID here
-			   managerID: AppConstants.managerID // Ensure managerID is passed
+			   managerID: AppConstants.managerID,
+			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)
 			)
 			.tabItem {
 			   Label("League", systemImage: "list.bullet.rectangle")
