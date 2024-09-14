@@ -6,11 +6,10 @@ struct ManagerRowView: View {
    @StateObject var draftViewModel: DraftViewModel
    let thisBackgroundColor: Color
    let viewType: ManagerViewType
-   @State private var showRosterDetailView = false
    @State private var showLeagueListView = false
 
    var body: some View {
-	  LazyVStack {
+	  NavigationLink(destination: destinationView) {  // NavigationLink wraps the entire card for RosterDetailView
 		 HStack {
 			// Manager's avatar
 			if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
@@ -35,17 +34,13 @@ struct ManagerRowView: View {
 
 			// Manager's name and draft pick
 			VStack(alignment: .leading) {
-			   // Use a Button to navigate to RosterDetailView
-			   Button(action: {
-				  showRosterDetailView = true
-			   }) {
-				  Text(draftViewModel.managerName(for: managerID))
-					 .font(.title2)
-					 .foregroundColor(.gpDark2)
-					 .bold()
-			   }
+			   // Manager's name navigates to RosterDetailView via NavigationLink
+			   Text(draftViewModel.managerName(for: managerID))
+				  .font(.title2)
+				  .foregroundColor(.gpDark2)
+				  .bold()
 
-			   // Use a Button for managerID to present LeagueListView
+			   // Manager's ID opens LeagueListView in a sheet
 			   Button(action: {
 				  showLeagueListView = true
 			   }) {
@@ -54,6 +49,7 @@ struct ManagerRowView: View {
 					 .foregroundColor(.blue)
 			   }
 
+			   // Draft pick information
 			   if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 				  Text("Draft Pick #:\(draftSlot)")
 					 .font(.caption2)
@@ -85,15 +81,7 @@ struct ManagerRowView: View {
 		 .padding(.vertical, 4)
 		 .padding(.horizontal, 4)
 	  }
-	  // Navigate to RosterDetailView when showRosterDetailView is true
-	  .background(
-		 NavigationLink(destination: destinationView, isActive: $showRosterDetailView) {
-			EmptyView()
-		 }
-			.hidden()
-	  )
-	  // Present LeagueListView as a sheet
-	  .sheet(isPresented: $showLeagueListView) {
+	  .sheet(isPresented: $showLeagueListView) {  // Present LeagueListView as a sheet
 		 LeagueListView(
 			managerID: managerID,
 			draftViewModel: draftViewModel
@@ -119,8 +107,7 @@ struct ManagerRowView: View {
 			managerID: managerID,
 			managerName: managerName,
 			managerAvatarURL: managerAvatarURL,
-			draftViewModel: draftViewModel //,
-//			rosterViewModel: RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel)
+			draftViewModel: draftViewModel
 		 )
 		 .preferredColorScheme(.dark)
 	  }

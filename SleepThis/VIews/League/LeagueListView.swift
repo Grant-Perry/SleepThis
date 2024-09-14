@@ -16,9 +16,8 @@ struct LeagueListView: View {
 	  draftViewModel.fetchManagerDetails(managerID: managerID)
    }
 
-
    var body: some View {
-	  NavigationView {
+	  NavigationStack {
 		 VStack {
 			// Displaying the userID at the top
 			let managerName = draftViewModel.managerName(for: managerID)
@@ -52,11 +51,10 @@ struct LeagueListView: View {
 			   .listStyle(PlainListStyle())
 			}
 		 }
-		 .navigationTitle("")
 		 .alert(isPresented: $showAlert) {
 			Alert(title: Text("Alert"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
 		 }
-		 .onAppear {draftViewModel.managerName(for: managerID)
+		 .onAppear {
 			// Fetch leagues for the passed userID
 			isLoading = true
 			leagueViewModel.fetchLeagues(userID: managerID)

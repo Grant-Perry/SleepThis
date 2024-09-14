@@ -12,7 +12,7 @@ struct VersionNumberModifier: ViewModifier {
 			Text("Version: \(AppConstants.getVersion())")
 			   .font(.system(size: AppConstants.verSize))
 			   .foregroundColor(AppConstants.verColor)
-			   .padding(.bottom) // Adjust padding as needed
+			   .padding(.bottom, 50) // Adjust padding as needed
 		 }
 	  }
    }

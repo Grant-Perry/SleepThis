@@ -77,7 +77,7 @@ struct RosterDetailListView: View {
 
 
 				  // Icon for undrafted players
-				  if isUndrafted {
+				  if backgroundColor == .gpGray {
 					 Image(systemName: "pencil.slash")
 						.resizable()
 						.frame(width: 15, height: 15)
