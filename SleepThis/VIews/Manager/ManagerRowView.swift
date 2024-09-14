@@ -38,11 +38,16 @@ struct ManagerRowView: View {
 					 .font(.title2)
 					 .foregroundColor(.gpDark2)
 					 .bold()
-				  Text("\(managerID)")
-					 .font(.footnote)
-					 .foregroundColor(.gpDark2)
 
-
+				  // NavigationLink for managerID to LeagueListView
+				  NavigationLink(destination: LeagueListView(
+					 draftViewModel: draftViewModel, // Passing the draftViewModel
+					 managerID: managerID // Passing the managerID
+				  )) {
+					 Text("\(managerID)")
+						.font(.footnote)
+						.foregroundColor(.blue) // Highlighted as a link
+				  }
 
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 					 Text("Draft Pick #:\(draftSlot)")
@@ -82,7 +87,6 @@ struct ManagerRowView: View {
    @ViewBuilder
    var destinationView: some View {
 	  if viewType == .draft {
-		 // Ensure this is valid
 		 DraftListView(managerID: managerID,
 					   draftViewModel: draftViewModel,
 					   backgroundColor: thisBackgroundColor)
@@ -92,7 +96,7 @@ struct ManagerRowView: View {
 		 let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
 
 		 RosterDetailView(
-			leagueID: leagueID, // Pass leagueID to RosterDetailView
+			leagueID: leagueID,
 			managerID: managerID,
 			managerName: managerName,
 			managerAvatarURL: managerAvatarURL,

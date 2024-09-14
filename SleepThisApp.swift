@@ -6,10 +6,13 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
-			LeagueListView()
-			   .tabItem {
-				  Label("League", systemImage: "list.bullet.rectangle")
-			   }
+			LeagueListView(
+			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID), // Pass leagueID here
+			   managerID: AppConstants.managerID // Ensure managerID is passed
+			)
+			.tabItem {
+			   Label("League", systemImage: "list.bullet.rectangle")
+			}
 
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
@@ -42,7 +45,6 @@ struct SleepThisApp: App {
 			   .tabItem {
 				  Label("NFL Roster", systemImage: "person.3.fill")
 			   }
-
 		 }
 		 .preferredColorScheme(.dark)
 		 .showVersionNumber()

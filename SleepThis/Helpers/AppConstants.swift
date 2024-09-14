@@ -5,6 +5,7 @@ struct AppConstants {
    static let verSize = 9.0
    static let verColor = Color.gpBlue
 
+   static let managerID = "1117588009542615040"
    static let sleeperID = "1117588009542615040"
 
    static let BigBoysLeagueID = "1136822872179224576"

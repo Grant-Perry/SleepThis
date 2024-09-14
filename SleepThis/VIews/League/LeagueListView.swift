@@ -2,42 +2,20 @@ import SwiftUI
 
 struct LeagueListView: View {
    @ObservedObject var leagueViewModel = LeagueViewModel()
-   @State private var userID: String = AppConstants.sleeperID
+   @ObservedObject var draftViewModel: DraftViewModel
    @State private var showAlert = false
    @State private var alertMessage = ""
    @State private var isLoading = false
+   var managerID: String // Accept the userID (managerID)
 
    var body: some View {
 	  NavigationView {
 		 VStack {
-			// Input field for Sleeper ID
-			HStack {
-			   TextField("Enter Sleeper ID", text: $userID)
-				  .textFieldStyle(RoundedBorderTextFieldStyle())
-				  .padding(.horizontal)
-
-			   Button(action: {
-				  if userID.isEmpty {
-					 alertMessage = "Please enter a valid Sleeper ID."
-					 showAlert = true
-				  } else {
-					 isLoading = true
-					 leagueViewModel.fetchLeagues(userID: userID)
-					 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-						isLoading = false
-						if leagueViewModel.leagues.isEmpty {
-						   alertMessage = "No leagues found for this user."
-						   showAlert = true
-						}
-					 }
-				  }
-			   }) {
-				  Image(systemName: "magnifyingglass")
-					 .font(.title)
-			   }
-			   .padding(.trailing)
-			}
-			.padding(.top)
+			// Displaying the userID at the top
+			let managerName = draftViewModel.managerName(for: managerID)
+			Text("Leagues for \(managerName)")
+			   .font(.title)
+			   .padding()
 
 			if isLoading {
 			   ProgressView("Loading Leagues...")
@@ -55,10 +33,18 @@ struct LeagueListView: View {
 		 .alert(isPresented: $showAlert) {
 			Alert(title: Text("Alert"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
 		 }
-	  }
-	  .onAppear {
-		 // Fetch leagues for default user ID
-		 leagueViewModel.fetchLeagues(userID: userID)
+		 .onAppear {
+			// Fetch leagues for the passed userID
+			isLoading = true
+			leagueViewModel.fetchLeagues(userID: managerID)
+			DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+			   isLoading = false
+			   if leagueViewModel.leagues.isEmpty {
+				  alertMessage = "No leagues found for this user."
+				  showAlert = true
+			   }
+			}
+		 }
 	  }
    }
 }
