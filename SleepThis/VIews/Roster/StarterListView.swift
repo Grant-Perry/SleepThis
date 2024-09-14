@@ -2,7 +2,7 @@ import SwiftUI
 
 struct StarterListView: View {
    let starters: [String]
-   @ObservedObject var playerViewModel: PlayerViewModel
+   @StateObject var playerViewModel: PlayerViewModel
    var playerSize = 50.0
 
    var body: some View {

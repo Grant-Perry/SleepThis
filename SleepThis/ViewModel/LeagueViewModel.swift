@@ -188,6 +188,11 @@ class LeagueViewModel: ObservableObject {
 	  }
    }
 
+   // New performSearch method that triggers fetchLeagues
+   func getLeagueByID(leagueID: String) {
+	  fetchLeagues(userID: leagueID) // Trigger the fetch based on the input League ID
+   }
+
    // Modified fetch method to check cache
    func fetchLeagues(userID: String) {
 	  // Check if cached data exists and is valid

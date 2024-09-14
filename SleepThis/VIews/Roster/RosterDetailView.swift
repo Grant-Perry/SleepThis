@@ -82,6 +82,10 @@ struct RosterDetailView: View {
 			   .font(.title)
 			   .padding(.leading)
 			   .foregroundColor(.gpGreen)
+			   .frame(maxWidth: .infinity)
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+			   .scaledToFit()
 
 			// Starters Section
 			let starters = sortByDraftOrder
@@ -101,6 +105,10 @@ struct RosterDetailView: View {
 			   .font(.title)
 			   .padding(.leading)
 			   .foregroundColor(.gpGreen)
+			   .frame(maxWidth: .infinity)
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+			   .scaledToFit()
 
 			// Bench Players Section
 			let allPlayers = rosterViewModel.rosters.first(where: { $0.ownerID == managerID })?.players ?? []

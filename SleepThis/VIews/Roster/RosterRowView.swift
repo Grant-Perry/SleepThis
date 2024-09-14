@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RosterRowView: View {
    let roster: RosterModel
-   @ObservedObject var draftViewModel: DraftViewModel
+   @StateObject var draftViewModel: DraftViewModel
    let backgroundColor: Color
 
    var body: some View {

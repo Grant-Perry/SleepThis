@@ -2,8 +2,8 @@ import SwiftUI
 
 struct DraftListView: View {
    let managerID: String
-   @ObservedObject var draftViewModel: DraftViewModel
-   @ObservedObject var userViewModel = UserViewModel()  // Assuming this fetches user info
+   @StateObject var draftViewModel: DraftViewModel
+   @StateObject var userViewModel = UserViewModel()  // Assuming this fetches user info
    let backgroundColor: Color
 
 

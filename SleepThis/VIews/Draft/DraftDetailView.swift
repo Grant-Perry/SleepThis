@@ -4,7 +4,7 @@ struct DraftDetailView: View {
 
    let managerID: String
    let draftPick: DraftModel  // Only expecting managerID and draftPick
-   @ObservedObject var draftViewModel: DraftViewModel
+   @StateObject var draftViewModel: DraftViewModel
 //   let draftViewModel = DraftViewModel()
 
    var body: some View {
