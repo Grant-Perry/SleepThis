@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ManagerRowView: View {
    let managerID: String
+   let leagueID: String // Pass leagueID here
    @ObservedObject var draftViewModel: DraftViewModel
    let thisBackgroundColor: Color
    let viewType: ManagerViewType
@@ -37,6 +38,12 @@ struct ManagerRowView: View {
 					 .font(.title2)
 					 .foregroundColor(.gpDark2)
 					 .bold()
+				  Text("\(managerID)")
+					 .font(.footnote)
+					 .foregroundColor(.gpDark2)
+
+
+
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 					 Text("Draft Pick #:\(draftSlot)")
 						.font(.caption2)
@@ -51,10 +58,8 @@ struct ManagerRowView: View {
 
 			   Spacer()
 			}
-			
 			.padding(.vertical, 15)  // Vertical padding for card height
 			.padding(.horizontal, 16)  // Horizontal padding inside the card
-
 		 }
 		 .background(
 			RoundedRectangle(cornerRadius: 15)  // Rounded corners
@@ -66,15 +71,11 @@ struct ManagerRowView: View {
 				  startPoint: .top,
 				  endPoint: .bottom
 			   ))
-
-
 			   .shadow(radius: 4)
 		 )
-
 		 .padding(.vertical, 4)  // Padding between the cards
 		 .padding(.horizontal, 4)  // Padding to prevent cards from touching screen edges
 	  }
-	  
    }
 
    // Dynamic destination view based on the view type
@@ -89,15 +90,16 @@ struct ManagerRowView: View {
 	  } else {
 		 let managerName = draftViewModel.managerName(for: managerID)
 		 let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
+
 		 RosterDetailView(
+			leagueID: leagueID, // Pass leagueID to RosterDetailView
 			managerID: managerID,
 			managerName: managerName,
 			managerAvatarURL: managerAvatarURL,
-			rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: draftViewModel),
-			draftViewModel: draftViewModel)
+			rosterViewModel: RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel),
+			draftViewModel: draftViewModel
+		 )
 		 .preferredColorScheme(.dark)
 	  }
    }
-
-
 }

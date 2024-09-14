@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RosterDetailView: View {
+   let leagueID: String                    // Added leagueID
    let managerID: String
    let managerName: String
    let managerAvatarURL: URL?
@@ -8,11 +9,18 @@ struct RosterDetailView: View {
    @ObservedObject var draftViewModel: DraftViewModel
    @ObservedObject var playerViewModel = PlayerViewModel()
    @State private var sortByDraftOrder = false
+   @State private var leagueName: String = ""    // Added leagueName
    var playerSize = 50.0
 
    var body: some View {
 	  ScrollView {
 		 VStack(alignment: .leading, spacing: 10) {
+			// League Name at the top
+			Text(leagueName)
+			   .font(.title)
+			   .foregroundColor(.gpWhite)
+			   .padding(.leading)
+
 			// Manager info
 			HStack {
 			   AsyncImage(url: managerAvatarURL) { image in
@@ -25,7 +33,7 @@ struct RosterDetailView: View {
 					 .resizable()
 					 .frame(width: playerSize, height: playerSize)
 			   }
-			   
+
 			   Text(managerName)
 				  .font(.title)
 				  .foregroundColor(.gpBlueDark)
@@ -50,8 +58,8 @@ struct RosterDetailView: View {
 			Toggle(isOn: $sortByDraftOrder) {
 			   HStack {
 				  Text("Sort by: ")
-					 .foregroundColor(.gray)
-				  Text("Draft Order")
+					 .foregroundColor(.gray) 
+				  Text("\(sortByDraftOrder ? "Draft" : "Roster") Order")
 					 .foregroundColor(.gpBlue)
 			   }
 			   .font(.title)
@@ -105,6 +113,16 @@ struct RosterDetailView: View {
 	  .navigationTitle("Roster Detail")
 	  .onAppear {
 		 playerViewModel.loadPlayersFromCache()
+
+		 // Fetch the league name
+		 let leagueVM = LeagueViewModel()
+		 leagueVM.fetchLeague(leagueID: leagueID) { league in
+			if let league = league {
+			   self.leagueName = league.name
+			} else {
+			   self.leagueName = "Unknown League"
+			}
+		 }
 	  }
    }
 }

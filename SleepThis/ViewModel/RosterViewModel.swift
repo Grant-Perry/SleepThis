@@ -5,7 +5,7 @@ import Combine
 class RosterViewModel: ObservableObject {
    @Published var rosters: [RosterModel] = []
    @Published var selectedRosterSettings: RosterSettings?
-   var draftViewModel = DraftViewModel()
+   var draftViewModel: DraftViewModel
 
    var leagueID = AppConstants.leagueID // TwoBrothersID
 
@@ -16,6 +16,8 @@ class RosterViewModel: ObservableObject {
    }
 
    func fetchRoster() {
+	  guard !leagueID.isEmpty else { return }
+	  
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/rosters") else {
 		 print("[RosterViewModel] Invalid URL.")
 		 return

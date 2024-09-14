@@ -2,11 +2,17 @@ import SwiftUI
 
 struct ManagerListView: View {
    @ObservedObject var draftViewModel: DraftViewModel
-   @State private var isLoading = true // Add loading state
+   @ObservedObject var rosterViewModel: RosterViewModel
+   @State private var isLoading = true
+   @State private var leagueName: String = ""
 
+   let leagueID: String
+   let draftID: String
    let viewType: ManagerViewType
-   let mgrColors: [Color] = [.mBG1,.mBG2,.mBG3,.mBG4,.mBG5, .mBG6,
-							 .mBG7, .mBG8, .mBG9, .mBG10, .mBG11, .mBG12]
+   let mgrColors: [Color] = [
+	  .mBG1, .mBG2, .mBG3, .mBG4, .mBG5, .mBG6,
+	  .mBG7, .mBG8, .mBG9, .mBG10, .mBG11, .mBG12
+   ]
 
    var sortedManagerIDs: [String] {
 	  draftViewModel.groupedPicks.keys.sorted {
@@ -19,31 +25,57 @@ struct ManagerListView: View {
    var body: some View {
 	  NavigationView {
 		 if isLoading {
-			// Display loading view while data is loading
 			Text("Loading \(viewType == .draft ? "Draft" : "Roster") Managers...")
 			   .font(.headline)
 			   .foregroundColor(.gray)
+			
 			   .onAppear {
-				  draftViewModel.fetchDraftData(draftID: AppConstants.draftID)
-				  isLoading = false // Set loading to false after fetching data
+				  draftViewModel.fetchDraftData(draftID: draftID)
+				  draftViewModel.fetchAllManagerDetails()
+				  rosterViewModel.fetchRoster()
+
+				  // Fetch the league name using leagueID
+				  let leagueVM = LeagueViewModel()
+				  leagueVM.fetchLeague(leagueID: leagueID) { league in
+					 if let league = league {
+						self.leagueName = league.name
+					 } else {
+						self.leagueName = "Unknown League"
+					 }
+					 isLoading = false
+				  }
 			   }
 		 } else {
-			ScrollView {  // Display content when loading is complete
-			   LazyVStack(spacing: 0) {
-				  ForEach(Array(sortedManagerIDs.enumerated()), id: \.element) { index, managerID in
-					 let backgroundColor = mgrColors[index % mgrColors.count]
-					 ManagerRowView(managerID: managerID,
-									draftViewModel: draftViewModel,
-									thisBackgroundColor: backgroundColor,
-									viewType: viewType)
-					 .padding(.horizontal, 0)
-				  }
+			ScrollView {
+			   VStack(alignment: .leading) {
+				  // Display league name at the top
+				  Text(leagueName)
+					 .frame(maxWidth: .infinity)
+					 .lineLimit(1)
+					 .minimumScaleFactor(0.5)
+					 .font(.title)
+					 .foregroundColor(.gpWhite)
+					 .padding(.leading)
+				  Text(leagueID)
+					 .font(.footnote)
 
+				  LazyVStack(spacing: 0) {
+					 ForEach(Array(sortedManagerIDs.enumerated()), id: \.offset) { index, managerID in
+						let backgroundColor = mgrColors[index % mgrColors.count]
+
+						ManagerRowView(
+						   managerID: managerID,
+						   leagueID: leagueID,
+						   draftViewModel: draftViewModel,
+						   thisBackgroundColor: backgroundColor,
+						   viewType: viewType
+						)
+						.padding(.horizontal, 0)
+					 }
+				  }
 			   }
 			}
 			.navigationTitle(viewType == .draft ? "Draft Managers" : "Roster Managers")
-
-
 		 }
 	  }
 	  .preferredColorScheme(.dark)

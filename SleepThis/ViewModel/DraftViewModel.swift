@@ -7,8 +7,16 @@ class DraftViewModel: ObservableObject {
    @Published var groupedPicks: [String: [DraftModel]] = [:]
    @Published var managerDetails: [String: (name: String, avatar: String?)] = [:]
    @Published var managerIDToColor: [String: Color] = [:]
+   @Published var managers: [ManagerModel] = []
+   var leagueID: String = ""
+   private var cancellables = Set<AnyCancellable>()
+
+   init(leagueID: String) {
+	  self.leagueID = leagueID
+   }
 
    func fetchDraftData(draftID: String) {
+	  guard !leagueID.isEmpty else { return }
 	  guard let url = URL(string: "https://api.sleeper.app/v1/draft/\(draftID)/picks") else {
 		 print("[fetchDraftData]: Invalid URL")
 		 return
@@ -96,6 +104,8 @@ class DraftViewModel: ObservableObject {
 
    // Fetch all manager details
    func fetchAllManagerDetails() {
+	  guard !leagueID.isEmpty else { return }
+
 	  for managerID in groupedPicks.keys {
 		 print("Fetching manager details for managerID: \(managerID) [fetchAllManagerDetails]")
 		 fetchManagerDetails(managerID: managerID)
