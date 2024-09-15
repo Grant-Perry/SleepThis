@@ -4,6 +4,8 @@ struct PlayerDetailView: View {
    let player: PlayerModel
    let playerViewModel: PlayerViewModel
    var playerSize = 350.0
+   let round: Int? // Add optional round parameter
+   let pickNo: Int? // Add optional pickNo parameter
 
    var body: some View {
 	  ScrollView {
@@ -45,6 +47,11 @@ struct PlayerDetailView: View {
 			   PlayerInfoRowView(label: "Number", value: player.number?.description)
 			   PlayerInfoRowView(label: "Depth Chart Position", value: player.depthChartPosition?.description)
 			   PlayerInfoRowView(label: "Depth Chart Order", value: player.depthChartOrder?.description)
+
+			   // Add round and pick details if available
+			   if let round = round, let pickNo = pickNo {
+				  PlayerInfoRowView(label: "Drafted", value: "Round \(round), Pick \(pickNo)")
+			   }
 			}
 			.padding(.top, -15) // Tighten up the spacing under the header
 			.padding()
@@ -109,6 +116,6 @@ struct PlayerDetailView_Previews: PreviewProvider {
 
 	  let exampleViewModel = PlayerViewModel()
 
-	  return PlayerDetailView(player: examplePlayer, playerViewModel: exampleViewModel)
+	  return PlayerDetailView(player: examplePlayer, playerViewModel: exampleViewModel, round: 1, pickNo: 10)
    }
 }

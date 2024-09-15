@@ -64,7 +64,7 @@ struct ManagerRowView: View {
 
 			Spacer()
 
-			// Add the ">" symbol to indicate more details
+			//   to indicate more details
 			Image(systemName: "chevron.right")
 			   .resizable()
 			   .frame(width: 8, height: 8)

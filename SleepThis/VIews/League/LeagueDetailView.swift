@@ -19,12 +19,17 @@ struct LeagueDetailView: View {
 			   .scaledToFit()
 			   .padding(.bottom, 5)
 
-			Text("League ID: \(league.leagueID)")
-			   .font(.caption)
-			   .foregroundColor(.gray)
+			Group {
+			   Text("League ID: \(league.leagueID)")
+				  .font(.caption)
+				  .foregroundColor(.gray)
 
-			Text("Season: \(league.season)")
-			   .font(.subheadline)
+			   Text("Season: ")
+				  .font(.subheadline) +
+			   Text("\(league.season)")
+				  .font(.title3)
+				  .foregroundColor(.gpBlue)
+			}
 			   .padding(.top, 5)
 
 			Text("Total Rosters: \(league.totalRosters)")
@@ -58,13 +63,32 @@ struct LeagueDetailView: View {
 				  .padding(.vertical, 5)
 			}
 
-			// Roster Positions Section
+			// CALCULATED Roster Positions Section
 			DisclosureGroup(isExpanded: $showRosterPositions) {
-			   VStack {
-				  ForEach(league.rosterPositions, id: \.self) { position in
-					 Text("\(position)")
-						.font(.subheadline)
-						.foregroundColor(.gpWhite)
+			   VStack(alignment: .leading, spacing: 5) {
+				  // Create a dictionary to count occurrences of each position
+				  let positionCounts = league.rosterPositions.reduce(into: [:]) { counts, position in
+					 counts[position, default: 0] += 1
+				  }
+
+				  // Specify the order and labels for the positions
+				  let positionOrder = ["QB", "RB", "WR", "TE", "FLEX", "K", "BN", "DEF"]
+
+				  // Display each position on its own line with trailing aligned labels and leading aligned values
+				  ForEach(positionOrder, id: \.self) { position in
+					 HStack {
+						// Position label aligned to the trailing
+						Text("\(position):")
+						   .font(.subheadline)
+						   .foregroundColor(.gpWhite)
+						   .frame(width: 40, alignment: .trailing)  // Align the labels to the trailing with fixed width
+
+						// Value aligned to the leading
+						Text("\(positionCounts[position, default: 0])")
+						   .font(.subheadline)
+						   .foregroundColor(.gpBlue)
+						   .frame(alignment: .leading)  // Align the value to the leading
+					 }
 				  }
 			   }
 			   .padding(.horizontal)
@@ -74,6 +98,8 @@ struct LeagueDetailView: View {
 				  .bold()
 				  .padding(.vertical, 5)
 			}
+
+
 
 			// League Settings Section
 			DisclosureGroup(isExpanded: $showLeagueSettings) {
@@ -129,24 +155,28 @@ struct LeagueDetailView: View {
 			}
 
 			Spacer()
+			Spacer()
 
 			/// Navigation to Manager List
 			NavigationLink(destination: ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: league.leagueID), // Pass leagueID
 			   rosterViewModel: RosterViewModel(leagueID: league.leagueID, draftViewModel: DraftViewModel(leagueID: league.leagueID)),
-			   leagueID: league.leagueID, // Use leagueID from league model
-			   draftID: league.draftID ?? AppConstants.draftID, // Use draftID from league model or fallback
+			   leagueID: league.leagueID,
+			   draftID: league.draftID ?? AppConstants.draftID,
 			   viewType: .roster
 			)) {
 			   Text("View Rosters")
 				  .font(.headline)
 				  .padding()
 				  .frame(maxWidth: .infinity)
-				  .background(Color.blue)
+				  .background(Color.blue.gradient)
 				  .foregroundColor(.white)
 				  .cornerRadius(10)
 				  .padding(.horizontal)
 			}
+			.padding(.top, 40)
+
+
 		 }
 		 .padding()
 		 .navigationTitle("League Details")

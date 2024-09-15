@@ -92,7 +92,10 @@ struct PlayerSearchView: View {
 			// Scrollable List Section
 			if !playerViewModel.players.isEmpty {
 			   List(filteredSortedPlayers) { player in
-				  NavigationLink(destination: PlayerDetailView(player: player, playerViewModel: playerViewModel)) {
+				  NavigationLink(destination: PlayerDetailView(player: player,
+															   playerViewModel: playerViewModel,
+															   round: 909,
+															   pickNo: 909)) {
 					 HStack {
 						// Display player thumbnail
 						if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg") {
@@ -112,7 +115,7 @@ struct PlayerSearchView: View {
 						   Text("\(player.firstName ?? "Unknown") \(player.lastName ?? "Unknown")")
 							  .font(.headline)
 						   VStack {
-						  	Text("Team: \(player.team ?? "Unknown")")
+							  Text("Team: \(player.team ?? "Unknown")")
 							  Text("Position: \(player.position ?? "Unknown")")
 							  Text("Depth: #\(player.depthChartOrder ?? 0)")
 						   }
