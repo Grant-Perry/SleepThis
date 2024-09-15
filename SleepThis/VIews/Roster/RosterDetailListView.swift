@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RosterDetailListView: View {
-   let players: [String] // Ensure this is a plain array, not a Binding
+   let players: [String]
    @StateObject var playerViewModel: PlayerViewModel
    @StateObject var draftViewModel: DraftViewModel
    @StateObject var rosterViewModel: RosterViewModel
@@ -36,10 +36,7 @@ struct RosterDetailListView: View {
 				  VStack(alignment: .leading, spacing: 2) {
 					 Text(player.fullName ?? "Unknown Player")
 						.font(.headline)
-//					 Text("\(player.id)")
-//						.font(.caption)
 						.foregroundColor(.gpDark2)
-
 
 					 HStack(spacing: 5) {
 						Text(player.position ?? "Unknown Position")
@@ -48,7 +45,6 @@ struct RosterDetailListView: View {
 						   .foregroundColor(PositionColor.fromPosition(player.position).color)
 
 						Text(fullTeamName(from: player.team))
-//						   .frame(maxWidth: .infinity)
 						   .padding(.trailing)
 						   .foregroundColor(.gpBlueDarkL)
 						   .lineLimit(1)
@@ -70,9 +66,6 @@ struct RosterDetailListView: View {
 						.foregroundColor(.gpDark1)
 						.padding(.top, 5)
 						.padding(.horizontal)
-						.onAppear {
-						   print("draft details: \(draftDetails)") //\nplayer: \(playerID)")
-						}
 				  }
 
 

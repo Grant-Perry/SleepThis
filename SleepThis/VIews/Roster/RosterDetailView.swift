@@ -97,7 +97,8 @@ struct RosterDetailView: View {
 			   playerViewModel: playerViewModel,
 			   draftViewModel: draftViewModel,
 			   rosterViewModel: rosterViewModel,
-			   showDraftDetails: true)
+			   showDraftDetails: true
+			)
 			.padding(.horizontal)
 
 			// Bench Section Header
@@ -143,3 +144,5 @@ struct RosterDetailView: View {
 	  }
    }
 }
+
+

@@ -63,6 +63,15 @@ struct ManagerRowView: View {
 			}
 
 			Spacer()
+
+			// Add the ">" symbol to indicate more details
+			Image(systemName: "chevron.right")
+			   .resizable()
+			   .frame(width: 8, height: 8)
+			   .padding(.trailing, 10)
+			   .foregroundColor(.gpDark1)
+
+
 		 }
 		 .padding(.vertical, 15)
 		 .padding(.horizontal, 16)
