@@ -21,10 +21,21 @@ struct RosterDetailListView: View {
 			   let round = draftDetails?.round != nil ? String(draftDetails!.round) : ""
 			   let pickNo = draftDetails?.pick_no != nil ? String(draftDetails!.pick_no) : ""
 
-			   NavigationLink(destination: PlayerCardView(playerModel: player,
-														  thisBackgroundColor: backgroundColor,
-														  round: round,
-														  pick: pickNo)) {
+			   // Fetch the managerID from the draftDetails, assuming draftDetails contains a managerID
+			   let managerID = draftDetails?.picked_by ?? ""  // Modify this as per your data structure
+
+			   // Get the manager's name and avatar using managerID instead of playerID
+			   let managerName = draftViewModel.managerName(for: managerID)
+			   let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
+
+			   NavigationLink(destination: PlayerCardView(
+				  playerModel: player,
+				  thisBackgroundColor: backgroundColor,
+				  round: round,
+				  pick: pickNo,
+				  managerName: managerName,
+				  managerAvatarURL: managerAvatarURL
+			   )) {
 				  HStack(alignment: .center, spacing: 10) {
 					 // Player Thumbnail
 					 if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(playerID).jpg") {
@@ -78,7 +89,7 @@ struct RosterDetailListView: View {
 					 }
 
 					 // Icon for undrafted players
-					 if backgroundColor == .gpGray {
+					 if backgroundColor == .gpUndrafted {
 						Image(systemName: "pencil.slash")
 						   .resizable()
 						   .frame(width: 15, height: 15)

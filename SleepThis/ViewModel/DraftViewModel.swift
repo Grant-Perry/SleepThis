@@ -71,7 +71,7 @@ class DraftViewModel: ObservableObject {
 
    // Get the color assigned to a manager
    func getManagerColor(for managerID: String) -> Color {
-	  return managerIDToColor[managerID] ?? .gpGray
+	  return managerIDToColor[managerID] ?? .gpUndrafted // .gpGray // THIS is it too
    }
 
    // Fetch manager details from the Sleeper API
