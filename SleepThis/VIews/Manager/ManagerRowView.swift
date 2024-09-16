@@ -56,7 +56,7 @@ struct ManagerRowView: View {
 					 .foregroundColor(.gpDark1)
 					 .padding(.leading, 10)
 			   } else {
-				  Text("Pick #: N/A")
+				  Text("")
 					 .font(.subheadline)
 					 .padding(.leading, 10)
 			   }

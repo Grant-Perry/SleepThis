@@ -35,7 +35,7 @@ struct DraftListView: View {
 						.font(.subheadline)
 						.padding(.trailing)
 				  } else {
-					 Text("Pick #: N/A")
+					 Text("")
 						.font(.subheadline)
 				  }
 			   }

@@ -95,7 +95,7 @@ class RosterViewModel: ObservableObject {
 	  } else {
 		 print("DP - Player \(playerID) was not drafted.")
 		 // If the player was not drafted, return .gpBlueDarkL
-		 return .gpWhite
+		 return .gpUndrafted // RIGHT HERE
 	  }
    }
 }

@@ -14,12 +14,12 @@ struct RosterDetailListView: View {
 			if let player = playerViewModel.players.first(where: { $0.id == playerID }) {
 			   // Get drafting manager's color from the RosterViewModel
 			   let backgroundColor = rosterViewModel.getBackgroundColor(for: playerID, draftViewModel: draftViewModel)
-			   let isUndrafted = backgroundColor == .gpBlueDarkL
+			   let isUndrafted = backgroundColor == .gpUndrafted
 
 			   // Fetch round and pickNo from draft details
 			   let draftDetails = draftViewModel.getDraftDetails(for: playerID)
-			   let round = draftDetails?.round != nil ? String(draftDetails!.round) : "N/A"
-			   let pickNo = draftDetails?.pick_no != nil ? String(draftDetails!.pick_no) : "N/A"
+			   let round = draftDetails?.round != nil ? String(draftDetails!.round) : ""
+			   let pickNo = draftDetails?.pick_no != nil ? String(draftDetails!.pick_no) : ""
 
 			   NavigationLink(destination: PlayerCardView(playerModel: player,
 														  thisBackgroundColor: backgroundColor,
