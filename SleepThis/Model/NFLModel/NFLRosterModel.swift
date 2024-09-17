@@ -35,12 +35,41 @@ enum NFLRosterModel {
 	  let displayHeight: String?
 	  let age: Int?
 	  let dateOfBirth: String?
+	  let position: String?  // Added position field
 	  let links: [Link]?
 	  let birthPlace: BirthPlace?
 	  let college: College?
-//	  var position: String?
+	  let team: Team? // Player's team information
+	  let coach: [Coach]? // Player's coach information
 
-	  // Add any other fields that are present in the JSON
+	  struct Team: Codable {
+		 let id: String
+		 let abbreviation: String
+		 let name: String
+		 let displayName: String
+		 let color: String
+		 let logo: String
+		 let record: String
+		 let standing: String
+
+		 private enum CodingKeys: String, CodingKey {
+			case id
+			case abbreviation
+			case name
+			case displayName
+			case color
+			case logo
+			case record = "recordSummary"
+			case standing = "standingSummary"
+		 }
+	  }
+
+	  struct Coach: Codable {
+		 let id: String
+		 let firstName: String
+		 let lastName: String
+		 let experience: Int
+	  }
    }
 
    struct Link: Codable {
@@ -76,7 +105,4 @@ enum NFLRosterModel {
 	  let rel: [String]?
 	  let lastUpdated: String?
    }
-
-   // This enum is no longer needed as we're using optionals for potentially missing fields
-   // enum StringOrInt: Codable { ... }
 }

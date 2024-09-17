@@ -21,9 +21,10 @@ class NFLRosterViewModel: ObservableObject {
 	  let playerId = extractPlayerId(from: player.uid)
 	  return URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(playerId).png")
    }
+
    func fetchPlayersForAllTeams() {
 	  print("[fetchPlayersForAllTeams:] Fetching players for all teams")
-	  let teamIDs = Array(1...33)
+	  let teamIDs = Array(1...33) // 33 teams
 	  let group = DispatchGroup()
 	  var allPlayers: [NFLRosterModel.NFLPlayer] = []
 
