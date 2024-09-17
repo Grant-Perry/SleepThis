@@ -18,7 +18,7 @@ struct NFLPlayerDetailView: View {
 			   .frame(height: 180)
 
 			HStack(alignment: .center) {
-			   // Player Image
+			   // MARK: Player Image
 			   if let playerImageUrl = player.imageUrl {
 				  AsyncImage(url: playerImageUrl) { phase in
 					 switch phase {
@@ -47,54 +47,7 @@ struct NFLPlayerDetailView: View {
 					 .frame(width: 180, height: 180)
 			   }
 
-			   VStack(alignment: .leading, spacing: 8) {
- // MARK: Player Name
-				  HStack {
-					 Text(player.fullName)
-						.font(.title)
-						.foregroundColor(teamColor.blended(withFraction: 0.55, of: .white))
-						.bold()
-						.frame(maxWidth: .infinity, alignment: .leading)
-						.lineLimit(1)
-						.minimumScaleFactor(0.5)
-
-					 // Player's jersey number (large and offset to bleed over the name)
-					 ZStack(alignment: .topTrailing) {
-						// Text for "# .top .trailing"
-						Text("#")
-						   .font(.system(size: 28, weight: .light))
-						   .foregroundColor(teamColor.adjustBrightness(by: 0.75))
-						   .padding(.top, 15)
-						   .padding(.trailing, 105)
-//						   .offset(x: -110, y: 20)  // Adjust the offset to control its position relative to the jersey number
-// MARK: Jersey
-						Text(player.jersey ?? "")
-						   .font(.system(size: 85, weight: .bold))
-					 }
-					 .italic()
-					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
-					 .opacity(0.35)
-				  }
-//MARK: Position
-				  HStack {
-					 Text(player.positionAbbreviation ?? "N/A")
-						.font(.headline)
-						.foregroundColor(teamColor.blended(withFraction: 0.85, of: .white))
-						.bold()
-						.offset(y: -20)
-					 Spacer()
-//					 Text("\(player.team?.displayName ?? "N/A")")
-//						.font(.footnote)
-//						.foregroundColor(teamColor.adjustBrightness(by: 0.75))
-				  }
-				  .opacity(0.5)
-				  .offset(y: -25)
-
-			   }
-			   .padding(.leading, -80)
-			   .padding(.top, -40)
-
-			   Spacer()
+			   Spacer() // Push the content to the right
 			}
 			.padding()
 
@@ -124,8 +77,60 @@ struct NFLPlayerDetailView: View {
 				  }
 			   }
 			   .padding(.bottom, -40)
-			   .padding(.trailing, -30)
+			   .padding(.trailing, -22)
 			}
+
+			// MARK: Jersey Number Overlay on the Far Right
+			VStack {
+			   ZStack(alignment: .topTrailing) {
+				  // Text for "# .top .trailing"
+				  Text("#")
+					 .font(.system(size: 28, weight: .light))
+					 .foregroundColor(teamColor.adjustBrightness(by: 0.75))
+					 .padding(.trailing, 5)
+					 .padding(.top, 10)
+				  // Jersey number
+				  Text(player.jersey ?? "")
+					 .font(.system(size: 85, weight: .bold))
+					 .italic()
+					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
+					 .opacity(0.35)
+					 .padding(.trailing, 10)
+			   }
+			   .offset(x: -10, y: -100)  // Move the jersey number further to the top right
+			}
+
+			// MARK: Player Name Overlay on Top
+			VStack {
+			   Text(player.fullName)
+				  .font(.system(size: 48))
+				  .foregroundColor(teamColor.blended(withFraction: 0.55, of: .white))
+				  .bold()
+				  .lineLimit(1)
+				  .minimumScaleFactor(0.5)
+				  .padding(.trailing, 20) // Add trailing padding
+				  .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .trailing)
+			}
+			.offset(x: 10, y: -100) // Adjust this to position the name across the ZStack
+
+			//MARK: Position
+			HStack {
+			   Text(player.positionAbbreviation ?? "N/A")
+				  .font(.headline)
+//				  .foregroundColor(teamColor.blended(withFraction: 0.65, of: .white))
+				  .foregroundColor(.white)
+				  .bold()
+				  .padding(.leading, 110)
+				  .padding(.bottom,	60)
+			   Spacer()
+			   //					 Text("\(player.team?.displayName ?? "N/A")")
+			   //						.font(.footnote)
+			   //						.foregroundColor(teamColor.adjustBrightness(by: 0.75))
+			}
+			.opacity(0.5)
+			.offset(y: -25)
+
+
 		 }
 		 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: 200)
 		 .padding(.vertical, 4)
@@ -168,6 +173,5 @@ struct NFLPlayerDetailView: View {
 		 Spacer()
 	  }
 	  .preferredColorScheme(.dark)
-	  //	  .navigationTitle(player.fullName)
    }
 }

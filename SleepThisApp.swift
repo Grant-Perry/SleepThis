@@ -6,7 +6,7 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
-			NFLRosterView()
+			NFLTeamListView()
 			   .tabItem {
 				  Label("NFL Roster", systemImage: "person.3.fill")
 			   }
