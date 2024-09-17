@@ -62,6 +62,7 @@ enum NFLRosterModel {
 	  let lastName: String
 	  let fullName: String
 	  let displayName: String
+	  let jersey: String? // Add jersey number here
 	  let weight: Double?
 	  let displayWeight: String?
 	  let height: Double?
@@ -69,9 +70,9 @@ enum NFLRosterModel {
 	  let age: Int?
 	  let position: Position?
 	  let college: College?
-	  var team: Team? // Add team later
-	  var coach: Coach? // Add coach later
-	  var id: String { uid } // Use `uid` for Identifiable conformance
+	  var team: Team?
+	  var coach: Coach?
+	  var id: String { uid }
 
 	  var imageUrl: URL? {
 		 URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(imageID).png")
@@ -82,9 +83,12 @@ enum NFLRosterModel {
 	  }
 
 	  private enum CodingKeys: String, CodingKey {
-		 case uid, imageID = "id", firstName, lastName, fullName, displayName, weight, displayWeight, height, displayHeight, age, position, college
+		 case uid, imageID = "id", firstName, lastName, fullName, displayName, jersey, weight, displayWeight, height, displayHeight, age, position, college
 	  }
    }
+
+
+
 
    struct Position: Codable {
 	  let name: String

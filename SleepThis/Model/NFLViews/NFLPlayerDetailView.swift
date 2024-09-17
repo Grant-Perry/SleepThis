@@ -48,27 +48,47 @@ struct NFLPlayerDetailView: View {
 			   }
 
 			   VStack(alignment: .leading, spacing: 8) {
-				  Text(player.fullName)
-					 .font(.title)
-					 .foregroundColor(.white)
-					 .bold()
-					 .frame(maxWidth: .infinity, alignment: .leading)
-					 .lineLimit(1)
-					 .minimumScaleFactor(0.5)
-					 .scaledToFit() +
-				  Text(player.)
+				  HStack {
+					 // Player's full name
+					 Text(player.fullName)
+						.font(.title)
+						.foregroundColor(teamColor.blended(withFraction: 0.55, of: .white))
+						.bold()
+						.frame(maxWidth: .infinity, alignment: .leading)
+						.lineLimit(1)
+						.minimumScaleFactor(0.5)
+
+					 // Player's jersey number (large and offset to bleed over the name)
+					 ZStack(alignment: .topTrailing) {
+						// Text for "# .top .trailing"
+						Text("#")
+						   .font(.system(size: 20, weight: .light))
+						   .offset(x: -100, y: 20)  // Adjust the offset to control its position relative to the jersey number
+						// Jersey number
+						Text(player.jersey ?? "")
+						   .font(.system(size: 85, weight: .bold))
+					 }
+					 .italic()
+					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
+					 .opacity(0.35)
+				  }
 
 				  HStack {
-					 Text("\(player.position?.displayName ?? "N/A") - \(player.team?.displayName ?? "N/A")")
-						.font(.subheadline)
-						.foregroundColor(.secondary)
+					 Text(player.positionAbbreviation ?? "N/A")
+						.font(.footnote)
+						.foregroundColor(PositionColor.fromPosition(player.positionAbbreviation).color) // Position color
+						.padding(.trailing, -10)
+					 Text(": \(player.team?.displayName ?? "N/A")")
+						.font(.footnote)
+						.foregroundColor(teamColor.blended(withFraction: 0.85, of: .white)) // Team color
 				  }
 
-				  if let coach = player.coach {
-					 Text("Coach: \(coach.firstName) \(coach.lastName)")
-						.font(.subheadline)
-						.foregroundColor(.secondary)
-				  }
+
+//				  if let coach = player.coach {
+//					 Text("Coach: \(coach.firstName) \(coach.lastName)")
+//						.font(.footnote)
+//						.foregroundColor(.secondary)
+//				  }
 			   }
 			   .padding(.leading, -80)
 			   .padding(.top, -40)
