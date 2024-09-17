@@ -6,6 +6,46 @@ enum NFLRosterModel {
 	  let status: String
 	  let season: Season
 	  let athletes: [AthleteGroup]
+	  let team: Team // Single team
+	  let coach: CoachOrCoaches? // Modified to handle both single coach and array of coaches
+
+	  private enum CodingKeys: String, CodingKey {
+		 case timestamp
+		 case status
+		 case season
+		 case athletes
+		 case team
+		 case coach
+	  }
+   }
+
+   struct CoachOrCoaches: Codable {
+	  let coachArray: [Coach]?
+	  let coach: Coach?
+
+	  init(from decoder: Decoder) throws {
+		 let container = try decoder.singleValueContainer()
+
+		 // Try to decode as an array of coaches
+		 if let coachArray = try? container.decode([Coach].self) {
+			self.coachArray = coachArray
+			self.coach = nil
+		 }
+		 // Try to decode as a single coach dictionary
+		 else if let coach = try? container.decode(Coach.self) {
+			self.coach = coach
+			self.coachArray = nil
+		 } else {
+			throw DecodingError.typeMismatch(CoachOrCoaches.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected single coach or an array of coaches"))
+		 }
+	  }
+   }
+
+   struct Coach: Codable {
+	  let id: String
+	  let firstName: String
+	  let lastName: String
+	  let experience: Int
    }
 
    struct Season: Codable {
@@ -21,65 +61,46 @@ enum NFLRosterModel {
    }
 
    struct NFLPlayer: Codable, Identifiable {
-	  var id: String { uid }
 	  let uid: String
-	  let guid: String
+	  let imageID: String // New property to map the actual ID for the image
 	  let firstName: String
 	  let lastName: String
 	  let fullName: String
 	  let displayName: String
-	  let shortName: String
 	  let weight: Double?
 	  let displayWeight: String?
 	  let height: Double?
 	  let displayHeight: String?
 	  let age: Int?
-	  let dateOfBirth: String?
-	  let position: String?  // Added position field
-	  let links: [Link]?
-	  let birthPlace: BirthPlace?
+	  let position: Position?
 	  let college: College?
-	  let team: Team? // Player's team information
-	  let coach: [Coach]? // Player's coach information
+	  var team: Team? // Single team per player
+	  var coach: Coach? // Single coach per player
+	  var id: String { uid } // Keep uid for fallback or other uses
 
-	  struct Team: Codable {
-		 let id: String
-		 let abbreviation: String
-		 let name: String
-		 let displayName: String
-		 let color: String
-		 let logo: String
-		 let record: String
-		 let standing: String
-
-		 private enum CodingKeys: String, CodingKey {
-			case id
-			case abbreviation
-			case name
-			case displayName
-			case color
-			case logo
-			case record = "recordSummary"
-			case standing = "standingSummary"
-		 }
+	  var imageUrl: URL? {
+		 URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(imageID).png")
 	  }
 
-	  struct Coach: Codable {
-		 let id: String
-		 let firstName: String
-		 let lastName: String
-		 let experience: Int
+	  private enum CodingKeys: String, CodingKey {
+		 case uid
+		 case imageID = "id" // Direct mapping to the ID in the JSON response
+		 case firstName, lastName, fullName, displayName, weight, displayWeight, height, displayHeight, age, position, college, team, coach
 	  }
    }
 
-   struct Link: Codable {
-	  let language: String
-	  let rel: [String]
-	  let href: String
-	  let text: String
-	  let shortText: String
-	  let isExternal: Bool
-	  let isPremium: Bool
+
+   struct Position: Codable {
+	  let name: String
+	  let displayName: String
+   }
+
+   struct Team: Codable {
+	  let id: String
+	  let abbreviation: String
+	  let displayName: String
+	  let color: String?
+	  let logo: String?
    }
 
    struct BirthPlace: Codable {
@@ -89,20 +110,6 @@ enum NFLRosterModel {
    }
 
    struct College: Codable {
-	  let id: String
-	  let mascot: String?
 	  let name: String
-	  let shortName: String
-	  let abbrev: String
-	  let logos: [Logo]?
-   }
-
-   struct Logo: Codable {
-	  let href: String
-	  let width: Int
-	  let height: Int
-	  let alt: String?
-	  let rel: [String]?
-	  let lastUpdated: String?
    }
 }

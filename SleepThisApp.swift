@@ -6,6 +6,11 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
+			NFLRosterView()
+			   .tabItem {
+				  Label("NFL Roster", systemImage: "person.3.fill")
+			   }
+
 			LeagueListView(
 			   managerID: AppConstants.managerID,
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)
@@ -41,10 +46,7 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-			NFLRosterView()
-			   .tabItem {
-				  Label("NFL Roster", systemImage: "person.3.fill")
-			   }
+
 		 }
 		 .preferredColorScheme(.dark)
 		 .showVersionNumber()

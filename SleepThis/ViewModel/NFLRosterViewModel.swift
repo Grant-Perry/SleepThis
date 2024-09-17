@@ -3,28 +3,12 @@ import Combine
 
 class NFLRosterViewModel: ObservableObject {
    @Published var players: [NFLRosterModel.NFLPlayer] = []
-   private let cacheFileName = "nfl_roster_cache.json"
-
-   init() {
-	  print("[NFLRosterViewModel:init] Loading cache or fetching players if needed.")
-	  loadCacheOrFetch()
-   }
-
-   func extractPlayerId(from uid: String) -> String {
-	  if let lastPart = uid.split(separator: ":").last {
-		 return String(lastPart)
-	  }
-	  return uid // Return the original string if we can't extract the ID
-   }
-
-   func getPlayerImageURL(for player: NFLRosterModel.NFLPlayer) -> URL? {
-	  let playerId = extractPlayerId(from: player.uid)
-	  return URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(playerId).png")
-   }
+   @Published var team: NFLRosterModel.Team?
+   @Published var coach: NFLRosterModel.Coach?
 
    func fetchPlayersForAllTeams() {
 	  print("[fetchPlayersForAllTeams:] Fetching players for all teams")
-	  let teamIDs = Array(1...33) // 33 teams
+	  let teamIDs = Array(1...33)
 	  let group = DispatchGroup()
 	  var allPlayers: [NFLRosterModel.NFLPlayer] = []
 
@@ -46,8 +30,22 @@ class NFLRosterViewModel: ObservableObject {
 			do {
 			   let rosterResponse = try JSONDecoder().decode(NFLRosterModel.TeamRosterResponse.self, from: data)
 			   let players = rosterResponse.athletes.flatMap { $0.items }
-			   print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
+
+			   // Handle multiple coaches or single coach
+			   let coach = rosterResponse.coach?.coach ?? rosterResponse.coach?.coachArray?.first
+			   for var player in players {
+				  player.team = rosterResponse.team
+				  player.coach = coach
+
+				  // Print out the player's image URL for debugging
+				  if let imageUrl = player.imageUrl {
+					 print("[Player Image URL] \(player.fullName): \(imageUrl.absoluteString)")
+				  } else {
+					 print("[Player Image URL] \(player.fullName): No valid image URL")
+				  }
+			   }
 			   allPlayers.append(contentsOf: players)
+			   print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
 			} catch {
 			   print("[fetchPlayersForAllTeams:] Failed to parse roster for team \(teamID): \(error)")
 			}
@@ -57,44 +55,6 @@ class NFLRosterViewModel: ObservableObject {
 	  group.notify(queue: .main) {
 		 print("[fetchPlayersForAllTeams:] Completed fetching players for all teams.")
 		 self.players = allPlayers
-		 self.saveCache()
 	  }
-   }
-
-   private func saveCache() {
-	  let cacheURL = getCacheURL()
-	  do {
-		 let data = try JSONEncoder().encode(players)
-		 try data.write(to: cacheURL)
-		 print("[saveCache:] Cache saved successfully!")
-	  } catch {
-		 print("[saveCache:] Failed to save cache: \(error)")
-	  }
-   }
-
-   private func loadCacheOrFetch() {
-	  let cacheURL = getCacheURL()
-	  if FileManager.default.fileExists(atPath: cacheURL.path) {
-		 do {
-			let data = try Data(contentsOf: cacheURL)
-			players = try JSONDecoder().decode([NFLRosterModel.NFLPlayer].self, from: data)
-			print("[loadCacheOrFetch:] Loaded data from cache. Number of players: \(players.count)")
-			if players.isEmpty {
-			   print("[loadCacheOrFetch:] Cache is empty, fetching from API.")
-			   fetchPlayersForAllTeams()
-			}
-		 } catch {
-			print("[loadCacheOrFetch:] Failed to load cache: \(error). Fetching from API.")
-			fetchPlayersForAllTeams()
-		 }
-	  } else {
-		 print("[loadCacheOrFetch:] No cache found. Fetching from API.")
-		 fetchPlayersForAllTeams()
-	  }
-   }
-
-   private func getCacheURL() -> URL {
-	  let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-	  return documentDirectory.appendingPathComponent(cacheFileName)
    }
 }
