@@ -28,23 +28,30 @@ class NFLRosterViewModel: ObservableObject {
 			}
 
 			do {
-			   let rosterResponse = try JSONDecoder().decode(NFLRosterModel.TeamRosterResponse.self, from: data)
+			   var rosterResponse = try JSONDecoder().decode(NFLRosterModel.TeamRosterResponse.self, from: data)
+
+			   // Debug print statement to log team info
+			   print("[fetchPlayersForAllTeams:] Fetched team info: \(String(describing: rosterResponse.team)) for team ID \(teamID)")
+
 			   let players = rosterResponse.athletes.flatMap { $0.items }
 
-			   // Handle multiple coaches or single coach
-			   let coach = rosterResponse.coach?.coach ?? rosterResponse.coach?.coachArray?.first
+			   // Assign the team and coach to all players
 			   for var player in players {
-				  player.team = rosterResponse.team
-				  player.coach = coach
+				  // Check if team and coach exist before assigning
+					 player.team = rosterResponse.team
 
-				  // Print out the player's image URL for debugging
-				  if let imageUrl = player.imageUrl {
-					 print("[Player Image URL] \(player.fullName): \(imageUrl.absoluteString)")
+
+				  if let coach = rosterResponse.coach?.coach {
+					 player.coach = coach
+				  } else if let coachArray = rosterResponse.coach?.coachArray, let firstCoach = coachArray.first {
+					 player.coach = firstCoach
 				  } else {
-					 print("[Player Image URL] \(player.fullName): No valid image URL")
+					 print("[fetchPlayersForAllTeams:] No coach info for player \(player.fullName) in team ID \(teamID)")
 				  }
+
+				  // Append updated player with assigned team and coach
+				  allPlayers.append(player)
 			   }
-			   allPlayers.append(contentsOf: players)
 			   print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
 			} catch {
 			   print("[fetchPlayersForAllTeams:] Failed to parse roster for team \(teamID): \(error)")

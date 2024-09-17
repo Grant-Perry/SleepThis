@@ -6,7 +6,6 @@ struct NFLRosterView: View {
    var body: some View {
 	  NavigationStack {
 		 List(nflRosterViewModel.players) { player in
-			// Fetch the team and coach details for each player
 			NavigationLink(destination: NFLPlayerDetailView(player: player)) {
 			   HStack {
 				  // Player Thumbnail
@@ -34,10 +33,20 @@ struct NFLRosterView: View {
 				  VStack(alignment: .leading) {
 					 Text(player.fullName)
 						.font(.headline)
-					 Text(player.position?.name ?? "Unknown Position")
-						.font(.subheadline)
-						.bold()
-						.foregroundColor(PositionColor.fromPosition(player.position?.displayName).color)
+
+					 // Displaying position and team abbreviation
+					 HStack {
+						Text(player.positionAbbreviation ?? "Unknown Position")
+						   .font(.subheadline)
+						   .bold()
+						   .foregroundColor(PositionColor.fromPosition(player.positionAbbreviation).color)
+
+						if let teamAbbreviation = player.team?.abbreviation {
+						   Text(teamAbbreviation)
+							  .font(.subheadline)
+							  .foregroundColor(.secondary)
+						}
+					 }
 				  }
 			   }
 			}

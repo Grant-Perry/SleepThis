@@ -5,17 +5,12 @@ enum NFLRosterModel {
 	  let timestamp: String
 	  let status: String
 	  let season: Season
-	  let athletes: [AthleteGroup]
+	  var athletes: [AthleteGroup]
 	  let team: Team // Single team
 	  let coach: CoachOrCoaches? // Modified to handle both single coach and array of coaches
 
 	  private enum CodingKeys: String, CodingKey {
-		 case timestamp
-		 case status
-		 case season
-		 case athletes
-		 case team
-		 case coach
+		 case timestamp, status, season, athletes, team, coach
 	  }
    }
 
@@ -57,12 +52,12 @@ enum NFLRosterModel {
 
    struct AthleteGroup: Codable {
 	  let position: String
-	  let items: [NFLPlayer]
+	  var items: [NFLPlayer]
    }
 
    struct NFLPlayer: Codable, Identifiable {
 	  let uid: String
-	  let imageID: String // New property to map the actual ID for the image
+	  let imageID: String
 	  let firstName: String
 	  let lastName: String
 	  let fullName: String
@@ -74,25 +69,27 @@ enum NFLRosterModel {
 	  let age: Int?
 	  let position: Position?
 	  let college: College?
-	  var team: Team? // Single team per player
-	  var coach: Coach? // Single coach per player
-	  var id: String { uid } // Keep uid for fallback or other uses
+	  var team: Team? // Add team later
+	  var coach: Coach? // Add coach later
+	  var id: String { uid } // Use `uid` for Identifiable conformance
 
 	  var imageUrl: URL? {
 		 URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(imageID).png")
 	  }
 
+	  var positionAbbreviation: String? {
+		 position?.abbreviation
+	  }
+
 	  private enum CodingKeys: String, CodingKey {
-		 case uid
-		 case imageID = "id" // Direct mapping to the ID in the JSON response
-		 case firstName, lastName, fullName, displayName, weight, displayWeight, height, displayHeight, age, position, college, team, coach
+		 case uid, imageID = "id", firstName, lastName, fullName, displayName, weight, displayWeight, height, displayHeight, age, position, college
 	  }
    }
-
 
    struct Position: Codable {
 	  let name: String
 	  let displayName: String
+	  let abbreviation: String
    }
 
    struct Team: Codable {
@@ -103,13 +100,31 @@ enum NFLRosterModel {
 	  let logo: String?
    }
 
-   struct BirthPlace: Codable {
-	  let city: String?
-	  let state: String?
-	  let country: String?
-   }
-
    struct College: Codable {
 	  let name: String
    }
+
+   // This function applies team and coach after decoding
+   static func applyTeamAndCoachToPlayers(_ rosterResponse: inout TeamRosterResponse) {
+	  // Assign the team and coach to each player in each group
+	  for (groupIndex, group) in rosterResponse.athletes.enumerated() {
+		 for (playerIndex, _) in group.items.enumerated() {
+			var updatedPlayer = rosterResponse.athletes[groupIndex].items[playerIndex]
+			updatedPlayer.team = rosterResponse.team
+			updatedPlayer.coach = rosterResponse.coach?.coach ?? rosterResponse.coach?.coachArray?.first
+			rosterResponse.athletes[groupIndex].items[playerIndex] = updatedPlayer // Reassign back after mutating
+		 }
+	  }
+   }
+}
+
+// Decoding and applying team/coach logic integrated
+func fetchTeamRosterData(from jsonData: Data) throws -> NFLRosterModel.TeamRosterResponse {
+   let decoder = JSONDecoder()
+   var rosterResponse = try decoder.decode(NFLRosterModel.TeamRosterResponse.self, from: jsonData)
+
+   // Apply the team and coach to all players
+   NFLRosterModel.applyTeamAndCoachToPlayers(&rosterResponse)
+
+   return rosterResponse
 }

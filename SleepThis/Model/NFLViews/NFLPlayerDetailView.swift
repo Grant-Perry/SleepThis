@@ -52,6 +52,11 @@ struct NFLPlayerDetailView: View {
 					 .font(.title)
 					 .foregroundColor(.white)
 					 .bold()
+					 .frame(maxWidth: .infinity, alignment: .leading)
+					 .lineLimit(1)
+					 .minimumScaleFactor(0.5)
+					 .scaledToFit() +
+				  Text(player.)
 
 				  HStack {
 					 Text("\(player.position?.displayName ?? "N/A") - \(player.team?.displayName ?? "N/A")")
@@ -85,7 +90,7 @@ struct NFLPlayerDetailView: View {
 						image
 						   .resizable()
 						   .frame(width: 180, height: 180)
-						   .offset(x: 30, y: 30)
+						   .offset(x: -15, y: 18)
 						   .opacity(0.5)
 						   .clipped()
 					 case .failure:
@@ -126,11 +131,11 @@ struct NFLPlayerDetailView: View {
 				  .foregroundColor(.white)
 			}
 
-			if let college = player.college {
-			   Text("College: \(college.name)")
-				  .font(.subheadline)
-				  .foregroundColor(.white)
-			}
+//			if let college = player.college {
+//			   Text("College: \(college.name)")
+//				  .font(.subheadline)
+//				  .foregroundColor(.white)
+//			}
 		 }
 		 .padding()
 		 .background(RoundedRectangle(cornerRadius: 15)
@@ -140,6 +145,6 @@ struct NFLPlayerDetailView: View {
 		 Spacer()
 	  }
 	  .preferredColorScheme(.dark)
-	  .navigationTitle(player.fullName)
+//	  .navigationTitle(player.fullName)
    }
 }
