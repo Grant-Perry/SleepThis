@@ -48,6 +48,33 @@ struct NFLRosterView: View {
 						}
 					 }
 				  }
+
+				  Spacer()
+
+				  // Player's Team Logo on the extreme right
+				  if let teamLogoURL = URL(string: player.team?.logo ?? "") {
+					 AsyncImage(url: teamLogoURL) { phase in
+						switch phase {
+						   case .empty:
+							  Image(systemName: "photo")
+								 .resizable()
+								 .frame(width: 50, height: 50)
+								 .opacity(0.25)
+						   case .success(let image):
+							  image
+								 .resizable()
+								 .frame(width: 50, height: 50) // Adjust size if needed
+								 .clipShape(Circle())
+						   case .failure:
+							  Image(systemName: "photo")
+								 .resizable()
+								 .frame(width: 50, height: 50)
+								 .opacity(0.5)
+						   @unknown default:
+							  EmptyView()
+						}
+					 }
+				  }
 			   }
 			}
 		 }

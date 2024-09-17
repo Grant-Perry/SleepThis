@@ -15,7 +15,7 @@ struct NFLPlayerDetailView: View {
 				  endPoint: .bottom
 			   ))
 			   .shadow(radius: 4)
-			   .frame(height: 200)
+			   .frame(height: 180)
 
 			HStack(alignment: .center) {
 			   // Player Image
@@ -48,8 +48,8 @@ struct NFLPlayerDetailView: View {
 			   }
 
 			   VStack(alignment: .leading, spacing: 8) {
+ // MARK: Player Name
 				  HStack {
-					 // Player's full name
 					 Text(player.fullName)
 						.font(.title)
 						.foregroundColor(teamColor.blended(withFraction: 0.55, of: .white))
@@ -62,9 +62,12 @@ struct NFLPlayerDetailView: View {
 					 ZStack(alignment: .topTrailing) {
 						// Text for "# .top .trailing"
 						Text("#")
-						   .font(.system(size: 20, weight: .light))
-						   .offset(x: -100, y: 20)  // Adjust the offset to control its position relative to the jersey number
-						// Jersey number
+						   .font(.system(size: 28, weight: .light))
+						   .foregroundColor(teamColor.adjustBrightness(by: 0.75))
+						   .padding(.top, 15)
+						   .padding(.trailing, 105)
+//						   .offset(x: -110, y: 20)  // Adjust the offset to control its position relative to the jersey number
+// MARK: Jersey
 						Text(player.jersey ?? "")
 						   .font(.system(size: 85, weight: .bold))
 					 }
@@ -72,23 +75,21 @@ struct NFLPlayerDetailView: View {
 					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
 					 .opacity(0.35)
 				  }
-
+//MARK: Position
 				  HStack {
 					 Text(player.positionAbbreviation ?? "N/A")
-						.font(.footnote)
-						.foregroundColor(PositionColor.fromPosition(player.positionAbbreviation).color) // Position color
-						.padding(.trailing, -10)
-					 Text(": \(player.team?.displayName ?? "N/A")")
-						.font(.footnote)
-						.foregroundColor(teamColor.blended(withFraction: 0.85, of: .white)) // Team color
-				  }
-
-
-//				  if let coach = player.coach {
-//					 Text("Coach: \(coach.firstName) \(coach.lastName)")
+						.font(.headline)
+						.foregroundColor(teamColor.blended(withFraction: 0.85, of: .white))
+						.bold()
+						.offset(y: -20)
+					 Spacer()
+//					 Text("\(player.team?.displayName ?? "N/A")")
 //						.font(.footnote)
-//						.foregroundColor(.secondary)
-//				  }
+//						.foregroundColor(teamColor.adjustBrightness(by: 0.75))
+				  }
+				  .opacity(0.5)
+				  .offset(y: -25)
+
 			   }
 			   .padding(.leading, -80)
 			   .padding(.top, -40)
@@ -117,13 +118,13 @@ struct NFLPlayerDetailView: View {
 						Image(systemName: "photo")
 						   .resizable()
 						   .frame(width: 180, height: 180)
-						   .opacity(0.5)
+						   .opacity(0.35)
 					 @unknown default:
 						EmptyView()
 				  }
 			   }
 			   .padding(.bottom, -40)
-			   .padding(.trailing, -40)
+			   .padding(.trailing, -30)
 			}
 		 }
 		 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: 200)
@@ -135,27 +136,29 @@ struct NFLPlayerDetailView: View {
 		 // Player Details
 		 VStack(alignment: .leading, spacing: 10) {
 			if let height = player.displayHeight, let weight = player.displayWeight {
-			   HStack {
+			   HStack(spacing: 2) {
 				  Text("Height: \(height)")
-					 .font(.subheadline)
 				  Spacer()
 				  Text("Weight: \(weight)")
-					 .font(.subheadline)
 			   }
 			   .foregroundColor(.white)
+			   .font(.footnote)
 			}
 
-			if let age = player.age {
-			   Text("Age: \(age)")
-				  .font(.subheadline)
-				  .foregroundColor(.white)
+			if let age = player.age,
+			   let coachFirstName = player.coach?.firstName,
+			   let coachLastName = player.coach?.lastName {
+
+			   let coach = "\(coachFirstName) \(coachLastName)"
+			   HStack(spacing: 2) {
+				  Text("Age: \(age)")
+				  Spacer()
+				  Text("Coach: \(coach)")
+			   }
+			   .foregroundColor(.white)
+			   .font(.footnote)
 			}
 
-//			if let college = player.college {
-//			   Text("College: \(college.name)")
-//				  .font(.subheadline)
-//				  .foregroundColor(.white)
-//			}
 		 }
 		 .padding()
 		 .background(RoundedRectangle(cornerRadius: 15)
@@ -165,6 +168,6 @@ struct NFLPlayerDetailView: View {
 		 Spacer()
 	  }
 	  .preferredColorScheme(.dark)
-//	  .navigationTitle(player.fullName)
+	  //	  .navigationTitle(player.fullName)
    }
 }
