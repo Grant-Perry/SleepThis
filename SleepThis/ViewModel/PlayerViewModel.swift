@@ -9,6 +9,7 @@ class PlayerViewModel: ObservableObject {
    @Published var cacheSize: String?
    @Published var cacheAgeDescription: String?
 
+   private var maxCacheDays = AppConstants.maxCacheDays
    let cacheFileName = "cachedPlayers.json"
 
    init() {
@@ -65,23 +66,25 @@ class PlayerViewModel: ObservableObject {
 			}
 
 			do {
-			   // Attempt to decode the player dictionary
+			   // Decode player dictionary
 			   let playersDictionary = try JSONDecoder().decode([String: PlayerModel].self, from: data)
 
-			   // Filter for only relevant player positions
-			   self.players = Array(playersDictionary.values).filter { player in
+			   // Convert the dictionary values to an array of PlayerModel and filter the relevant positions
+			   self.players = playersDictionary.values.filter { player in
 				  guard let position = player.position,
 						let team = player.team,
 						let depthChartPosition = player.depthChartPosition else { return false }
-				  // Filter out players with "Unknown" values
+				  // Filter out players with "Unknown" values and keep only relevant positions
 				  return ["QB", "RB", "WR", "TE", "K", "DST"].contains(position) &&
 				  team.lowercased() != "unknown" &&
 				  position.lowercased() != "unknown" &&
 				  depthChartPosition.lowercased() != "unknown"
 			   }
 
+			   // Save to cache after fetching from network
 			   CacheManager.shared.saveToCache(self.players, as: self.cacheFileName)
 			   self.cacheSize = self.calculateCacheSize()
+			   self.cacheAgeDescription = self.calculateCacheAge()
 			   print("[fetchAllPlayers:] Successfully saved data to cache.")
 			} catch {
 			   print("[fetchAllPlayers:] Failed to decode player data: \(error)")
@@ -108,7 +111,6 @@ class PlayerViewModel: ObservableObject {
 	  print("[fetchPlayersByLookup:] Found \(self.players.count) players matching the query.")
    }
 
-
    // Load players from the cache
    func loadPlayersFromCache() {
 	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
@@ -120,15 +122,33 @@ class PlayerViewModel: ObservableObject {
 	  }
 
 	  do {
-		 let cachedPlayers = try Data(contentsOf: cacheURL)
-		 let decodedPlayers = try JSONDecoder().decode([PlayerModel].self, from: cachedPlayers)
-		 self.players = decodedPlayers
-		 self.cacheSize = calculateCacheSize()
-		 self.cacheAgeDescription = calculateCacheAge()
+		 // Check cache age before loading data
+		 if let cacheAgeInDays = calculateCacheAgeInDays(), cacheAgeInDays < Int(maxCacheDays) {
+			let cachedPlayers = try Data(contentsOf: cacheURL)
+			let decodedPlayers = try JSONDecoder().decode([PlayerModel].self, from: cachedPlayers)
+			self.players = decodedPlayers
+			self.cacheSize = calculateCacheSize()
+			self.cacheAgeDescription = "Cache Age: \(cacheAgeInDays) day(s)"
+			print("[loadPlayersFromCache:] Loaded data from cache.")
+		 } else {
+			print("[loadPlayersFromCache:] Cache is older than \(maxCacheDays) days. Fetching fresh data.")
+			fetchAllPlayers()
+		 }
 	  } catch {
 		 print("[loadPlayersFromCache:] Failed to load data from cache: \(error.localizedDescription). Fetching data from network.")
 		 fetchAllPlayers()
 	  }
+   }
+
+   // Calculate the cache age in days
+   func calculateCacheAgeInDays() -> Int? {
+	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
+	  if let attributes = try? FileManager.default.attributesOfItem(atPath: cacheURL.path),
+		 let modificationDate = attributes[.modificationDate] as? Date {
+		 let currentDate = Date()
+		 return Calendar.current.dateComponents([.day], from: modificationDate, to: currentDate).day
+	  }
+	  return nil
    }
 
    // Calculate the cache size
@@ -142,14 +162,10 @@ class PlayerViewModel: ObservableObject {
 	  return nil
    }
 
-   // Calculate the cache age
-   func calculateCacheAge() -> String? {
-	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
-	  if let attributes = try? FileManager.default.attributesOfItem(atPath: cacheURL.path),
-		 let modificationDate = attributes[.modificationDate] as? Date {
-		 let currentDate = Date()
-		 let ageInDays = Calendar.current.dateComponents([.day], from: modificationDate, to: currentDate).day ?? 0
-		 return "Cache Age: \(ageInDays) day(s)"
+   // Calculate the cache age description
+   func calculateCacheAge() -> String {
+	  if let cacheAgeInDays = calculateCacheAgeInDays() {
+		 return "Cache Age: \(cacheAgeInDays) day(s)"
 	  }
 	  return "Cache Age: Unknown"
    }

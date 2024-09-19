@@ -2,6 +2,7 @@ import Foundation
 
 class CacheManager {
    static let shared = CacheManager()
+   private init() {}
 
    func getCacheDirectory() -> URL {
 	  let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
@@ -19,15 +20,15 @@ class CacheManager {
 	  return cacheDirectory
    }
 
-   func saveToCache<T: Encodable>(_ object: T, as fileName: String) {
-	  let url = getCacheDirectory().appendingPathComponent(fileName)
+   func saveToCache<T: Encodable>(_ data: T, as fileName: String) {
+	  let cacheURL = getCacheDirectory().appendingPathComponent(fileName)
 
 	  do {
-		 let data = try JSONEncoder().encode(object)
-		 try data.write(to: url)
-		 print("Successfully saved data to cache.")
+		 let encodedData = try JSONEncoder().encode(data)
+		 try encodedData.write(to: cacheURL)
+		 print("[saveToCache:] Successfully saved data to cache at \(cacheURL.path)")
 	  } catch {
-		 print("Failed to save data to cache: \(error.localizedDescription)")
+		 print("[saveToCache:] Failed to save data to cache: \(error.localizedDescription)")
 	  }
    }
 
@@ -49,4 +50,3 @@ class CacheManager {
 	  }
    }
 }
-

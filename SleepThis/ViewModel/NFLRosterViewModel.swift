@@ -30,13 +30,17 @@ class NFLRosterViewModel: ObservableObject {
 			   var rosterResponse = try JSONDecoder().decode(NFLRosterModel.TeamRosterResponse.self, from: data)
 			   NFLRosterModel.applyTeamAndCoachToPlayers(&rosterResponse)
 			   let players = rosterResponse.athletes.flatMap { $0.items }
-			   allPlayers.append(contentsOf: players)
 
-			   if !self.teams.contains(where: { $0.id == rosterResponse.team.id }) {
-				  self.teams.append(rosterResponse.team) // Add teams from roster response
+			   // Append players to allPlayers
+			   DispatchQueue.main.async {
+				  allPlayers.append(contentsOf: players)
+
+				  if !self.teams.contains(where: { $0.id == rosterResponse.team.id }) {
+					 self.teams.append(rosterResponse.team) // Add teams from roster response
+				  }
+
+				  print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
 			   }
-
-			   print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
 			} catch {
 			   print("[fetchPlayersForAllTeams:] Failed to parse roster for team \(teamID): \(error)")
 			}
@@ -49,6 +53,7 @@ class NFLRosterViewModel: ObservableObject {
 		 completion()
 	  }
    }
+
 
    // Group players by team
    func groupPlayersByTeam() {

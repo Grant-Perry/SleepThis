@@ -4,6 +4,7 @@ import Combine
 class LeagueDetailViewModel: ObservableObject {
    @Published var league: LeagueModel?
    private var cancellables = Set<AnyCancellable>()
+   private var maxCacheDays = AppConstants.maxCacheDays
 
    func fetchLeague(leagueID: String) {
 	  // Check if cached data exists and is valid
@@ -87,7 +88,7 @@ class LeagueDetailViewModel: ObservableObject {
 		 if let modificationDate = attributes[.modificationDate] as? Date {
 			let currentDate = Date()
 			let daysDifference = Calendar.current.dateComponents([.day], from: modificationDate, to: currentDate).day ?? 0
-			return daysDifference >= 14
+			return daysDifference >= Int(maxCacheDays)
 		 } else {
 			return true
 		 }

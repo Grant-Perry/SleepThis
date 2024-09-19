@@ -11,6 +11,11 @@ struct SleepThisApp: App {
 				  Label("NFL Roster", systemImage: "person.3.fill")
 			   }
 
+//			ManagerSwipeView(draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID))
+//			   .tabItem {
+//				  Label("Managers", systemImage: "person.2.square.stack.fill")
+//			   }
+
 			LeagueListView(
 			   managerID: AppConstants.managerID,
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)

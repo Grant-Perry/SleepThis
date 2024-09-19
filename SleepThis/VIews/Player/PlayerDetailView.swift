@@ -69,53 +69,53 @@ struct PlayerDetailView: View {
    }
 }
 
-struct PlayerDetailView_Previews: PreviewProvider {
-   static var previews: some View {
-	  // Example data for preview
-	  let examplePlayer = PlayerModel(
-		 id: "4046",
-		 firstName: "Patrick",
-		 lastName: "Mahomes",
-		 fullName: "Patrick Mahomes",
-		 team: "KC",
-		 position: "QB",
-		 age: 28,
-		 height: "6'3\"",
-		 weight: "230",
-		 status: "Active",
-		 college: "Texas Tech",
-		 birthCity: "Tyler",
-		 birthState: "TX",
-		 birthCountry: "USA",
-		 birthDate: "1995-09-17",
-		 yearsExp: 7,
-		 highSchool: "Whitehouse",
-		 fantasyPositions: ["QB"],
-		 metadata: nil,
-		 newsUpdated: nil,
-		 number: 15,
-		 depthChartPosition: "QB",
-		 depthChartOrder: 1,
-		 rookieYear: "2017",
-		 statsId: "4046",
-		 searchLastName: "mahomes",
-		 searchFirstName: "patrick",
-		 searchFullName: "patrickmahomes",
-		 hashtag: "#PatrickMahomes-NFL-KC-15",
-		 injuryStartDate: nil,
-		 practiceParticipation: nil,
-		 sportradarId: "",
-		 fantasyDataId: 4046,
-		 injuryStatus: nil,
-		 yahooId: nil,
-		 rotowireId: 13244,
-		 rotoworldId: 11601,
-		 espnId: "3139477",
-		 searchRank: 1
-	  )
-
-	  let exampleViewModel = PlayerViewModel()
-
-	  return PlayerDetailView(player: examplePlayer, playerViewModel: exampleViewModel, round: 1, pickNo: 10)
-   }
-}
+//struct PlayerDetailView_Previews: PreviewProvider {
+//   static var previews: some View {
+//	  // Example data for preview
+//	  let examplePlayer = PlayerModel(
+//		 id: "4046",
+//		 firstName: "Patrick",
+//		 lastName: "Mahomes",
+//		 fullName: "Patrick Mahomes",
+//		 team: "KC",
+//		 position: "QB",
+//		 age: 28,
+//		 height: "6'3\"",
+//		 weight: "230",
+//		 status: "Active",
+//		 college: "Texas Tech",
+//		 birthCity: "Tyler",
+//		 birthState: "TX",
+//		 birthCountry: "USA",
+//		 birthDate: "1995-09-17",
+//		 yearsExp: 7,
+//		 highSchool: "Whitehouse",
+//		 fantasyPositions: ["QB"],
+//		 metadata: nil,
+//		 newsUpdated: nil,
+//		 number: 15,
+//		 depthChartPosition: "QB",
+//		 depthChartOrder: 1,
+//		 rookieYear: "2017",
+//		 statsId: "4046",
+//		 searchLastName: "mahomes",
+//		 searchFirstName: "patrick",
+//		 searchFullName: "patrickmahomes",
+//		 hashtag: "#PatrickMahomes-NFL-KC-15",
+//		 injuryStartDate: nil,
+//		 practiceParticipation: nil,
+//		 sportradarId: "",
+//		 fantasyDataId: 4046,
+//		 injuryStatus: nil,
+//		 yahooId: nil,
+//		 rotowireId: 13244,
+//		 rotoworldId: 11601,
+//		 espnId: "3139477",
+//		 searchRank: 1
+//	  )
+//
+//	  let exampleViewModel = PlayerViewModel()
+//
+//	  return PlayerDetailView(player: examplePlayer, playerViewModel: exampleViewModel, round: 1, pickNo: 10)
+//   }
+//}
