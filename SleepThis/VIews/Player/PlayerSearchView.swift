@@ -5,11 +5,13 @@ struct PlayerSearchView: View {
    @State private var playerLookup: String = ""
    @State private var sortOption: SortOption = .name
    @State private var positionFilter: PositionFilter = .qb
+   @State private var showInactivePlayersOnly = false // New state variable for inactive player filtering
 
    enum SortOption: String, CaseIterable {
 	  case name = "Player"
 	  case team = "Team"
 	  case position = "Position"
+	  case inactive = "Inactive" // Added new case for status sorting
    }
 
    enum PositionFilter: String, CaseIterable {
@@ -87,7 +89,22 @@ struct PlayerSearchView: View {
 			   .pickerStyle(SegmentedPickerStyle())
 			   .padding(.horizontal)
 			   .padding(.bottom)
+
 			}
+
+			// Inactive/All Toggle Button
+//			Button(action: {
+//			   showInactivePlayersOnly.toggle()
+//			   print("[PlayerSearchView:toggleInactive] Showing \(showInactivePlayersOnly ? "Inactive" : "All") players.")
+//			}) {
+//			   Text(showInactivePlayersOnly ? "Show All" : "Show Inactive")
+//				  .padding()
+//				  .frame(maxWidth: .infinity)
+//				  .background(showInactivePlayersOnly ? Color.gpGreen : Color.gpRed)
+//				  .foregroundColor(.white)
+//				  .cornerRadius(10)
+//				  .padding(.horizontal)
+//			}
 
 			// Scrollable List Section
 			if !playerViewModel.players.isEmpty {
@@ -101,9 +118,9 @@ struct PlayerSearchView: View {
 						if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg") {
 						   AsyncImage(url: url) { image in
 							  image.resizable()
-								 .aspectRatio(contentMode: .fit)
+								 .aspectRatio(contentMode: .fill)
 								 .frame(width: 150, height: 150)
-								 .clipShape(Circle())
+								 .isOnIR(player.injuryStatus ?? "", hXw: 150)
 						   } placeholder: {
 							  Image(systemName: "person.crop.circle.fill")
 								 .resizable()
@@ -118,6 +135,24 @@ struct PlayerSearchView: View {
 							  Text("Team: \(player.team ?? "Unknown")")
 							  Text("Position: \(player.position ?? "Unknown")")
 							  Text("Depth: #\(player.depthChartOrder ?? 0)")
+							  if player.status?.lowercased() != "active" {
+								 Text(" status: ")
+									.foregroundColor(.gpWhite)
+									+ Text("\(player.status ?? "Unknown")")
+									.font(.caption2)
+									.foregroundColor(player.injuryStatus == "IR" ? Color.red : Color.gpWhite)
+
+
+								 Text("\(player.injuryStatus ?? "Unknown")")
+									.font(.caption)
+									.foregroundColor(.gpRed)
+									.bold()
+//								 Text("\(player.injuryStartDate ?? "Unknown")")
+//									.font(.caption)
+
+
+							  }
+
 						   }
 						   .font(.caption)
 						   .padding(.leading, 1)
@@ -161,6 +196,11 @@ struct PlayerSearchView: View {
 		 filteredPlayers = filteredPlayers.filter { $0.position == positionFilter.rawValue }
 	  }
 
+	  // Check if the sortOption is 'inactive' to filter inactive players only
+	  if sortOption == .inactive {
+		 filteredPlayers = filteredPlayers.filter { $0.status?.lowercased() == "inactive" }
+	  }
+
 	  return filteredPlayers.sorted { player1, player2 in
 		 let team1 = player1.team ?? ""
 		 let team2 = player2.team ?? ""
@@ -188,7 +228,12 @@ struct PlayerSearchView: View {
 			   return team1.localizedStandardCompare(team2) == .orderedAscending
 			case .position:
 			   return (player1.position ?? "zzz") < (player2.position ?? "zzz")
+			case .inactive:
+			   let status1 = player1.status ?? "active"
+			   let status2 = player2.status ?? "active"
+			   return status1.localizedStandardCompare(status2) == .orderedAscending
 		 }
 	  }
    }
+
 }

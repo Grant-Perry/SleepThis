@@ -5,7 +5,7 @@ struct RosterDetailListView: View {
    @StateObject var playerViewModel: PlayerViewModel
    @StateObject var draftViewModel: DraftViewModel
    @StateObject var rosterViewModel: RosterViewModel
-   var playerSize = 50.0
+   var playerSize = 70.0
    var showDraftDetails = false
 
    var body: some View {
@@ -14,6 +14,7 @@ struct RosterDetailListView: View {
 			if let player = playerViewModel.players.first(where: { $0.id == playerID }) {
 			   // Get drafting manager's color from the RosterViewModel
 			   let backgroundColor = rosterViewModel.getBackgroundColor(for: playerID, draftViewModel: draftViewModel)
+// TODO: need to make isUndrafted assignment better than THIS...
 			   let isUndrafted = backgroundColor == .gpUndrafted
 
 			   // Fetch round and pickNo from draft details
@@ -44,7 +45,9 @@ struct RosterDetailListView: View {
 							  .resizable()
 							  .aspectRatio(contentMode: .fill)
 							  .frame(width: playerSize, height: playerSize)
-							  .clipShape(Circle())
+							  .isOnIR(player.injuryStatus ?? "", hXw: playerSize)
+//							  .border(player.injuryStatus == "IR" ? (Color.gpRed, width: 1) : .clear)
+//							  .clipShape(Circle())
 						} placeholder: {
 						   Image(systemName: "person.crop.circle")
 							  .resizable()
