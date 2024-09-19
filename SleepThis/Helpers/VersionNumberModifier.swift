@@ -12,8 +12,13 @@ struct VersionNumberModifier: ViewModifier {
 			Text("Version: \(AppConstants.getVersion())")
 			   .font(.system(size: AppConstants.verSize))
 			   .foregroundColor(AppConstants.verColor)
-			   .padding(.bottom, 50) // Adjust padding as needed
+//
+//			Text(" - \(URL(fileURLWithPath: #file).deletingLastPathComponent().lastPathComponent)")
+//			   .font(.footnote)
+//			   .foregroundColor(.white)
+////			   .padding(.bottom, 5) // Adjust padding as needed
 		 }
+		 .padding(.bottom, 50)
 	  }
    }
 }

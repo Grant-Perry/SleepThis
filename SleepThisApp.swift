@@ -6,6 +6,11 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
+			PlayerSearchView()
+			   .tabItem {
+				  Label("Player Search", systemImage: "plus.magnifyingglass")
+			   }
+
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
 			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),

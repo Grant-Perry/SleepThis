@@ -2,18 +2,20 @@ import SwiftUI
 
 struct DraftRowView: View {
    let draft: DraftModel
+   let draftViewModel: DraftViewModel
+   let playerViewModel: PlayerViewModel  // Add playerViewModel as a parameter
    let playerSize: CGFloat = 160
 
    var body: some View {
 	  HStack {
-		 // Player Image on the left using the `player_id` from `DraftModel`
+// MARK:  Player Image on the left using the `player_id` from `DraftModel`
 		 if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(draft.player_id).jpg") {
 			AsyncImage(url: url) { image in
 			   image
 				  .resizable()
 				  .aspectRatio(contentMode: .fit)
 				  .frame(width: playerSize, height: playerSize)
-//				  .isOnIR(player.status, hXw: playerSize)
+				  .isOnIR(draftViewModel.getPlayerStatus(for: draft.player_id, playerViewModel: playerViewModel) ?? "", hXw: playerSize) // Apply the isOnIR modifier
 				  .padding(EdgeInsets(top: 0, leading: -15, bottom: 0, trailing: 0))
 
 			} placeholder: {
@@ -50,6 +52,5 @@ struct DraftRowView: View {
 			.font(.footnote)
 	  }
 	  .padding(.vertical, 4)
-//	  .background(PositionColor.fromPosition(draft.metadata?.position).color)
    }
 }

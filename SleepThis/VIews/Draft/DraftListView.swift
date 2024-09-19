@@ -3,14 +3,14 @@ import SwiftUI
 struct DraftListView: View {
    let managerID: String
    @StateObject var draftViewModel: DraftViewModel
-   @StateObject var userViewModel = UserViewModel()  // Assuming this fetches user info
+   @StateObject var userViewModel = UserViewModel()
+   @StateObject var playerViewModel = PlayerViewModel() // Add this line to instantiate PlayerViewModel
    let backgroundColor: Color
-
 
    var body: some View {
 	  VStack {
 		 if let user = userViewModel.user {
-// MARK: Manager's avatar and name
+			// MARK: Manager's avatar and name
 			HStack {
 			   if let avatarURL = user.avatarURL {
 				  AsyncImage(url: avatarURL) { image in
@@ -29,7 +29,6 @@ struct DraftListView: View {
 					 .font(.title2)
 					 .bold()
 
-
 				  if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 					 Text("Pick #: \(draftSlot)")
 						.font(.subheadline)
@@ -44,34 +43,36 @@ struct DraftListView: View {
 			.frame(maxWidth: .infinity)
 			.padding(.leading)
 			.background(
-			   RoundedRectangle(cornerRadius: 15)  // Rounded corners
+			   RoundedRectangle(cornerRadius: 15)
 				  .fill(LinearGradient(
 					 gradient: Gradient(colors: [
 						backgroundColor,
-						backgroundColor.blended(withFraction: 0.55, of: .white)  // 55% blend with white
+						backgroundColor.blended(withFraction: 0.55, of: .white)
 					 ]),
 					 startPoint: .top,
 					 endPoint: .bottom
 				  ))
-
-
 				  .shadow(radius: 4)
 			)
 			.padding()
-
 		 }
-
 
 		 // List the draft picks for this manager
 		 List {
 			if let picks = draftViewModel.groupedPicks[managerID] {
 			   ForEach(picks) { draft in
 				  NavigationLink(
-					 destination: DraftDetailView(managerID: managerID,
-												  draftPick: draft,
-												  draftViewModel: draftViewModel)  // Pass managerID, draftPick, and draftViewModel
+					 destination: DraftDetailView(
+						managerID: managerID,
+						draftPick: draft,
+						draftViewModel: draftViewModel,
+						playerViewModel: playerViewModel // Pass the playerViewModel here
+					 )
 				  ) {
-					 DraftRowView(draft: draft)
+					 DraftRowView(draft: draft,
+								  draftViewModel: draftViewModel,
+								  playerViewModel: playerViewModel
+					 )
 				  }
 			   }
 			} else {
@@ -88,7 +89,7 @@ struct DraftListView: View {
 		 }
 	  }
 	  .onAppear {
-		 userViewModel.fetchUser(by: managerID)  // Fetch the user info
+		 userViewModel.fetchUser(by: managerID) // Fetch the user info
 	  }
    }
 }

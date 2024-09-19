@@ -24,14 +24,17 @@ struct PlayerCardView: View {
 			   .shadow(radius: 4)
 
 			HStack(alignment: .center) {  // Center the image and text vertically
-										  // Player Thumbnail
+//MARK: Player Thumbnail
 			   if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(playerModel.id).jpg") {
 				  AsyncImage(url: url) { image in
 					 image
 						.resizable()
 						.scaledToFill()
 						.frame(width: 180, height: 180) // Adjust size as needed
-						.offset(x: -50)  // Shift the image to the left for overflow
+						.offset(x: -50, y: 10)  // Shift the image to the left for overflow
+					 .isOnIR(playerModel.injuryStatus ?? "", hXw: 180)
+//					 .padding(.trailing, 10)
+					 .offset(x: 10, y: -20)
 				  } placeholder: {
 					 Image(systemName: "person.crop.circle.fill")
 						.resizable()

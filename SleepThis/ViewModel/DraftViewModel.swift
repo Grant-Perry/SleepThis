@@ -133,7 +133,9 @@ class DraftViewModel: ObservableObject {
 
    // New Method to Get Player Status
    func getPlayerStatus(for playerID: String, playerViewModel: PlayerViewModel) -> String? {
-	  return playerViewModel.players.first(where: { $0.id == playerID })?.status
+	  let thisBack = playerViewModel.players.first(where: { $0.id == playerID })?.status
+	  print("Player Status: \(String(describing: thisBack))")
+	  return thisBack
    }
 
 

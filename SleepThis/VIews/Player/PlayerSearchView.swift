@@ -172,6 +172,10 @@ struct PlayerSearchView: View {
 			Text("Version: \(AppConstants.getVersion())")
 			   .font(.system(size: AppConstants.verSize))
 			   .foregroundColor(AppConstants.verColor)
+//
+//			Text(" - \(URL(fileURLWithPath: #file).deletingLastPathComponent().lastPathComponent)")
+//			   .font(.footnote)
+//			   .foregroundColor(.white)
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
