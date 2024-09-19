@@ -6,6 +6,17 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
+			ManagerListView(
+			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
+			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+			   leagueID: AppConstants.leagueID,
+			   draftID: AppConstants.draftID,
+			   viewType: .roster
+			)
+			.tabItem {
+			   Label("Rosters", systemImage: "pencil.and.list.clipboard")
+			}
+
 			NFLTeamListView()
 			   .tabItem {
 				  Label("NFL Roster", systemImage: "person.3.fill")
@@ -24,16 +35,7 @@ struct SleepThisApp: App {
 			   Label("League", systemImage: "list.bullet.rectangle")
 			}
 
-			ManagerListView(
-			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
-			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
-			   leagueID: AppConstants.leagueID,
-			   draftID: AppConstants.draftID,
-			   viewType: .roster
-			)
-			.tabItem {
-			   Label("Rosters", systemImage: "pencil.and.list.clipboard")
-			}
+
 
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),

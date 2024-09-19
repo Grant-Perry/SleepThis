@@ -10,7 +10,7 @@ struct DraftListView: View {
    var body: some View {
 	  VStack {
 		 if let user = userViewModel.user {
-			// Display the manager's avatar and name
+// MARK: Manager's avatar and name
 			HStack {
 			   if let avatarURL = user.avatarURL {
 				  AsyncImage(url: avatarURL) { image in

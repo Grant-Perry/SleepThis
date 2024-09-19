@@ -13,6 +13,7 @@ struct DraftRowView: View {
 				  .resizable()
 				  .aspectRatio(contentMode: .fit)
 				  .frame(width: playerSize, height: playerSize)
+//				  .isOnIR(player.status, hXw: playerSize)
 				  .padding(EdgeInsets(top: 0, leading: -15, bottom: 0, trailing: 0))
 
 			} placeholder: {

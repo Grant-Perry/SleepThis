@@ -5,7 +5,7 @@ struct RosterDetailListView: View {
    @StateObject var playerViewModel: PlayerViewModel
    @StateObject var draftViewModel: DraftViewModel
    @StateObject var rosterViewModel: RosterViewModel
-   var playerSize = 70.0
+   var playerSize = 95.0
    var showDraftDetails = false
 
    var body: some View {
@@ -15,7 +15,7 @@ struct RosterDetailListView: View {
 			   // Get drafting manager's color from the RosterViewModel
 			   let backgroundColor = rosterViewModel.getBackgroundColor(for: playerID, draftViewModel: draftViewModel)
 // TODO: need to make isUndrafted assignment better than THIS...
-			   let isUndrafted = backgroundColor == .gpUndrafted
+//			   let isUndrafted = backgroundColor == .gpUndrafted
 
 			   // Fetch round and pickNo from draft details
 			   let draftDetails = draftViewModel.getDraftDetails(for: playerID)
@@ -37,17 +37,18 @@ struct RosterDetailListView: View {
 				  managerName: managerName,
 				  managerAvatarURL: managerAvatarURL
 			   )) {
+				  // MARK:  Player Thumbnail
 				  HStack(alignment: .center, spacing: 10) {
-					 // Player Thumbnail
 					 if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(playerID).jpg") {
 						AsyncImage(url: url) { image in
 						   image
 							  .resizable()
+							  .scaledToFill()
 							  .aspectRatio(contentMode: .fill)
 							  .frame(width: playerSize, height: playerSize)
 							  .isOnIR(player.injuryStatus ?? "", hXw: playerSize)
-//							  .border(player.injuryStatus == "IR" ? (Color.gpRed, width: 1) : .clear)
-//							  .clipShape(Circle())
+							  .offset(x: -13)
+
 						} placeholder: {
 						   Image(systemName: "person.crop.circle")
 							  .resizable()
@@ -100,8 +101,12 @@ struct RosterDetailListView: View {
 						   .padding(.trailing, 10)
 					 }
 				  }
-				  .padding(.vertical, 8)
-				  .padding(.horizontal)
+
+
+//				  .padding(.vertical, 8)
+//				  .padding(.horizontal)
+//				  .border(.red)
+
 				  .background(
 					 RoundedRectangle(cornerRadius: 15)
 						.fill(LinearGradient(
@@ -115,6 +120,7 @@ struct RosterDetailListView: View {
 						.shadow(radius: 4)
 				  )
 				  .padding(.bottom, 4)
+				  .clipped()
 			   }
 			}
 		 }

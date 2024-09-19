@@ -130,4 +130,11 @@ class DraftViewModel: ObservableObject {
 		 .map { ($0.round, $0.pick_no, $0.picked_by) }
    }
 
+
+   // New Method to Get Player Status
+   func getPlayerStatus(for playerID: String, playerViewModel: PlayerViewModel) -> String? {
+	  return playerViewModel.players.first(where: { $0.id == playerID })?.status
+   }
+
+
 }

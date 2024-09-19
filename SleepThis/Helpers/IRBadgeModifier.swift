@@ -8,17 +8,17 @@ struct IRBadgeModifier: ViewModifier {
 	  ZStack(alignment: .bottomTrailing) {
 		 content
 		 if isOnIR {
-			ZStack {
-			   Text("IR")
-				  .font(.system(size: hXw / 6))
-				  .foregroundColor(.red)
-				  .bold()
-			}
-			.frame(width: hXw, height: hXw)
-			.offset(x: -hXw, y: hXw)
+			Text("IR")
+			   .font(.system(size: 25)) // Set fixed size for the text
+			   .foregroundColor(.red)
+			   .bold()
+			   .padding(5)
+			   .background(Color.white.opacity(0.8)) // White background with some opacity
+			   .clipShape(Circle())
+			   .offset(x: 10, y: 10) // Adjust as needed for positioning
 		 }
 	  }
-	  .frame(width: hXw, height: hXw) // Apply hXw to both width and height of the main frame
+	  .frame(width: hXw, height: hXw)
    }
 }
 
