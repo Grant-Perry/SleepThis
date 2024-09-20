@@ -82,23 +82,24 @@ struct NFLPlayerDetailView: View {
 
 			// MARK: Jersey Number Overlay on the Far Right
 			VStack {
-			   ZStack(alignment: .topTrailing) {
-				  // Text for "# .top .trailing"
-				  Text("#")
-					 .font(.system(size: 28, weight: .light))
-					 .foregroundColor(teamColor.adjustBrightness(by: 0.75))
-					 .padding(.trailing, 5)
-					 .padding(.top, 10)
+			   ZStack(alignment: .topLeading) {
 				  // Jersey number
 				  Text(player.jersey ?? "")
-					 .font(.system(size: 85, weight: .bold))
+					 .font(.system(size: 115, weight: .bold))
 					 .italic()
 					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
 					 .opacity(0.35)
-					 .padding(.trailing, 10)
+
+	  // MARK: # symbol, positioned at the top leading corner
+				  Text("#")
+					 .font(.system(size: 55, weight: .light))
+					 .foregroundColor(teamColor.adjustBrightness(by: 0.25))
+					 .offset(x: -10, y:10)
+
 			   }
-			   .offset(x: -10, y: -100)  // Move the jersey number further to the top right
+			   .offset(x: 0, y: -70)
 			}
+
 
 			// MARK: Player Name Overlay on Top
 			VStack {
@@ -123,14 +124,9 @@ struct NFLPlayerDetailView: View {
 				  .padding(.leading, 110)
 				  .padding(.bottom,	60)
 			   Spacer()
-			   //					 Text("\(player.team?.displayName ?? "N/A")")
-			   //						.font(.footnote)
-			   //						.foregroundColor(teamColor.adjustBrightness(by: 0.75))
 			}
 			.opacity(0.5)
 			.offset(y: -25)
-
-
 		 }
 		 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: 200)
 		 .padding(.vertical, 4)
@@ -170,8 +166,42 @@ struct NFLPlayerDetailView: View {
 			.fill(Color.black.opacity(0.4)))
 		 .padding()
 
+
 		 Spacer()
 	  }
-	  .preferredColorScheme(.dark)
+	  	  .preferredColorScheme(.dark)
    }
 }
+
+import SwiftUI
+
+struct NFLPlayerDetailView_Previews: PreviewProvider {
+   static var previews: some View {
+	  NFLPlayerDetailView(player: sampleNFLPlayer)
+		 .previewLayout(.sizeThatFits)
+   }
+}
+
+// Sample data for preview
+let sampleNFLPlayer = NFLRosterModel.NFLPlayer(
+   uid: "12345",
+   imageID: "4241479",
+   firstName: "Tua",
+   lastName: "Tagovailoa",
+   fullName: "Tua Tagovailoa",
+   displayName: "T. Tagovailoa",
+   jersey: "99",
+   weight: 220,
+   displayWeight: "220 lbs",
+   height: 6.2,
+   displayHeight: "6'2\"",
+   age: 28,
+   position: NFLRosterModel.Position(name: "Quarterback", displayName: "QB", abbreviation: "QB"),
+   college: NFLRosterModel.College(name: "University of Nowhere"),
+   team: NFLRosterModel.Team(id: "1", abbreviation: "XYZ", displayName: "Sample Team", color: "008C96", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png"),
+   coach: NFLRosterModel.Coach(id: "c1", firstName: "Jane", lastName: "Doe", experience: 5),
+   status: NFLRosterModel.PlayerStatus(id: "1", name: "Injured", type: "Status", abbreviation: "IR"),  // Sample status
+   injuries: [NFLRosterModel.Injury(status: "IR", date: "2023-09-20")]  // Sample injury
+)
+
+

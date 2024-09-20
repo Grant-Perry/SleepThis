@@ -5,7 +5,7 @@ struct PlayerSearchView: View {
    @State private var playerLookup: String = ""
    @State private var sortOption: SortOption = .name
    @State private var positionFilter: PositionFilter = .qb
-   @State private var showInactivePlayersOnly = false // New state variable for inactive player filtering
+   @State private var showInactivePlayersOnly = false
 
    enum SortOption: String, CaseIterable {
 	  case name = "Player"
@@ -38,7 +38,7 @@ struct PlayerSearchView: View {
 					 let cacheSize = playerViewModel.cacheSize {
 					 Text("\(cacheAge) ")
 						.font(.footnote)
-						.foregroundColor(.cyan)
+						.foregroundColor(.gpBlue)
 					 +
 					 Text("(\(cacheSize))")
 						.font(.caption2)
@@ -91,20 +91,6 @@ struct PlayerSearchView: View {
 			   .padding(.bottom)
 
 			}
-
-			// Inactive/All Toggle Button
-//			Button(action: {
-//			   showInactivePlayersOnly.toggle()
-//			   print("[PlayerSearchView:toggleInactive] Showing \(showInactivePlayersOnly ? "Inactive" : "All") players.")
-//			}) {
-//			   Text(showInactivePlayersOnly ? "Show All" : "Show Inactive")
-//				  .padding()
-//				  .frame(maxWidth: .infinity)
-//				  .background(showInactivePlayersOnly ? Color.gpGreen : Color.gpRed)
-//				  .foregroundColor(.white)
-//				  .cornerRadius(10)
-//				  .padding(.horizontal)
-//			}
 
 			// Scrollable List Section
 			if !playerViewModel.players.isEmpty {

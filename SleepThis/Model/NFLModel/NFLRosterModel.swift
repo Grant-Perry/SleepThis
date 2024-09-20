@@ -6,8 +6,8 @@ enum NFLRosterModel {
 	  let status: String
 	  let season: Season
 	  var athletes: [AthleteGroup]
-	  let team: Team // Single team
-	  let coach: CoachOrCoaches? // Modified to handle both single coach and array of coaches
+	  let team: Team
+	  let coach: CoachOrCoaches?
 
 	  private enum CodingKeys: String, CodingKey {
 		 case timestamp, status, season, athletes, team, coach
@@ -20,14 +20,10 @@ enum NFLRosterModel {
 
 	  init(from decoder: Decoder) throws {
 		 let container = try decoder.singleValueContainer()
-
-		 // Try to decode as an array of coaches
 		 if let coachArray = try? container.decode([Coach].self) {
 			self.coachArray = coachArray
 			self.coach = nil
-		 }
-		 // Try to decode as a single coach dictionary
-		 else if let coach = try? container.decode(Coach.self) {
+		 } else if let coach = try? container.decode(Coach.self) {
 			self.coach = coach
 			self.coachArray = nil
 		 } else {
@@ -62,7 +58,7 @@ enum NFLRosterModel {
 	  let lastName: String
 	  let fullName: String
 	  let displayName: String
-	  let jersey: String? // Add jersey number here
+	  let jersey: String?
 	  let weight: Double?
 	  let displayWeight: String?
 	  let height: Double?
@@ -72,6 +68,8 @@ enum NFLRosterModel {
 	  let college: College?
 	  var team: Team?
 	  var coach: Coach?
+	  var status: PlayerStatus?  // New PlayerStatus field
+	  var injuries: [Injury]?    // New injuries field
 	  var id: String { uid }
 
 	  var imageUrl: URL? {
@@ -83,12 +81,23 @@ enum NFLRosterModel {
 	  }
 
 	  private enum CodingKeys: String, CodingKey {
-		 case uid, imageID = "id", firstName, lastName, fullName, displayName, jersey, weight, displayWeight, height, displayHeight, age, position, college
+		 case uid, imageID = "id", firstName, lastName, fullName, displayName, jersey, weight, displayWeight, height, displayHeight, age, position, college, status, injuries
 	  }
    }
 
+   // Struct for Player Status
+   struct PlayerStatus: Codable {
+	  let id: String
+	  let name: String
+	  let type: String
+	  let abbreviation: String
+   }
 
-
+   // Struct for Player Injuries
+   struct Injury: Codable {
+	  let status: String
+	  let date: String
+   }
 
    struct Position: Codable {
 	  let name: String
