@@ -116,7 +116,7 @@ struct NFLPlayerDetailView: View {
 
 			//MARK: Position
 			HStack {
-			   Text(player.positionAbbreviation ?? "N/A")
+			   Text("\(player.positionAbbreviation ?? "N/A")")
 				  .font(.headline)
 //				  .foregroundColor(teamColor.blended(withFraction: 0.65, of: .white))
 				  .foregroundColor(.white)

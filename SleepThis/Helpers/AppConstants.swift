@@ -23,7 +23,8 @@ struct AppConstants {
    
    static let leagueID = TwoBrothersLeagueID
    static let draftID = TwoBrothersDraftID
-   
+   static let teamColor = Color(hex: "008C96")
+
    static func getVersion() -> String {
 	  return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
    }

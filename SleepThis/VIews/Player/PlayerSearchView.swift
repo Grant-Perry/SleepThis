@@ -119,8 +119,8 @@ struct PlayerSearchView: View {
 							  .font(.headline)
 						   VStack {
 							  Text("Team: \(player.team ?? "Unknown")")
-							  Text("Position: \(player.position ?? "Unknown")")
-							  Text("Depth: #\(player.depthChartOrder ?? 0)")
+							  Text("Position: \(player.position ?? "Unknown")\(player.depthChartOrder ?? 0)")
+//							  Text("Depth: #\(player.depthChartOrder ?? 0)")
 							  if player.status?.lowercased() != "active" {
 								 Text(" status: ")
 									.foregroundColor(.gpWhite)
