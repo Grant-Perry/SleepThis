@@ -6,6 +6,8 @@ struct PlayerSearchView: View {
    @State private var sortOption: SortOption = .name
    @State private var positionFilter: PositionFilter = .qb
    @State private var showInactivePlayersOnly = false
+   @ObservedObject var nflRosterViewModel: NFLRosterViewModel
+
 
    enum SortOption: String, CaseIterable {
 	  case name = "Player"
@@ -97,8 +99,10 @@ struct PlayerSearchView: View {
 			   List(filteredSortedPlayers) { player in
 				  NavigationLink(destination: PlayerDetailView(player: player,
 															   playerViewModel: playerViewModel,
+															   nflRosterViewModel: nflRosterViewModel,
 															   round: 909,
 															   pickNo: 909)) {
+
 					 HStack {
 						// Display player thumbnail
 						if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg") {

@@ -3,15 +3,16 @@ import SwiftUI
 struct PlayerDetailView: View {
    let player: PlayerModel
    let playerViewModel: PlayerViewModel
+   @ObservedObject var nflRosterViewModel: NFLRosterViewModel // Add this property to access the NFL roster
    var playerSize = 350.0
    let round: Int? // Add optional round parameter
    let pickNo: Int? // Add optional pickNo parameter
    @State private var isExpanded: Bool = false
+   @State private var nflPlayer: NFLRosterModel.NFLPlayer?
 
    var body: some View {
-	  let playerImageURL = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg")
-	  let teamLogoURL = URL(string: "https://sleepercdn.com/i/teamlogos/nfl/500/\(player.team ?? "nfl").png")
-	  let teamColor = Color(hex: "008C96") // TODO: need to get actual team color
+	  let teamColor = Color(hex: nflPlayer?.team?.color ?? "008C96")
+	  let teamLogoURL = URL(string: nflPlayer?.team?.logo ?? "")
 
 	  VStack {
 		 // Top Background Section with Player Image and Team Logo
@@ -57,7 +58,7 @@ struct PlayerDetailView: View {
 			   }
 
 			   // Player Image
-			   if let playerImageURL = playerImageURL {
+			   if let playerImageURL = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg") {
 				  AsyncImage(url: playerImageURL) { phase in
 					 switch phase {
 						case .empty:
@@ -167,22 +168,20 @@ struct PlayerDetailView: View {
 		 // Player Info Section with Disclosure Group
 		 if isExpanded {
 			LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3), spacing: 16) {
-			   PlayerInfoRowView(label: "Height", value: player.height)
-			   PlayerInfoRowView(label: "Weight", value: player.weight)
-			   PlayerInfoRowView(label: "Age", value: player.age?.description)
-			   PlayerInfoRowView(label: "ID", value: player.id)
-			   PlayerInfoRowView(label: "Team", value: player.team)
-			   PlayerInfoRowView(label: "Position", value: player.position)
-			   PlayerInfoRowView(label: "Status", value: player.status)
-			   PlayerInfoRowView(label: "College", value: player.college)
-			   PlayerInfoRowView(label: "Birth Country", value: player.birthCountry)
-			   PlayerInfoRowView(label: "Years Experience", value: player.yearsExp?.description)
-			   PlayerInfoRowView(label: "Number", value: player.number?.description)
-			   PlayerInfoRowView(label: "Depth Chart Position", value: player.depthChartPosition?.description)
-			   PlayerInfoRowView(label: "Depth Chart Order", value: player.depthChartOrder?.description)
-			   if let round = round, let pickNo = pickNo {
-				  PlayerInfoRowView(label: "Drafted", value: "Round \(round), Pick \(pickNo)")
-			   }
+			   PlayerInfoRowView(label: "Height", value: player.height, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Weight", value: player.weight, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Age", value: player.age?.description, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "ID", value: player.id, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Team", value: player.team, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Position", value: player.position, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Status", value: player.status, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "College", value: player.college, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Birth Country", value: player.birthCountry, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Years Experience", value: player.yearsExp?.description, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Number", value: player.number?.description, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Depth Chart Position", value: player.depthChartPosition?.description, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Depth Chart Order", value: player.depthChartOrder?.description, nflPlayer: nflPlayer)
+			   PlayerInfoRowView(label: "Drafted", value: "Round \(round ?? 0), Pick \(pickNo ?? 0)", nflPlayer: nflPlayer)
 			}
 			.padding()
 			.background(RoundedRectangle(cornerRadius: 15)
@@ -194,15 +193,37 @@ struct PlayerDetailView: View {
 		 Spacer()
 	  }
 	  .preferredColorScheme(.dark)
+	  .onAppear {
+		 if nflRosterViewModel.players.isEmpty {
+			print("[onAppear:] NFL roster is empty, fetching players...")
+			nflRosterViewModel.fetchPlayersForAllTeams {
+			   print("[onAppear:] NFL roster loaded with \(nflRosterViewModel.players.count) players.")
+			   self.nflPlayer = NFLRosterModel.getPlayerInfo(by: player.fullName ?? "", from: nflRosterViewModel.players)
+			   if let nflPlayer = nflPlayer {
+				  print("[onAppear:] Loaded NFLPlayer info for \(nflPlayer.fullName).")
+			   } else {
+				  print("[onAppear:] Player not found in NFL roster.")
+			   }
+			}
+		 } else {
+			print("[onAppear:] NFL roster already loaded with \(nflRosterViewModel.players.count) players.")
+			self.nflPlayer = NFLRosterModel.getPlayerInfo(by: player.fullName ?? "", from: nflRosterViewModel.players)
+			if let nflPlayer = nflPlayer {
+			   print("[onAppear:] Loaded NFLPlayer info for \(nflPlayer.fullName).")
+			} else {
+			   print("[onAppear:] Player not found in NFL roster.")
+			}
+		 }
+	  }
    }
 
    @ViewBuilder
-   private func PlayerInfoRowView(label: String, value: String?) -> some View {
+   private func PlayerInfoRowView(label: String, value: String?, nflPlayer: NFLRosterModel.NFLPlayer?) -> some View {
 	  if let value = value, !value.isEmpty {
 		 VStack(alignment: .leading, spacing: 4) {
 			Text("\(label):")
 			   .font(.headline)
-			   .foregroundColor(AppConstants.teamColor) // TODO: need to get the real teamColor from player.team
+			   .foregroundColor(Color(hex: nflPlayer?.team?.color ?? "008C96"))
 			   .lineLimit(1)
 			   .minimumScaleFactor(0.5)
 			   .scaledToFit()

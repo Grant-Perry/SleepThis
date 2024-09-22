@@ -6,10 +6,11 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
-			PlayerSearchView()
+			PlayerSearchView(nflRosterViewModel: NFLRosterViewModel())
 			   .tabItem {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
+
 
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
@@ -53,10 +54,10 @@ struct SleepThisApp: App {
 			   Label("Draft", systemImage: "list.clipboard")
 			}
 
-			PlayerSearchView()
-			   .tabItem {
-				  Label("Player Search", systemImage: "plus.magnifyingglass")
-			   }
+//			PlayerSearchView()
+//			   .tabItem {
+//				  Label("Player Search", systemImage: "plus.magnifyingglass")
+//			   }
 
 
 		 }
