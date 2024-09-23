@@ -1,13 +1,16 @@
 import Foundation
 import Combine
 import SwiftUI
+import Observation
+
+@Observable
 
 class DraftViewModel: ObservableObject {
-   @Published var drafts: [DraftModel] = []
-   @Published var groupedPicks: [String: [DraftModel]] = [:]
-   @Published var managerDetails: [String: (name: String, avatar: String?)] = [:]
-   @Published var managerIDToColor: [String: Color] = [:]
-   @Published var managers: [ManagerModel] = []
+   var drafts: [DraftModel] = []
+   var groupedPicks: [String: [DraftModel]] = [:]
+   var managerDetails: [String: (name: String, avatar: String?)] = [:]
+   var managerIDToColor: [String: Color] = [:]
+   var managers: [ManagerModel] = []
    var leagueID: String = ""
    private var cancellables = Set<AnyCancellable>()
 

@@ -1,13 +1,16 @@
 import SwiftUI
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class PlayerViewModel: ObservableObject {
-   @Published var players: [PlayerModel] = []
-   @Published var isLoading = false
-   @Published var errorMessage: String?
-   @Published var cacheSize: String?
-   @Published var cacheAgeDescription: String?
+   var players: [PlayerModel] = []
+   var isLoading = false
+   var errorMessage: String?
+   var cacheSize: String?
+   var cacheAgeDescription: String?
 
    private var maxCacheDays = AppConstants.maxCacheDays
    let cacheFileName = "cachedPlayers.json"

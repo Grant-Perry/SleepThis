@@ -5,8 +5,8 @@ struct RosterDetailView: View {
    let managerID: String
    let managerName: String
    let managerAvatarURL: URL?
-   @ObservedObject var draftViewModel: DraftViewModel
-   @StateObject var rosterViewModel: RosterViewModel
+   @State var draftViewModel: DraftViewModel
+   @State var rosterViewModel: RosterViewModel
    @StateObject var playerViewModel = PlayerViewModel()
    @State private var sortByDraftOrder = false
    @State private var leagueName: String = ""
@@ -18,8 +18,8 @@ struct RosterDetailView: View {
 	  self.managerName = managerName
 	  self.managerAvatarURL = managerAvatarURL
 	  self.draftViewModel = draftViewModel
-	  _rosterViewModel = StateObject(wrappedValue: RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel))
-   }
+	  rosterViewModel = RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel)
+    }
 
    var body: some View {
 	  ScrollView {

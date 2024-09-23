@@ -1,11 +1,14 @@
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class TransactionViewModel: ObservableObject {
-   @Published var transactions: [TransactionModel] = []
-   @Published var isLoading = false
-   @Published var errorMessage: String?
-	var userViewModel: [String: UserViewModel] = [:]
+   var transactions: [TransactionModel] = []
+   var isLoading = false
+   var errorMessage: String?
+   var userViewModel: [String: UserViewModel] = [:]
 
    func fetchTransactions(leagueID: String, round: Int) {
 	  isLoading = true

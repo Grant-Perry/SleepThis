@@ -1,4 +1,7 @@
 import Foundation
+import Observation
+
+@Observable
 
 class CacheManager {
    static let shared = CacheManager()

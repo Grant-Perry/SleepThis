@@ -1,11 +1,14 @@
 import SwiftUI
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class MatchupViewModel: ObservableObject {
-   @Published var matchups: [MatchupModel] = []
-   @Published var isLoading = false
-   @Published var errorMessage: String?
+   var matchups: [MatchupModel] = []
+   var isLoading = false
+   var errorMessage: String?
 
    func fetchMatchups(leagueID: String, week: Int) {
 	  print("[fetchMatchups:] Fetching matchups for leagueID: \(leagueID), week: \(week)")

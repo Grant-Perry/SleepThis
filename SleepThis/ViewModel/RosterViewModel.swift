@@ -1,10 +1,13 @@
 import Foundation
 import SwiftUI
 import Combine
+import Observation
+
+@Observable
 
 class RosterViewModel: ObservableObject {
-   @Published var rosters: [RosterModel] = []
-   @Published var selectedRosterSettings: RosterSettings?
+   var rosters: [RosterModel] = []
+   var selectedRosterSettings: RosterSettings?
    var draftViewModel: DraftViewModel
 
    var leagueID = AppConstants.leagueID // TwoBrothersID

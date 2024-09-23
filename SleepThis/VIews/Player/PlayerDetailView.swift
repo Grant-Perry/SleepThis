@@ -3,7 +3,7 @@ import SwiftUI
 struct PlayerDetailView: View {
    let player: PlayerModel
    let playerViewModel: PlayerViewModel
-   @ObservedObject var nflRosterViewModel: NFLRosterViewModel // Add this property to access the NFL roster
+   @StateObject var nflRosterViewModel: NFLRosterViewModel // Add this property to access the NFL roster
    var playerSize = 350.0
    let round: Int? // Add optional round parameter
    let pickNo: Int? // Add optional pickNo parameter

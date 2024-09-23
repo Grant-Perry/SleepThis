@@ -6,7 +6,7 @@ struct PlayerSearchView: View {
    @State private var sortOption: SortOption = .name
    @State private var positionFilter: PositionFilter = .qb
    @State private var showInactivePlayersOnly = false
-   @ObservedObject var nflRosterViewModel: NFLRosterViewModel
+   @StateObject var nflRosterViewModel: NFLRosterViewModel
 
 
    enum SortOption: String, CaseIterable {

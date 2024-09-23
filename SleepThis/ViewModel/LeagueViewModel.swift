@@ -1,8 +1,11 @@
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class LeagueViewModel: ObservableObject {
-   @Published var leagues: [LeagueModel] = []
+   var leagues: [LeagueModel] = []
    private var cancellables = Set<AnyCancellable>()
 
    func fetchLeaguesForUser(userID: String) {

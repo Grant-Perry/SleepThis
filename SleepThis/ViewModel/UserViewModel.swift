@@ -1,10 +1,13 @@
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class UserViewModel: ObservableObject {
-   @Published var user: UserModel?
-   @Published var isLoading = false
-   @Published var errorMessage: String?
+   var user: UserModel?
+   var isLoading = false
+   var errorMessage: String?
 
    func fetchUser(by lookup: String, completion: @escaping () -> Void = {}) {
 	  isLoading = true

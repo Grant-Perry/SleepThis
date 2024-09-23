@@ -1,8 +1,11 @@
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class LeagueDetailViewModel: ObservableObject {
-   @Published var league: LeagueModel?
+   var league: LeagueModel?
    private var cancellables = Set<AnyCancellable>()
    private var maxCacheDays = AppConstants.maxCacheDays
 

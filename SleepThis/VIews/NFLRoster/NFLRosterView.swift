@@ -2,7 +2,7 @@ import SwiftUI
 
 struct NFLRosterView: View {
    let team: NFLRosterModel.Team
-   @ObservedObject var nflRosterViewModel: NFLRosterViewModel
+   @StateObject var nflRosterViewModel: NFLRosterViewModel
    @State private var selectedTab: Int = 0 // Tracks which tab is selected (0 = All, 1 = Offense, 2 = Defense)
 
    var body: some View {

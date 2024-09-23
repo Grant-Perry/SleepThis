@@ -1,10 +1,13 @@
 import Foundation
 import Combine
+import Observation
+
+@Observable
 
 class NFLRosterViewModel: ObservableObject {
-   @Published var players: [NFLRosterModel.NFLPlayer] = []
-   @Published var teams: [NFLRosterModel.Team] = []
-   @Published var groupedPlayersByTeam: [String: [NFLRosterModel.NFLPlayer]] = [:]
+   var players: [NFLRosterModel.NFLPlayer] = []
+   var teams: [NFLRosterModel.Team] = []
+   var groupedPlayersByTeam: [String: [NFLRosterModel.NFLPlayer]] = [:]
 
    func fetchPlayersForAllTeams(completion: @escaping () -> Void) {
 	  let teamIDs = Array(1...33)
