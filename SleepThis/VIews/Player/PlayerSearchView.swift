@@ -2,12 +2,13 @@ import SwiftUI
 
 struct PlayerSearchView: View {
    @StateObject private var playerViewModel = PlayerViewModel()
+   @StateObject private var draftViewModel = DraftViewModel(leagueID: AppConstants.leagueID)
+   @StateObject var nflRosterViewModel = NFLRosterViewModel()
    @State private var playerLookup: String = ""
    @State private var sortOption: SortOption = .name
    @State private var positionFilter: PositionFilter = .qb
    @State private var showInactivePlayersOnly = false
-   @StateObject var nflRosterViewModel: NFLRosterViewModel
-
+   var playerSize = 110.0 // thumbnail size for player pic
 
    enum SortOption: String, CaseIterable {
 	  case name = "Player"
@@ -33,7 +34,7 @@ struct PlayerSearchView: View {
 				  .padding()
 			}
 
-			// Fixed header section
+			// Header with cache info and reload button
 			VStack {
 			   HStack {
 				  if let cacheAge = playerViewModel.cacheAgeDescription,
@@ -91,26 +92,33 @@ struct PlayerSearchView: View {
 			   .pickerStyle(SegmentedPickerStyle())
 			   .padding(.horizontal)
 			   .padding(.bottom)
-
 			}
 
 			// Scrollable List Section
 			if !playerViewModel.players.isEmpty {
 			   List(filteredSortedPlayers) { player in
-				  NavigationLink(destination: PlayerDetailView(player: player,
-															   playerViewModel: playerViewModel,
-															   nflRosterViewModel: nflRosterViewModel,
-															   round: 909,
-															   pickNo: 909)) {
+				  let draftDetails = draftViewModel.getDraftDetails(for: player.id)
+				  let managerID = draftDetails?.picked_by
+				  let managerName = managerID != nil ? draftViewModel.managerName(for: managerID!) : nil
+				  let managerAvatarURL = managerID != nil ? draftViewModel.managerAvatar(for: managerID!) : nil
 
+				  NavigationLink(destination: PlayerDetailView(
+					 player: player,
+					 playerViewModel: playerViewModel,
+					 nflRosterViewModel: nflRosterViewModel,
+					 round: draftDetails?.round,
+					 pickNo: draftDetails?.pick_no,
+					 managerName: managerName,
+					 managerAvatarURL: managerAvatarURL
+				  )) {
 					 HStack {
 						// Display player thumbnail
 						if let url = URL(string: "https://sleepercdn.com/content/nfl/players/\(player.id).jpg") {
 						   AsyncImage(url: url) { image in
 							  image.resizable()
 								 .aspectRatio(contentMode: .fill)
-								 .frame(width: 150, height: 150)
-								 .isOnIR(player.injuryStatus ?? "", hXw: 150)
+								 .frame(width: playerSize, height: playerSize)
+								 .isOnIR(player.injuryStatus ?? "", hXw: playerSize)
 						   } placeholder: {
 							  Image(systemName: "person.crop.circle.fill")
 								 .resizable()
@@ -124,24 +132,17 @@ struct PlayerSearchView: View {
 						   VStack {
 							  Text("Team: \(player.team ?? "Unknown")")
 							  Text("Position: \(player.position ?? "Unknown")\(player.depthChartOrder ?? 0)")
-//							  Text("Depth: #\(player.depthChartOrder ?? 0)")
-							  if player.status?.lowercased() != "active" {
-								 Text(" status: ")
-									.foregroundColor(.gpWhite)
-									+ Text("\(player.status ?? "Unknown")")
-									.font(.caption2)
-									.foregroundColor(player.injuryStatus == "IR" ? Color.red : Color.gpWhite)
-
-
-								 Text("\(player.injuryStatus ?? "Unknown")")
-									.font(.caption)
-									.foregroundColor(.gpRed)
-									.bold()
-//								 Text("\(player.injuryStartDate ?? "Unknown")")
-//									.font(.caption)
-
-
-							  }
+							     if let managerName = managerName {
+									Text("Manager: \(managerName)")
+									   .font(.caption2)
+									   .foregroundColor(.gpGreen)
+								 }
+//									.padding(.top, 10)
+								 if let round = draftDetails?.round, let pickNo = draftDetails?.pick_no {
+									Text("Round: \(round), Pick: \(pickNo)")
+									   .font(.caption)
+									   .foregroundColor(.gpBlue)
+								 }
 
 						   }
 						   .font(.caption)
@@ -158,14 +159,11 @@ struct PlayerSearchView: View {
 			}
 			Spacer()
 
+
 			// Version Number in Safe Area
 			Text("Version: \(AppConstants.getVersion())")
 			   .font(.system(size: AppConstants.verSize))
 			   .foregroundColor(AppConstants.verColor)
-//
-//			Text(" - \(URL(fileURLWithPath: #file).deletingLastPathComponent().lastPathComponent)")
-//			   .font(.footnote)
-//			   .foregroundColor(.white)
 		 }
 		 .navigationTitle("Player Lookup")
 		 .onAppear {
@@ -174,6 +172,11 @@ struct PlayerSearchView: View {
 			if playerViewModel.players.isEmpty {
 			   playerViewModel.fetchAllPlayers()
 			}
+
+			// Ensure that DraftViewModel loads the draft data
+			draftViewModel.fetchDraftData(draftID: AppConstants.draftID)
+			// Fetch manager details after fetching draft data
+			draftViewModel.fetchAllManagerDetails()
 		 }
 	  }
 	  .preferredColorScheme(.dark)
@@ -229,5 +232,4 @@ struct PlayerSearchView: View {
 		 }
 	  }
    }
-
 }

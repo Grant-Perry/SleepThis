@@ -136,10 +136,10 @@ enum NFLRosterModel {
 	  print("[getPlayerInfo:] Total players in roster: \(roster.count)")
 
 	  // Print all player names in the roster for verification
-	  print("[getPlayerInfo:] Roster contains the following players:")
-	  for player in roster {
-		 print(" - \(player.fullName)")
-	  }
+//	  print("[getPlayerInfo:] Roster contains the following players:")
+//	  for player in roster {
+//		 print(" - \(player.fullName)")
+//	  }
 
 	  // Clean up and match the full name
 	  let cleanedFullName = fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -148,13 +148,13 @@ enum NFLRosterModel {
 	  let player = roster.first(where: { $0.fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == cleanedFullName })
 
 	  // Debug prints for verification
-	  if let player = player {
-		 print("[getPlayerInfo:] Found player: \(player.fullName)")
-		 print("[getPlayerInfo:] team.color = \(player.team?.color ?? "No Color Found")")
-		 print("[getPlayerInfo:] team.logo = \(player.team?.logo ?? "No Logo Found")")
-	  } else {
-		 print("[getPlayerInfo:] Player with name '\(cleanedFullName)' not found in roster.")
-	  }
+//	  if let player = player {
+////		 print("[getPlayerInfo:] Found player: \(player.fullName)")
+////		 print("[getPlayerInfo:] team.color = \(player.team?.color ?? "No Color Found")")
+////		 print("[getPlayerInfo:] team.logo = \(player.team?.logo ?? "No Logo Found")")
+//	  } else {
+//		 print("[getPlayerInfo:] Player with name '\(cleanedFullName)' not found in roster.")
+//	  }
 
 	  return player
    }

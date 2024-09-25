@@ -20,12 +20,12 @@ class NFLRosterViewModel: ObservableObject {
 		 URLSession.shared.dataTask(with: rosterURL) { data, _, error in
 			defer { group.leave() }
 			if let error = error {
-			   print("[fetchPlayersForAllTeams:] Failed to fetch roster for team \(teamID): \(error.localizedDescription)")
+//			   print("[fetchPlayersForAllTeams:] Failed to fetch roster for team \(teamID): \(error.localizedDescription)")
 			   return
 			}
 
 			guard let data = data else {
-			   print("[fetchPlayersForAllTeams:] No data received for team \(teamID)")
+//			   print("[fetchPlayersForAllTeams:] No data received for team \(teamID)")
 			   return
 			}
 
@@ -42,7 +42,7 @@ class NFLRosterViewModel: ObservableObject {
 					 self.teams.append(rosterResponse.team) // Add teams from roster response
 				  }
 
-				  print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
+//				  print("[fetchPlayersForAllTeams:] Fetched \(players.count) players for team \(teamID).")
 			   }
 			} catch {
 			   print("[fetchPlayersForAllTeams:] Failed to parse roster for team \(teamID): \(error)")

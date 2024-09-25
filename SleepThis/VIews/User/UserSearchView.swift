@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UserSearchView: View {
-    var userViewModel = UserViewModel()
+   @StateObject var userViewModel = UserViewModel()
    @State private var userLookup: String = ""
 
    var body: some View {

@@ -7,6 +7,8 @@ struct PlayerDetailView: View {
    var playerSize = 350.0
    let round: Int? // Add optional round parameter
    let pickNo: Int? // Add optional pickNo parameter
+   let managerName: String? // Manager name
+   let managerAvatarURL: URL? // Manager avatar URL
    @State private var isExpanded: Bool = false
    @State private var nflPlayer: NFLRosterModel.NFLPlayer?
 
@@ -181,7 +183,26 @@ struct PlayerDetailView: View {
 			   PlayerInfoRowView(label: "Number", value: player.number?.description, nflPlayer: nflPlayer)
 			   PlayerInfoRowView(label: "Depth Chart Position", value: player.depthChartPosition?.description, nflPlayer: nflPlayer)
 			   PlayerInfoRowView(label: "Depth Chart Order", value: player.depthChartOrder?.description, nflPlayer: nflPlayer)
-			   PlayerInfoRowView(label: "Drafted", value: "Round \(round ?? 0), Pick \(pickNo ?? 0)", nflPlayer: nflPlayer)
+
+			   if round != nil || pickNo != nil {
+			      PlayerInfoRowView(label: "Drafted", value: "Round \(round ?? 0).\(pickNo ?? 0)", nflPlayer: nflPlayer)
+			   }
+			   if let managerName = managerName {
+				  PlayerInfoRowView(label: "Manager", value: managerName, nflPlayer: nflPlayer)
+			   }
+			   // Manager Avatar
+			   if let managerAvatarURL = managerAvatarURL {
+				  AsyncImage(url: managerAvatarURL) { image in
+					 image.resizable()
+						.frame(width: 60, height: 60)
+						.clipShape(Circle())
+				  } placeholder: {
+					 Image(systemName: "person.crop.circle.fill")
+						.resizable()
+						.frame(width: 60, height: 60)
+				  }
+				  .padding(.top, 10)
+			   }
 			}
 			.padding()
 			.background(RoundedRectangle(cornerRadius: 15)
@@ -189,6 +210,8 @@ struct PlayerDetailView: View {
 			.padding(.horizontal, 16)
 			.offset(y: -25)
 		 }
+
+
 
 		 Spacer()
 	  }
