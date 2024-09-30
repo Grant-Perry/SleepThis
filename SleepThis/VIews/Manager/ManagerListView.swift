@@ -52,8 +52,15 @@ struct ManagerListView: View {
 		 }
 		 .navigationTitle(viewType == .draft ? "Draft Managers" : "Roster Managers")
 		 .onAppear {
-			draftViewModel.fetchDraftData(draftID: draftID)
-			draftViewModel.fetchAllManagerDetails()
+			draftViewModel.fetchAllManagerDetails { success in
+			   if success {
+				  print("Successfully fetched all manager details.")
+			   } else {
+				  print("Failed to fetch some manager details.")
+			   }
+			}
+
+
 			rosterViewModel.fetchRoster()
 
 			// Fetch the league name using leagueID
@@ -66,6 +73,7 @@ struct ManagerListView: View {
 			   }
 			}
 		 }
+
 	  }
 	  .preferredColorScheme(.dark)
    }

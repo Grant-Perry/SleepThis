@@ -11,6 +11,16 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
+			ManagerSwipeView(
+			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
+			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+			   playerViewModel: PlayerViewModel()
+			)
+			.tabItem {
+			   Label("Swipe", systemImage: "person.2.square.stack.fill")
+			}
+
+
 
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
@@ -28,10 +38,6 @@ struct SleepThisApp: App {
 				  Label("NFL Roster", systemImage: "person.3.fill")
 			   }
 
-//			ManagerSwipeView(draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID))
-//			   .tabItem {
-//				  Label("Managers", systemImage: "person.2.square.stack.fill")
-//			   }
 
 			LeagueListView(
 			   managerID: AppConstants.managerID,
@@ -43,21 +49,18 @@ struct SleepThisApp: App {
 
 
 
-			ManagerListView(
-			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
-			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
-			   leagueID: AppConstants.leagueID,
-			   draftID: AppConstants.draftID,
-			   viewType: .draft
-			)
-			.tabItem {
-			   Label("Draft", systemImage: "list.clipboard")
-			}
+			//			ManagerListView(
+			//			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
+			//			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+			//			   leagueID: AppConstants.leagueID,
+			//			   draftID: AppConstants.draftID,
+			//			   viewType: .draft
+			//			)
+			//			.tabItem {
+			//			   Label("Draft", systemImage: "list.clipboard")
+			//			}
 
-//			PlayerSearchView()
-//			   .tabItem {
-//				  Label("Player Search", systemImage: "plus.magnifyingglass")
-//			   }
+
 
 
 		 }

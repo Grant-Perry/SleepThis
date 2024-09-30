@@ -174,9 +174,21 @@ struct PlayerSearchView: View {
 			}
 
 			// Ensure that DraftViewModel loads the draft data
-			draftViewModel.fetchDraftData(draftID: AppConstants.draftID)
+			draftViewModel.fetchDraftData(draftID: AppConstants.draftID) { success in
+			   if success {
+				  print("Draft data fetched successfully.")
+			   } else {
+				  print("Failed to fetch draft data.")
+			   }
+			}
 			// Fetch manager details after fetching draft data
-			draftViewModel.fetchAllManagerDetails()
+			draftViewModel.fetchAllManagerDetails() { success in
+			   if success {
+				  print("Draft data fetched successfully.")
+			   } else {
+				  print("Failed to fetch draft data.")
+			   }
+			}
 		 }
 	  }
 	  .preferredColorScheme(.dark)

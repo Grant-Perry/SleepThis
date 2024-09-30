@@ -2,42 +2,48 @@ import SwiftUI
 
 struct ManagerSwipeView: View {
    @StateObject var draftViewModel: DraftViewModel
+   @StateObject var rosterViewModel: RosterViewModel
+   @StateObject var playerViewModel: PlayerViewModel
+
+   @State private var selectedManagerID: String = ""
+   @State private var selectedManagerName: String = ""
 
    var body: some View {
-	  VStack {
-		 if draftViewModel.managers.isEmpty {
-			// Show a loading indicator if no managers are available
-			ProgressView("Loading Managers...")
-			   .onAppear {
-				  // Fetch manager details for the league
-				  draftViewModel.fetchAllManagerDetails()
-			   }
-		 } else {
-			// Display TabView for swiping between ManagerListViews
-			TabView {
-			   ForEach(draftViewModel.managers, id: \.user_id) { manager in
-				  ManagerListView(
-					 draftViewModel: draftViewModel,
-					 rosterViewModel: RosterViewModel(leagueID: draftViewModel.leagueID, draftViewModel: draftViewModel),
-					 leagueID: draftViewModel.leagueID,
-					 draftID: "draft_id_placeholder",  // Placeholder: Update as needed
-					 viewType: .roster // Set viewType based on requirements
+	  TabView {
+		 ForEach(rosterViewModel.rosters, id: \.ownerID) { roster in
+			if let managerDetails = draftViewModel.managerDetails[roster.ownerID] {
+			   VStack {
+				  Text(managerDetails.name)
+					 .font(.largeTitle)
+					 .padding()
+
+				  // Displaying RosterDetailView for each manager
+				  RosterDetailView(
+					 leagueID: rosterViewModel.leagueID,
+					 managerID: roster.ownerID,
+					 managerName: managerDetails.name,
+					 managerAvatarURL: draftViewModel.managerAvatar(for: roster.ownerID),
+					 draftViewModel: draftViewModel
 				  )
-				  .tabItem {
-					 // Optional: Show manager's name or avatar in the tab indicator
-					 Text(manager.display_name ?? manager.username)
-				  }
 			   }
+			   .padding()
+			   .tag(roster.ownerID)
 			}
-			.tabViewStyle(PageTabViewStyle())
 		 }
 	  }
-   }
-}
+	  .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+	  .onAppear {
+		 // Fetch data needed for displaying the manager's rosters and draft details
+		 draftViewModel.fetchAllManagerDetails { success in
+			if success {
+			   print("[ManagerSwipeView]: Successfully fetched all manager details.")
+			} else {
+			   print("[ManagerSwipeView]: Failed to fetch some manager details.")
+			}
+		 }
 
-// Preview for testing purposes
-struct ManagerSwipeView_Previews: PreviewProvider {
-   static var previews: some View {
-	  ManagerSwipeView(draftViewModel: DraftViewModel(leagueID: "sample_league_id"))
+		 rosterViewModel.fetchRoster()
+		 playerViewModel.loadPlayersFromCache()
+	  }
    }
 }

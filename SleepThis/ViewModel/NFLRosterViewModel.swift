@@ -19,10 +19,10 @@ class NFLRosterViewModel: ObservableObject {
 		 let rosterURL = URL(string: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/\(teamID)/roster")!
 		 URLSession.shared.dataTask(with: rosterURL) { data, _, error in
 			defer { group.leave() }
-			if let error = error {
-//			   print("[fetchPlayersForAllTeams:] Failed to fetch roster for team \(teamID): \(error.localizedDescription)")
-			   return
-			}
+//			if let error = error {
+////			   print("[fetchPlayersForAllTeams:] Failed to fetch roster for team \(teamID): \(error.localizedDescription)")
+//			   return
+//			}
 
 			guard let data = data else {
 //			   print("[fetchPlayersForAllTeams:] No data received for team \(teamID)")

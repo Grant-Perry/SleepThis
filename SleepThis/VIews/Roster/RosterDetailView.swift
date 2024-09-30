@@ -19,7 +19,7 @@ struct RosterDetailView: View {
 	  self.managerAvatarURL = managerAvatarURL
 	  self.draftViewModel = draftViewModel
 	  rosterViewModel = RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel)
-    }
+   }
 
    var body: some View {
 	  ScrollView {
@@ -30,7 +30,7 @@ struct RosterDetailView: View {
 			   .foregroundColor(.gpWhite)
 			   .padding(.leading)
 
-			// Manager info
+			// Manager Info
 			HStack {
 			   AsyncImage(url: managerAvatarURL) { image in
 				  image.resizable()
@@ -144,5 +144,3 @@ struct RosterDetailView: View {
 	  }
    }
 }
-
-
