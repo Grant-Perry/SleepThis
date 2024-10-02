@@ -18,21 +18,27 @@ class RosterViewModel: ObservableObject {
 	  fetchRoster()
    }
 
-   func fetchRoster() {
-	  guard !leagueID.isEmpty else { return }
-	  
+   func fetchRoster(completion: (() -> Void)? = nil) {
+	  guard !leagueID.isEmpty else {
+		 completion?()
+		 return
+	  }
+
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/rosters") else {
 		 print("[RosterViewModel] Invalid URL.")
+		 completion?()
 		 return
 	  }
 
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
 		 if let error = error {
 			print("[RosterViewModel] Error fetching rosters: \(error)")
+			completion?()
 			return
 		 }
 		 guard let data = data else {
 			print("[RosterViewModel] No data returned.")
+			completion?()
 			return
 		 }
 		 do {
@@ -48,12 +54,17 @@ class RosterViewModel: ObservableObject {
 				  self?.selectedRosterSettings = firstRoster.settings
 				  print("DP - selectedRosterSettings successfully assigned: \(firstRoster.settings)")
 			   }
+			   completion?() // Call completion handler here
 			}
 		 } catch {
 			print("[RosterViewModel] Failed to decode rosters: \(error)")
+			completion?()
 		 }
 	  }.resume()
    }
+
+
+
 
    func getManagerSettings(managerID: String) -> RosterSettings? {
 	  return rosters.first(where: { $0.ownerID == managerID })?.settings

@@ -4,12 +4,13 @@ struct ManagerRowView: View {
    let managerID: String
    let leagueID: String
    @StateObject var draftViewModel: DraftViewModel
+   @StateObject var rosterViewModel: RosterViewModel  // Added this line
    let thisBackgroundColor: Color
    let viewType: ManagerViewType
    @State private var showLeagueListView = false
 
    var body: some View {
-	  NavigationLink(destination: destinationView) {  // NavigationLink wraps the entire card for RosterDetailView
+	  NavigationLink(destination: destinationView) {
 		 HStack {
 			// Manager's avatar
 			if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
@@ -116,7 +117,8 @@ struct ManagerRowView: View {
 			managerID: managerID,
 			managerName: managerName,
 			managerAvatarURL: managerAvatarURL,
-			draftViewModel: draftViewModel
+			draftViewModel: draftViewModel,
+			rosterViewModel: rosterViewModel  
 		 )
 		 .preferredColorScheme(.dark)
 	  }

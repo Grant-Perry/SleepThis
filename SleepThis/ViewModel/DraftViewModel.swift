@@ -18,40 +18,60 @@ class DraftViewModel: ObservableObject {
 	  self.leagueID = leagueID
    }
 
-   func fetchDraftData(draftID: String) {
-	  guard !leagueID.isEmpty else { return }
+   func fetchDraftData(draftID: String, completion: @escaping (Bool) -> Void) {
+	  guard !leagueID.isEmpty else {
+		 completion(false)
+		 return
+	  }
+
 	  guard let url = URL(string: "https://api.sleeper.app/v1/draft/\(draftID)/picks") else {
 		 print("[fetchDraftData]: Invalid URL")
+		 completion(false)
 		 return
 	  }
 
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-		 guard let self = self else { return }
+		 guard let self = self else {
+			completion(false)
+			return
+		 }
 
 		 if let error = error {
 			print("[fetchDraftData]: Error fetching draft data - \(error.localizedDescription)")
+			completion(false)
 			return
 		 }
 
 		 guard let data = data else {
 			print("[fetchDraftData]: No data received")
+			completion(false)
 			return
 		 }
 
+		 // Log the raw JSON response for debugging
+		 if let jsonString = String(data: data, encoding: .utf8) {
+			print("[fetchDraftData]: Raw JSON Response: \(jsonString)")
+		 }
+
 		 do {
+			// Decode the response to DraftModel
 			let decodedData: [DraftModel] = try JSONDecoder().decode([DraftModel].self, from: data)
 			DispatchQueue.main.async {
 			   self.drafts = decodedData
 			   self.groupedPicks = Dictionary(grouping: decodedData) { $0.picked_by }
-			   self.assignManagerColors()  // Assign colors after grouping picks
-			   self.fetchAllManagerDetails()
+			   self.assignManagerColors()  // Assign colors to managers based on draft order
+
 			   print("[fetchDraftData]: Successfully fetched and decoded draft data")
+			   completion(true)  // Indicate successful completion
 			}
 		 } catch {
 			print("[fetchDraftData]: Failed to decode data - \(error.localizedDescription)")
+			completion(false)  // Indicate failure
 		 }
 	  }.resume()
    }
+
+
 
    // Assign colors to each manager based on their draft slot order
    func assignManagerColors() {
@@ -74,20 +94,24 @@ class DraftViewModel: ObservableObject {
 
    // Get the color assigned to a manager
    func getManagerColor(for managerID: String) -> Color {
-	  return managerIDToColor[managerID] ?? .gpUndrafted // .gpGray // THIS is it too
+	  return managerIDToColor[managerID] ?? .gpUndrafted
    }
 
-   // Fetch manager details from the Sleeper API
-   func fetchManagerDetails(managerID: String) {
+   // Fetch manager details from the Sleeper API with a completion handler
+   func fetchManagerDetails(managerID: String, completion: @escaping (Bool) -> Void) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(managerID)") else {
 		 print("[fetchManagerDetails]: Invalid manager URL for ID: \(managerID)")
+		 completion(false) // Call completion with `false` indicating failure.
 		 return
 	  }
 
 	  print("[fetchManagerDetails]: Fetching manager details for ID: \(managerID)")
 
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-		 guard let self = self else { return }
+		 guard let self = self else {
+			completion(false)
+			return
+		 }
 
 		 if let data = data {
 			do {
@@ -95,25 +119,40 @@ class DraftViewModel: ObservableObject {
 			   DispatchQueue.main.async {
 				  self.managerDetails[managerID] = (name: json.display_name ?? json.username, avatar: json.avatar)
 				  print("[fetchManagerDetails]: Successfully fetched manager details for ID: \(managerID)")
+				  completion(true) // Call completion with `true` indicating success.
 			   }
 			} catch {
 			   print("[fetchManagerDetails]: Error decoding manager data for \(managerID): \(error)")
+			   completion(false)
 			}
 		 } else {
 			print("[fetchManagerDetails]: No data received for manager ID: \(managerID)")
+			completion(false)
 		 }
 	  }.resume()
    }
 
-   // Fetch all manager details
-   func fetchAllManagerDetails() {
-	  guard !leagueID.isEmpty else { return }
 
-	  for managerID in groupedPicks.keys {
-		 print("Fetching manager details for managerID: \(managerID) [fetchAllManagerDetails]")
-		 fetchManagerDetails(managerID: managerID)
+
+   // Fetch all manager details with a completion handler
+   func fetchAllManagerDetails(completion: @escaping (Bool) -> Void) {
+	  let managerIDs = Array(groupedPicks.keys)
+	  var fetchCount = 0
+
+	  for managerID in managerIDs {
+		 fetchManagerDetails(managerID: managerID) { success in
+			fetchCount += 1
+			if !success {
+			   print("[fetchAllManagerDetails]: Failed to fetch manager details for ID: \(managerID)")
+			}
+			// When all manager details have been fetched, call the completion handler
+			if fetchCount == managerIDs.count {
+			   completion(true) // All tasks finished successfully
+			}
+		 }
 	  }
    }
+
 
    // Get manager name
    func managerName(for managerID: String) -> String {
@@ -128,18 +167,14 @@ class DraftViewModel: ObservableObject {
 
    // Get draft details for a specific player, including who picked them
    func getDraftDetails(for playerID: String) -> (round: Int, pick_no: Int, picked_by: String)? {
-	  // Look for the player in the drafts
 	  return drafts.first(where: { $0.player_id == playerID })
 		 .map { ($0.round, $0.pick_no, $0.picked_by) }
    }
 
-
-   // New Method to Get Player Status
+   // Get Player Status
    func getPlayerStatus(for playerID: String, playerViewModel: PlayerViewModel) -> String? {
 	  let thisBack = playerViewModel.players.first(where: { $0.id == playerID })?.status
 	  print("Player Status: \(String(describing: thisBack))")
 	  return thisBack
    }
-
-
 }
