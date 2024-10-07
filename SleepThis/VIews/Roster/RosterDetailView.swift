@@ -5,21 +5,29 @@ struct RosterDetailView: View {
    let managerID: String
    let managerName: String
    let managerAvatarURL: URL?
-   @State var draftViewModel: DraftViewModel
-   @State var rosterViewModel: RosterViewModel
+   var draftViewModel: DraftViewModel
+   var rosterViewModel: RosterViewModel
    @StateObject var playerViewModel = PlayerViewModel()
    @State private var sortByDraftOrder = false
    @State private var leagueName: String = ""
    var playerSize = 50.0
 
-   init(leagueID: String, managerID: String, managerName: String, managerAvatarURL: URL?, draftViewModel: DraftViewModel) {
+   init(
+	  leagueID: String,
+	  managerID: String,
+	  managerName: String,
+	  managerAvatarURL: URL?,
+	  draftViewModel: DraftViewModel,
+	  rosterViewModel: RosterViewModel
+   ) {
 	  self.leagueID = leagueID
 	  self.managerID = managerID
 	  self.managerName = managerName
 	  self.managerAvatarURL = managerAvatarURL
 	  self.draftViewModel = draftViewModel
-	  rosterViewModel = RosterViewModel(leagueID: leagueID, draftViewModel: draftViewModel)
-    }
+	  self.rosterViewModel = rosterViewModel
+	  // Removed the creation of a new rosterViewModel
+   }
 
    var body: some View {
 	  ScrollView {
@@ -30,7 +38,7 @@ struct RosterDetailView: View {
 			   .foregroundColor(.gpWhite)
 			   .padding(.leading)
 
-			// Manager info
+			// Manager Info
 			HStack {
 			   AsyncImage(url: managerAvatarURL) { image in
 				  image.resizable()
@@ -144,5 +152,3 @@ struct RosterDetailView: View {
 	  }
    }
 }
-
-

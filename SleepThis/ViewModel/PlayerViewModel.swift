@@ -40,62 +40,75 @@ class PlayerViewModel: ObservableObject {
 
    // Fetch all players from the API and filter
    func fetchAllPlayers() {
-	  print("[fetchAllPlayers:] Starting network fetch for players...")
-	  isLoading = true
-	  errorMessage = nil
-
-	  let urlString = "https://api.sleeper.app/v1/players/nfl"
-
-	  guard let url = URL(string: urlString) else {
-		 self.errorMessage = "Invalid URL"
-		 isLoading = false
+	  // Construct the URL for the API endpoint
+	  guard let url = URL(string: "https://api.sleeper.app/v1/players/nfl") else {
+		 print("[fetchAllPlayers]: Invalid URL.")
 		 return
 	  }
 
-	  URLSession.shared.dataTask(with: url) { data, response, error in
-		 DispatchQueue.main.async {
-			self.isLoading = false
+	  // Create a URLSession data task to fetch data from the API
+	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+		 // Handle errors from the network request
+		 if let error = error {
+			print("[fetchAllPlayers]: Network request failed with error: \(error.localizedDescription)")
+			return
+		 }
 
-			if let error = error {
-			   self.errorMessage = error.localizedDescription
-			   print("[fetchAllPlayers:] Network error: \(error.localizedDescription)")
-			   return
+		 // Ensure data is not nil
+		 guard let data = data else {
+			print("[fetchAllPlayers]: No data received from the network.")
+			return
+		 }
+
+		 do {
+			// Decode the JSON data into a dictionary of PlayerModel objects
+			let decoder = JSONDecoder()
+			let playerDictionary = try decoder.decode([String: PlayerModel].self, from: data)
+
+			// Convert the dictionary values into an array
+			let playerArray = Array(playerDictionary.values)
+
+			// Sort the players if needed (e.g., by name)
+			let sortedPlayers = playerArray.sorted { (player1: PlayerModel, player2: PlayerModel) -> Bool in
+			   let name1 = player1.fullName ?? ""
+			   let name2 = player2.fullName ?? ""
+			   return name1 < name2
 			}
 
-			guard let data = data else {
-			   self.errorMessage = "No data received"
-			   print("[fetchAllPlayers:] No data received from network")
-			   return
-			}
 
-			do {
-			   // Decode player dictionary
-			   let playersDictionary = try JSONDecoder().decode([String: PlayerModel].self, from: data)
+			// Calculate cache size and age on a background thread
+			DispatchQueue.global(qos: .background).async {
+			   let cacheSize = self?.calculateCacheSize()
+			   let cacheAgeDescription = "Cache Age: 0 day(s)" // Since we just fetched fresh data
 
-			   // Convert the dictionary values to an array of PlayerModel and filter the relevant positions
-			   self.players = playersDictionary.values.filter { player in
-				  guard let position = player.position,
-						let team = player.team,
-						let depthChartPosition = player.depthChartPosition else { return false }
-				  // Filter out players with "Unknown" values and keep only relevant positions
-				  return ["QB", "RB", "WR", "TE", "K", "DST"].contains(position) &&
-				  team.lowercased() != "unknown" &&
-				  position.lowercased() != "unknown" &&
-				  depthChartPosition.lowercased() != "unknown"
+			   // Save data to cache
+			   self?.savePlayersToCache(data: data)
+
+			   // Update UI-related properties on the main thread
+			   DispatchQueue.main.async {
+				  self?.players = sortedPlayers
+				  self?.cacheSize = cacheSize
+				  self?.cacheAgeDescription = cacheAgeDescription
+				  print("[fetchAllPlayers]: Successfully fetched and loaded player data.")
 			   }
-
-			   // Save to cache after fetching from network
-			   CacheManager.shared.saveToCache(self.players, as: self.cacheFileName)
-			   self.cacheSize = self.calculateCacheSize()
-			   self.cacheAgeDescription = self.calculateCacheAge()
-			   print("[fetchAllPlayers:] Successfully saved data to cache.")
-			} catch {
-			   print("[fetchAllPlayers:] Failed to decode player data: \(error)")
-			   self.errorMessage = "Failed to decode player data: \(error)"
 			}
+		 } catch {
+			print("[fetchAllPlayers]: Failed to decode player data: \(error.localizedDescription)")
 		 }
 	  }.resume()
    }
+
+   // Helper method to save data to cache
+   private func savePlayersToCache(data: Data) {
+	  let cacheURL = CacheManager.shared.getCacheDirectory().appendingPathComponent(cacheFileName)
+	  do {
+		 try data.write(to: cacheURL)
+		 print("[savePlayersToCache]: Successfully saved player data to cache.")
+	  } catch {
+		 print("[savePlayersToCache]: Failed to save player data to cache: \(error.localizedDescription)")
+	  }
+   }
+
 
    // Fetch players by name or ID using a lookup query
    func fetchPlayersByLookup(playerLookup: String) {
@@ -129,9 +142,11 @@ class PlayerViewModel: ObservableObject {
 		 if let cacheAgeInDays = calculateCacheAgeInDays(), cacheAgeInDays < Int(maxCacheDays) {
 			let cachedPlayers = try Data(contentsOf: cacheURL)
 			let decodedPlayers = try JSONDecoder().decode([PlayerModel].self, from: cachedPlayers)
-			self.players = decodedPlayers
-			self.cacheSize = calculateCacheSize()
-			self.cacheAgeDescription = "Cache Age: \(cacheAgeInDays) day(s)"
+			DispatchQueue.main.async {
+			   self.players = decodedPlayers
+			   self.cacheSize = self.calculateCacheSize()
+			   self.cacheAgeDescription = "Cache Age: \(cacheAgeInDays) day(s)"
+			}
 			print("[loadPlayersFromCache:] Loaded data from cache.")
 		 } else {
 			print("[loadPlayersFromCache:] Cache is older than \(maxCacheDays) days. Fetching fresh data.")
@@ -142,6 +157,7 @@ class PlayerViewModel: ObservableObject {
 		 fetchAllPlayers()
 	  }
    }
+
 
    // Calculate the cache age in days
    func calculateCacheAgeInDays() -> Int? {

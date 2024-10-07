@@ -87,20 +87,23 @@ struct LeagueListView: View {
 		 .onAppear {
 			if !hasFetchedManagerDetails {
 			   hasFetchedManagerDetails = true
-			   // Move the fetchManagerDetails here, making sure it only runs once
-			   draftViewModel.fetchManagerDetails(managerID: managerID)
-
-			   // Fetch leagues for the passed userID
+			   // Fetch manager details for the passed userID
 			   isLoading = true
-			   leagueViewModel.fetchLeagues(userID: managerID)
-			   DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-				  isLoading = false
-				  if leagueViewModel.leagues.isEmpty {
-					 alertMessage = "No leagues found for this user."
+			   draftViewModel.fetchManagerDetails(managerID: managerID) { success in
+				  if success {
+					 print("[onAppear]: Manager details fetched successfully.")
+					 // Fetch leagues for the userID
+					 leagueViewModel.fetchLeagues(userID: managerID)
+				  } else {
+					 alertMessage = "Failed to load manager details."
 					 showAlert = true
 				  }
+				  isLoading = false
 			   }
 			}
+		 }
+		 .alert(isPresented: $showAlert) {
+			Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
 		 }
 		 .sheet(isPresented: $showNewLeagueList) {
 			LeagueListView(

@@ -1,43 +1,93 @@
 import SwiftUI
 
 struct ManagerSwipeView: View {
-   @StateObject var draftViewModel: DraftViewModel
+   var draftViewModel: DraftViewModel
+   var rosterViewModel: RosterViewModel
+   var playerViewModel: PlayerViewModel
+
+   @State private var isDataLoaded = false
 
    var body: some View {
-	  VStack {
-		 if draftViewModel.managers.isEmpty {
-			// Show a loading indicator if no managers are available
-			ProgressView("Loading Managers...")
-			   .onAppear {
-				  // Fetch manager details for the league
-				  draftViewModel.fetchAllManagerDetails()
-			   }
-		 } else {
-			// Display TabView for swiping between ManagerListViews
-			TabView {
-			   ForEach(draftViewModel.managers, id: \.user_id) { manager in
-				  ManagerListView(
-					 draftViewModel: draftViewModel,
-					 rosterViewModel: RosterViewModel(leagueID: draftViewModel.leagueID, draftViewModel: draftViewModel),
-					 leagueID: draftViewModel.leagueID,
-					 draftID: "draft_id_placeholder",  // Placeholder: Update as needed
-					 viewType: .roster // Set viewType based on requirements
-				  )
-				  .tabItem {
-					 // Optional: Show manager's name or avatar in the tab indicator
-					 Text(manager.display_name ?? manager.username)
+	  if isDataLoaded {
+		 TabView {
+			ForEach(rosterViewModel.rosters, id: \.ownerID) { roster in
+			   let ownerIDString = String(describing: roster.ownerID)
+			   if let managerDetails = draftViewModel.managerDetails[ownerIDString] {
+				  VStack {
+					 Text(managerDetails.name)
+						.font(.largeTitle)
+						.padding()
+
+					 RosterDetailView(
+						leagueID: rosterViewModel.leagueID,
+						managerID: ownerIDString,
+						managerName: managerDetails.name,
+						managerAvatarURL: draftViewModel.managerAvatar(for: ownerIDString),
+						draftViewModel: draftViewModel,
+						rosterViewModel: rosterViewModel
+					 )
 				  }
+				  .padding()
+				  .tag(ownerIDString)
+			   } else {
+				  Text("Manager details not found for \(ownerIDString)")
 			   }
 			}
-			.tabViewStyle(PageTabViewStyle())
 		 }
+		 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+	  } else {
+		 Text("Loading managers and rosters...")
+			.onAppear {
+			   fetchData()
+			}
 	  }
    }
-}
 
-// Preview for testing purposes
-struct ManagerSwipeView_Previews: PreviewProvider {
-   static var previews: some View {
-	  ManagerSwipeView(draftViewModel: DraftViewModel(leagueID: "sample_league_id"))
+   func fetchData() {
+	  var dataLoadedCount = 0
+	  let totalDataTypes = 2
+
+	  // Fetch draft details
+	  draftViewModel.fetchDraftData(draftID: AppConstants.draftID) { success in
+		 if success {
+			// Now fetch manager details
+			draftViewModel.fetchAllManagerDetails { success in
+			   DispatchQueue.main.async {
+				  dataLoadedCount += 1
+				  if dataLoadedCount == totalDataTypes { checkDataLoaded() }
+			   }
+			}
+		 } else {
+			DispatchQueue.main.async {
+			   dataLoadedCount += 1
+			   if dataLoadedCount == totalDataTypes { checkDataLoaded() }
+			}
+		 }
+	  }
+
+	  // **Re-enable fetchRoster**
+	  rosterViewModel.fetchRoster {
+		 DispatchQueue.main.async {
+			dataLoadedCount += 1
+			if dataLoadedCount == totalDataTypes { checkDataLoaded() }
+		 }
+	  }
+
+	  // **Re-enable loadPlayersFromCache**
+	  playerViewModel.loadPlayersFromCache()
+   }
+
+
+   func checkDataLoaded() {
+	  DispatchQueue.main.async {
+		 print("[checkDataLoaded]: managerDetails.count = \(draftViewModel.managerDetails.count)")
+		 print("[checkDataLoaded]: rosters.count = \(rosterViewModel.rosters.count)")
+		 if !draftViewModel.managerDetails.isEmpty && !rosterViewModel.rosters.isEmpty {
+			print("[checkDataLoaded]: Data is fully loaded.")
+			isDataLoaded = true
+		 } else {
+			print("[checkDataLoaded]: Data is not fully loaded.")
+		 }
+	  }
    }
 }
