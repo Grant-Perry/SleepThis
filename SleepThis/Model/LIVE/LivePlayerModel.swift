@@ -1,49 +1,36 @@
 import Foundation
 
-struct LivePlayerModel: Codable, Identifiable {
-   let id: Int
-   let lineupSlotId: Int
-   let playerPoolEntry: PlayerPoolEntry
+struct LivePlayerModel: Codable {
+   var teams: [Team]?
+}
+
+struct Team: Codable {
+   var id: Int?
+   var roster: Roster?
+}
+
+struct Roster: Codable {
+   var entries: [RosterEntry]?
+}
+
+struct RosterEntry: Codable {
+   var playerPoolEntry: PlayerPoolEntry?
 }
 
 struct PlayerPoolEntry: Codable {
-   let appliedStatTotal: Double
-   let id: Int
-   let keeperValue: Int?
-   let keeperValueFuture: Int?
-   let lineupLocked: Bool
-   let onTeamId: Int
-   let player: Player
-   let rosterLocked: Bool
-   let status: String?
-   let tradeLocked: Bool
+   var player: Player?
 }
 
 struct Player: Codable {
-   let defaultPositionId: Int
-   let draftRanksByRankType: [String: Int]?
-   let eligibleSlots: [Int]
-   let firstName: String?
-   let fullName: String
-   let id: Int
-   let injured: Bool
-   let injuryStatus: String?
-   let lastName: String?
-   let proTeamId: Int
-   let stats: [Stat]
-   let universeId: Int
+   var id: Int?
+   var fullName: String?
+   var proTeamId: Int?
+   var defaultPositionID: Int?
+   var stats: [PlayerStat]?
 }
 
-struct Stat: Codable {
-   let appliedTotal: Double
-   let externalId: String
-   let id: String
-   let proTeamId: Int
-   let scoringPeriodId: Int
-   let seasonId: Int
-   let statSourceId: Int
-   let statSplitTypeId: Int
-   let stats: [String: Double]
-   let appliedStats: [String: Double]?
-   let variance: [String: Double]?
+
+
+struct PlayerStat: Codable {
+   var appliedStats: [String: Double]?
 }

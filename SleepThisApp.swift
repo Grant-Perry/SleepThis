@@ -6,11 +6,6 @@ struct SleepThisApp: App {
 	  WindowGroup {
 		 TabView {
 
-			PlayerSearchView(nflRosterViewModel: NFLRosterViewModel())
-			   .tabItem {
-				  Label("Player Search", systemImage: "plus.magnifyingglass")
-			   }
-
 			LivePlayerListView()
 			   .tabItem {
 				  Label("LIVE", systemImage: "livephoto.play")
@@ -18,9 +13,16 @@ struct SleepThisApp: App {
 
 
 
+			PlayerSearchView(nflRosterViewModel: NFLRosterViewModel())
+			   .tabItem {
+				  Label("Player Search", systemImage: "plus.magnifyingglass")
+			   }
+
+
 			ManagerSwipeView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
-			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID,
+												draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
 			   playerViewModel: PlayerViewModel()
 			)
 			.tabItem {
@@ -31,7 +33,8 @@ struct SleepThisApp: App {
 
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
-			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID, draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID,
+												 draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
 			   leagueID: AppConstants.leagueID,
 			   draftID: AppConstants.draftID,
 			   viewType: .roster

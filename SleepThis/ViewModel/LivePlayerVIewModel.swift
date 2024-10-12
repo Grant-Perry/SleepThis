@@ -1,137 +1,113 @@
-import Foundation
+import SwiftUI
 import Combine
 
 class LivePlayerViewModel: ObservableObject {
-   @Published var players: [LivePlayerModel] = []
-   private var cancellables = Set<AnyCancellable>()
-   private let updateInterval: TimeInterval = 20
-   private var timer: Timer?
+   @Published var players: [Player] = []
+   @Published var isLoading: Bool = false
+   @Published var errorMessage: String?
 
-   init() {
-	  startUpdating()
+   // Remove cache entirely
+   func loadData() {
+	  isLoading = true
+	  errorMessage = nil
+	  fetchDataFromNetwork()  // Always fetch from network
    }
 
-   func startUpdating() {
-	  fetchESPNPlayerData()
-	  timer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
-		 self?.fetchESPNPlayerData()
-	  }
-   }
-
-   func fetchESPNPlayerData() {
-	  guard let url = URL(string: "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2024/segments/0/leagues/\(AppConstants.LeagueID)?rosterForTeamId=7&view=mLiveScoring&view=mMatchupScore") else {
+   private func fetchDataFromNetwork() {
+	  let leagueID = AppConstants.ESPNLeagueID
+	  guard let url = URL(string: "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2024/segments/0/leagues/\(leagueID)?view=mMatchupScore&view=mLiveScoring&view=mRoster") else {
 		 print("Invalid URL")
+		 DispatchQueue.main.async {
+			self.isLoading = false
+			self.errorMessage = "Invalid URL"
+		 }
 		 return
 	  }
 
 	  var request = URLRequest(url: url)
-	  request.addValue("SWID=\(AppConstants.SWID)", forHTTPHeaderField: "Cookie")
-	  request.addValue("ESPN_S2=\(AppConstants.ESPN_S2)", forHTTPHeaderField: "Cookie")
+	  request.httpMethod = "GET"
+	  let cookieString = "SWID=\(AppConstants.SWID); espn_s2=\(AppConstants.ESPN_S2)"
+	  request.setValue(cookieString, forHTTPHeaderField: "Cookie")
+	  request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-	  URLSession.shared.dataTaskPublisher(for: request)
-		 .map(\.data)
-		 .decode(type: LeagueResponse.self, decoder: JSONDecoder())
-		 .receive(on: DispatchQueue.main)
-		 .sink { completion in
-			switch completion {
-			   case .finished:
-				  break
-			   case .failure(let error):
-				  print("Error fetching data: \(error)")
+	  let session = URLSession(configuration: .default)
+	  let task = session.dataTask(with: request) { data, response, error in
+		 if let httpResponse = response as? HTTPURLResponse {
+			print("HTTP Status Code: \(httpResponse.statusCode)")
+			if httpResponse.statusCode != 200 {
+			   DispatchQueue.main.async {
+				  self.isLoading = false
+				  self.errorMessage = "Server returned status code \(httpResponse.statusCode)"
+			   }
+			   return
 			}
-		 } receiveValue: { [weak self] response in
-			self?.players = response.rosterForCurrentScoringPeriod.entries
 		 }
-		 .store(in: &cancellables)
-   }
 
-   deinit {
-	  timer?.invalidate()
-   }
-}
+		 if let error = error {
+			print("Error fetching data: \(error.localizedDescription)")
+			DispatchQueue.main.async {
+			   self.isLoading = false
+			   self.errorMessage = error.localizedDescription
+			}
+			return
+		 }
 
-struct LeagueResponse: Codable {
-   let rosterForCurrentScoringPeriod: RosterForCurrentScoringPeriod
-}
+		 guard let data = data else {
+			print("No data received")
+			DispatchQueue.main.async {
+			   self.isLoading = false
+			   self.errorMessage = "No data received"
+			}
+			return
+		 }
 
-struct RosterForCurrentScoringPeriod: Codable {
-   let entries: [LivePlayerModel]
-}
+		 do {
+			let decoder = JSONDecoder()
+			decoder.keyDecodingStrategy = .convertFromSnakeCase
+			let livePlayerModel = try decoder.decode(LivePlayerModel.self, from: data)
+			print("Decoded LivePlayerModel: \(livePlayerModel)")
 
-enum Position: Int, CaseIterable {
-   case quarterback = 1
-   case runningBack = 2
-   case wideReceiver = 3
-   case tightEnd = 4
-   case kicker = 5
-   case defenseST = 16
-
-   var name: String {
-	  switch self {
-		 case .quarterback: return "Quarterback"
-		 case .runningBack: return "Running Back"
-		 case .wideReceiver: return "Wide Receiver"
-		 case .tightEnd: return "Tight End"
-		 case .kicker: return "Kicker"
-		 case .defenseST: return "Defense/Special Teams"
+			DispatchQueue.main.async {
+			   self.processLivePlayerModel(livePlayerModel)
+			   self.isLoading = false // Reset isLoading here
+			   print("Final state - isLoading: \(self.isLoading), players count: \(self.players.count)")
+			}
+		 } catch {
+			print("Error decoding data: \(error.localizedDescription)")
+			DispatchQueue.main.async {
+			   self.isLoading = false
+			   self.errorMessage = "Error decoding data: \(error.localizedDescription)"
+			}
+		 }
 	  }
+	  task.resume()
    }
-}
 
-enum LineupSlot: Int, CaseIterable {
-   case quarterback = 0
-   case runningBack = 2
-   case wideReceiver = 4
-   case tightEnd = 6
-   case defenseST = 16
-   case kicker = 17
-   case bench = 20
-   case injuredReserve = 21
-   case flex = 23
 
-   var name: String {
-	  switch self {
-		 case .quarterback: return "Quarterback"
-		 case .runningBack: return "Running Back"
-		 case .wideReceiver: return "Wide Receiver"
-		 case .tightEnd: return "Tight End"
-		 case .defenseST: return "Defense/Special Teams"
-		 case .kicker: return "Kicker"
-		 case .bench: return "Bench"
-		 case .injuredReserve: return "Injured Reserve"
-		 case .flex: return "Flex"
+   private func processLivePlayerModel(_ livePlayerModel: LivePlayerModel) {
+	  var allPlayers: [Player] = []
+	  if let teams = livePlayerModel.teams {
+		 for team in teams {
+			print("Processing team ID: \(team.id ?? 0)")
+
+			if let rosterEntries = team.roster?.entries {
+			   print("Team \(team.id ?? 0) has \(rosterEntries.count) roster entries")
+
+			   for rosterEntry in rosterEntries {
+				  // Access player through nested structure
+				  if let player = rosterEntry.playerPoolEntry?.player {
+					 print("Found player: \(player.fullName ?? "Unknown Player")")
+					 allPlayers.append(player)
+				  } else {
+					 print("No player found in roster entry")
+				  }
+			   }
+			} else {
+			   print("No roster entries for team ID \(team.id ?? 0)")
+			}
+		 }
 	  }
-   }
-}
-
-enum StatType: String, CaseIterable {
-   case passAttempts = "0"
-   case passCompletions = "1"
-   case passYards = "3"
-   case passTDs = "4"
-   case rushAttempts = "23"
-   case rushYards = "24"
-   case rushTDs = "25"
-   case receptions = "41"
-   case receivingYards = "42"
-   case receivingTDs = "43"
-   case totalPoints = "53"
-   case targets = "58"
-
-   var name: String {
-	  switch self {
-		 case .passAttempts: return "Pass Attempts"
-		 case .passCompletions: return "Pass Completions"
-		 case .passYards: return "Pass Yards"
-		 case .passTDs: return "Pass TDs"
-		 case .rushAttempts: return "Rush Attempts"
-		 case .rushYards: return "Rush Yards"
-		 case .rushTDs: return "Rush TDs"
-		 case .receptions: return "Receptions"
-		 case .receivingYards: return "Receiving Yards"
-		 case .receivingTDs: return "Receiving TDs"
-		 case .totalPoints: return "Total Points"
-		 case .targets: return "Targets"
-	  }
+	  print("Total players loaded: \(allPlayers.count)")
+	  self.players = allPlayers
    }
 }
