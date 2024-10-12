@@ -22,14 +22,24 @@ struct LivePlayerListView: View {
 			   List(liveViewModel.players, id: \.id) { player in
 				  NavigationLink(destination: LivePlayerDetailView(player: player)) {
 					 HStack {
-						AsyncImage(url: URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(player.id ?? 0).png&w=75&h=75")) { image in
-						   image
-							  .resizable()
-							  .frame(width: 75, height: 75)
-							  .clipShape(Circle())
-						} placeholder: {
-						   ProgressView()
-							  .frame(width: 75, height: 75)
+						AsyncImage(url: URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(player.id ?? 0).png")) { phase in
+						   switch phase {
+							  case .empty:
+								 ProgressView()
+									.frame(width: 75, height: 75)
+							  case .success(let image):
+								 image
+									.resizable()
+									.scaledToFit()
+									.frame(width: 75, height: 75)
+									.clipShape(Circle())
+							  case .failure:
+								 Image(systemName: "person.crop.circle.fill")
+									.resizable()
+									.frame(width: 75, height: 75)
+							  @unknown default:
+								 EmptyView()
+						   }
 						}
 						Text(player.fullName ?? "Unknown Player")
 						   .font(.headline)
