@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LivePlayerImageView: View {
    let playerID: Int?
+   let picSize: CGFloat
 
    var body: some View {
 	  let playerID = playerID ?? 0
@@ -12,17 +13,17 @@ struct LivePlayerImageView: View {
 			case .empty:
 			   Image(systemName: "person.crop.circle.fill")
 				  .resizable()
-				  .frame(width: 180, height: 180)
+				  .frame(width: picSize, height: picSize)
 			case .success(let image):
 			   image
 				  .resizable()
 				  .scaledToFill()
-				  .frame(width: 180, height: 180)
+				  .frame(width: picSize, height: picSize)
 //				  .clipShape(Circle())
 			case .failure:
 			   Image(systemName: "person.crop.circle.fill")
 				  .resizable()
-				  .frame(width: 180, height: 180)
+				  .frame(width: picSize, height: picSize)
 			@unknown default:
 			   EmptyView()
 		 }

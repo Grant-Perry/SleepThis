@@ -4,6 +4,7 @@ struct LivePlayerDetailView: View {
    var player: Player
    @StateObject private var nflRosterViewModel = NFLRosterViewModel()
    @State private var nflPlayer: NFLRosterModel.NFLPlayer?
+   var picSize: CGFloat = 180
 
    var body: some View {
 	  VStack {
@@ -18,11 +19,11 @@ struct LivePlayerDetailView: View {
 				  endPoint: .bottom
 			   ))
 			   .shadow(radius: 4)
-			   .frame(height: 180)
+			   .frame(height: picSize)
 
 			HStack(alignment: .center) {
 			   // Player Image
-			   LivePlayerImageView(playerID: player.id)
+			   LivePlayerImageView(playerID: player.id, picSize: 50)
 
 			   Spacer() // Push content to the right
 			}
@@ -35,19 +36,19 @@ struct LivePlayerDetailView: View {
 					 case .empty:
 						Image(systemName: "photo")
 						   .resizable()
-						   .frame(width: 180, height: 180)
+						   .frame(width: picSize, height: picSize)
 						   .opacity(0.5)
 					 case .success(let image):
 						image
 						   .resizable()
-						   .frame(width: 180, height: 180)
+						   .frame(width: picSize, height: picSize)
 						   .offset(x: -15, y: 18)
 						   .opacity(0.5)
 						   .clipped()
 					 case .failure:
 						Image(systemName: "photo")
 						   .resizable()
-						   .frame(width: 180, height: 180)
+						   .frame(width: picSize, height: picSize)
 						   .opacity(0.35)
 					 @unknown default:
 						EmptyView()
@@ -89,16 +90,17 @@ struct LivePlayerDetailView: View {
 
 			// Position
 			HStack {
-			   Text("\(positionName(for: player.defaultPositionID ?? 0))")
+			   Text("\(nflPlayer?.position?.abbreviation ?? "")")
 				  .font(.headline)
 				  .foregroundColor(.white)
 				  .bold()
 				  .padding(.leading, 110)
 				  .padding(.bottom, 60)
+
 			   Spacer()
 			}
 			.opacity(0.5)
-			.offset(y: -25)
+			.offset(x: 40, y: -25)
 		 }
 		 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: 200)
 		 .padding(.vertical, 4)
@@ -108,38 +110,40 @@ struct LivePlayerDetailView: View {
 
 		 // ScrollView for the Player Info Grid and Stats
 		 ScrollView {
-			// Player information grid
-			LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3), spacing: 16) {
-			   LivePlayerInfoRowView(label: "Height", value: nflPlayer?.displayHeight)
-			   LivePlayerInfoRowView(label: "Weight", value: nflPlayer?.displayWeight)
-			   LivePlayerInfoRowView(label: "Age", value: nflPlayer?.age?.description)
-			   LivePlayerInfoRowView(label: "Team", value: nflPlayer?.team?.displayName)
-			   LivePlayerInfoRowView(label: "Position", value: nflPlayer?.position?.displayName)
-			   LivePlayerInfoRowView(label: "Jersey", value: nflPlayer?.jersey)
-			}
-			.padding()
-			.background(RoundedRectangle(cornerRadius: 15)
-			   .fill(Color.black.opacity(0.2)))
-			.padding(.horizontal, 16)
-			.offset(y: -25)
+			VStack {
+			   // Player information grid
+//			   LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3), spacing: 16) {
+//				  LivePlayerInfoRowView(label: "Height", value: nflPlayer?.displayHeight?.description)
+//				  LivePlayerInfoRowView(label: "Weight", value: nflPlayer?.displayWeight?.description)
+//				  LivePlayerInfoRowView(label: "Age", value: nflPlayer?.age?.description)
+//				  LivePlayerInfoRowView(label: "Team", value: nflPlayer?.team?.displayName.description)
+//				  LivePlayerInfoRowView(label: "Position", value: nflPlayer?.position?.displayName.description)
+//				  LivePlayerInfoRowView(label: "Jersey", value: nflPlayer?.jersey)
+//			   }
+//			   .padding()
+//			   .background(RoundedRectangle(cornerRadius: 15)
+//				  .fill(Color.black.opacity(0.2)))
+//			   .padding(.horizontal, 16)
+//			   .offset(y: -25)
 
-			// Player Stats Grid
-			LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3), spacing: 16) {
-			   if let stats = player.stats {
-				  ForEach(stats.indices, id: \.self) { index in
-					 let stat = stats[index]
-					 if let appliedStats = stat.appliedStats {
-						ForEach(appliedStats.keys.sorted(), id: \.self) { key in
-						   LivePlayerInfoRowView(label: StatType(rawValue: key)?.description ?? "Unknown Stat", value: "\(appliedStats[key] ?? 0)")
+			   // Player Stats Grid
+			   LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3), spacing: 16) {
+				  if let stats = player.stats {
+					 ForEach(stats.indices, id: \.self) { index in
+						let stat = stats[index]
+						if let appliedStats = stat.appliedStats {
+						   ForEach(appliedStats.keys.sorted(), id: \.self) { key in
+							  LivePlayerInfoRowView(label: StatType(rawValue: key)?.description ?? "[UK]", value: "\(appliedStats[key] ?? 0)")
+						   }
 						}
 					 }
 				  }
 			   }
+			   .padding()
+			   .background(RoundedRectangle(cornerRadius: 15)
+				  .fill(Color.black.opacity(0.5)))
+			   .padding(.top, 10)
 			}
-			.padding()
-			.background(RoundedRectangle(cornerRadius: 15)
-			   .fill(Color.black.opacity(0.5)))
-			.padding(.top, 10)
 		 }
 	  }
 	  .onAppear {
@@ -173,35 +177,15 @@ struct LivePlayerDetailView: View {
 	  }
    }
 
-   func positionName(for positionID: Int) -> String {
-	  
+   func positionName(for positionID: String) -> String {
 	  switch positionID {
-		 case 1: return "Quarterback"
-		 case 2: return "Running Back"
-		 case 3: return "Wide Receiver"
-		 case 4: return "Tight End"
-		 case 5: return "Kicker"
-		 case 16: return "Defense/Special Teams"
-		 default: return "Unknown"
+		 case "Quarter Back": return "QB"
+		 case "Running Back": return "RB"
+		 case "Wide Receiver": return "WR"
+		 case "Tight End": return "TE"
+		 case "Kicker": return "K"
+		 case "Defense": return "D/ST"
+		 default: return "?"
 	  }
    }
-
-//   // Helper function to return the stat's name based on its ID
-//   func statName(for statID: String) -> String {
-//	  switch statID {
-//		 case "0": return "Pass Attempts"
-//		 case "1": return "Pass Completions"
-//		 case "3": return "Pass Yards"
-//		 case "4": return "Pass Touchdowns"
-//		 case "23": return "Rush Attempts"
-//		 case "24": return "Rush Yards"
-//		 case "25": return "Rush Touchdowns"
-//		 case "41": return "Receptions"
-//		 case "42": return "Receiving Yards"
-//		 case "43": return "Receiving Touchdowns"
-//		 case "53": return "Total Points"
-//		 case "58": return "Targets"
-//		 default: return "Stat \(statID)"
-//	  }
-//   }
 }

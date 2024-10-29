@@ -6,12 +6,12 @@ struct AppConstants {
    static let verColor = Color.gpGreen
 
    static let ESPNLeagueID = "1241361400"
+   static let ESPNLeagueYear = "2024"
+
    static let GpManagerID = "1117588009542615040"
    static let sleeperID = "1117588009542615040"
-   
    static let rossManagerID = "1044843366334828544"
    static let managerID = rossManagerID
-   
    
    static let BigBoysLeagueID = "1136822872179224576"
    static let BigBoysDraftID = "1136822873030782976"
