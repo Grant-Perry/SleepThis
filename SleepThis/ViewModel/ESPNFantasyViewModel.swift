@@ -43,11 +43,15 @@ class ESPNFantasyViewModel: ObservableObject {
    func getTeam(for teamId: Int) -> ESPNFantasy.ESPNFantasyModel.Team? {
 	  return espnFantasyModel?.teams.first(where: { $0.id == teamId })
    }
+
+   func getMatchup(for week: Int, teamId: Int) -> ESPNFantasy.ESPNFantasyModel.Matchup? {
+	  return espnFantasyModel?.schedule.first(where: { $0.matchupPeriodId == week && ($0.away.teamId == teamId || $0.home.teamId == teamId) })
+   }
 }
 
 struct ESPNFantasyListView: View {
    @ObservedObject var espnFantasyViewModel = ESPNFantasyViewModel()
-   @State private var selectedWeek = 1 // Default to week 1
+   @State private var selectedWeek = 8 // Default to week 8
 
    var body: some View {
 	  VStack(alignment: .leading) {
@@ -58,7 +62,7 @@ struct ESPNFantasyListView: View {
 			}
 		 }
 		 .pickerStyle(MenuPickerStyle())
-		 .onChange(of: selectedWeek) { newWeek in
+		 .onChange(of: selectedWeek) {
 			espnFantasyViewModel.fetchFantasyData(forWeek: selectedWeek)
 		 }
 		 .padding()
@@ -71,40 +75,42 @@ struct ESPNFantasyListView: View {
 			// Display matchups in a horizontal TabView
 			if let schedule = espnFantasyViewModel.espnFantasyModel?.schedule, !schedule.isEmpty {
 			   TabView {
-				  ForEach(schedule, id: \ .id) { matchup in
+				  ForEach(schedule.filter { $0.matchupPeriodId == selectedWeek }, id: \ .id) { matchup in
 					 VStack(alignment: .leading, spacing: 16) {
 						HStack {
 						   if let awayTeam = espnFantasyViewModel.getTeam(for: matchup.away.teamId) {
 							  VStack(alignment: .leading) {
 								 Text(awayTeam.name)
-									.font(.title)
+									.font(.title3)
 									.bold()
-									.frame(maxWidth: .infinity, alignment: .topLeading)
-									.lineLimit(2)
+									.frame(maxWidth: .infinity, alignment: .leading)
+									.lineLimit(1)
 									.minimumScaleFactor(0.5)
-									.multilineTextAlignment(.center)
+									.multilineTextAlignment(.leading)
 									.fixedSize(horizontal: false, vertical: true)
+
 								 Text("\(awayTeam.roster?.entries.filter { $0.lineupSlotId < 20 || $0.lineupSlotId == 23 }.reduce(0) { $0 + ($1.playerPoolEntry.player.stats.first { $0.scoringPeriodId == selectedWeek && $0.statSourceId == 0 }?.appliedTotal ?? 0) } ?? 0, specifier: "%.2f")")
-									.font(.headline)
+									.font(.body)
 									.foregroundColor(.gpPink)
-									.frame(maxWidth: .infinity, alignment: .trailing)
+									.frame(maxWidth: .infinity, alignment: .leading)
 							  }
 						   }
 						   Spacer()
 						   if let homeTeam = espnFantasyViewModel.getTeam(for: matchup.home.teamId) {
 							  VStack(alignment: .trailing) {
 								 Text(homeTeam.name)
-									.font(.title)
+									.font(.title3)
 									.bold()
 									.frame(maxWidth: .infinity, alignment: .topLeading)
-									.lineLimit(2)
+									.lineLimit(1)
 									.minimumScaleFactor(0.5)
-									.multilineTextAlignment(.center)
+									.multilineTextAlignment(.leading)
 									.fixedSize(horizontal: false, vertical: true)
+
 								 Text("\(homeTeam.roster?.entries.filter { $0.lineupSlotId < 20 || $0.lineupSlotId == 23 }.reduce(0) { $0 + ($1.playerPoolEntry.player.stats.first { $0.scoringPeriodId == selectedWeek && $0.statSourceId == 0 }?.appliedTotal ?? 0) } ?? 0, specifier: "%.2f")")
 									.font(.body)
 									.foregroundColor(.gpPink)
-									.frame(maxWidth: .infinity, alignment: .trailing)
+									.frame(maxWidth: .infinity, alignment: .leading)
 							  }
 						   }
 						}
@@ -149,30 +155,7 @@ struct ESPNTeamView: View {
 			.padding(.bottom, 8)
 
 		 ForEach(team.roster?.entries.filter { $0.lineupSlotId < 20 || $0.lineupSlotId == 23 }.sorted { sortOrder($0.lineupSlotId) < sortOrder($1.lineupSlotId) } ?? [], id: \ .playerPoolEntry.player.id) { playerEntry in
-			VStack(spacing: 8) {
-			   VStack(alignment: .trailing, spacing: 4) {
-				  Text(playerEntry.playerPoolEntry.player.fullName)
-					 .font(.body)
-					 .bold()
-					 .frame(maxWidth: .infinity, alignment: .leading)
-					 .lineLimit(1)
-					 .minimumScaleFactor(0.5)
-			   }
-			   HStack(spacing: 16) {
-				  LivePlayerImageView(playerID: playerEntry.playerPoolEntry.player.id, picSize: 75)
-					 .offset(x: -5, y: -10)
-					 .frame(width: 75, height: 75)
-				  VStack(alignment: .leading) {
-					 Text(positionString(playerEntry.lineupSlotId))
-						.font(.footnote)
-						.frame(maxWidth: .infinity, alignment: .leading)
-					 Text("\(playerEntry.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0, specifier: "%.2f")")
-						.font(.footnote)
-						.foregroundColor(.secondary)
-						.frame(maxWidth: .infinity, alignment: .leading)
-				  }
-			   }
-			}
+			ESPNFantasyPlayerView(playerEntry: playerEntry, week: week)
 		 }
 
 		 Text("Active Total: \(team.roster?.entries.filter { $0.lineupSlotId < 20 || $0.lineupSlotId == 23 }.reduce(0) { $0 + ($1.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0) } ?? 0, specifier: "%.2f")")
@@ -186,30 +169,9 @@ struct ESPNTeamView: View {
 			.font(.headline)
 			.padding(.vertical, 8)
 
-		 ForEach(team.roster?.entries.filter { $0.lineupSlotId >= 20 && $0.lineupSlotId != 23 } ?? [], id: \ .playerPoolEntry.player.id) { playerEntry in
-			VStack(spacing: 8) {
-			   HStack(spacing: 16) {
-				  LivePlayerImageView(playerID: playerEntry.playerPoolEntry.player.id, picSize: 75)
-					 .offset(x: -5, y: -10)
-					 .frame(width: 75, height: 75)
-				  VStack(alignment: .leading) {
-					 Text(playerEntry.playerPoolEntry.player.fullName)
-						.font(.body)
-						.bold()
-						.frame(maxWidth: .infinity)
-						.lineLimit(1)
-						.minimumScaleFactor(0.5)
-					 Text("\(positionString(playerEntry.lineupSlotId))")
-						.font(.footnote)
-						.frame(maxWidth: .infinity, alignment: .leading)
-				  }
-				  Spacer()
-				  Text("\(playerEntry.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0, specifier: "%.2f")")
-					 .font(.footnote)
-					 .foregroundColor(.secondary)
-					 .frame(maxWidth: .infinity, alignment: .trailing)
-			   }
-			}
+		 ForEach(team.roster?.entries.filter { $0.lineupSlotId >= 20 && $0.lineupSlotId != 23 }.sorted { sortOrder($0.lineupSlotId) < sortOrder($1.lineupSlotId) } ?? [], id: \ .playerPoolEntry.player.id) { playerEntry in
+
+			ESPNFantasyPlayerView(playerEntry: playerEntry, week: week)
 		 }
 
 		 Text("Bench Total: \(team.roster?.entries.filter { $0.lineupSlotId >= 20 && $0.lineupSlotId != 23 }.reduce(0) { $0 + ($1.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0) } ?? 0, specifier: "%.2f")")
@@ -226,11 +188,52 @@ struct ESPNTeamView: View {
 		 case 2, 3: return 1 // RB
 		 case 4, 5: return 2 // WR
 		 case 6: return 3 // TE
-		 case 16: return 4 // D/ST
-		 case 17: return 5 // K
-		 case 23: return 6 // FLEX
+		 case 23: return 4 // FLEX
+		 case 16: return 5 // D/ST
+		 case 17: return 6 // K
 		 default: return 7 // Others
 	  }
+   }
+}
+
+struct ESPNFantasyPlayerView: View {
+   let playerEntry: ESPNFantasy.ESPNFantasyModel.Team.PlayerEntry
+   let week: Int
+
+   var body: some View {
+	  VStack(spacing: 8) {
+		 VStack(alignment: .leading, spacing: 4) {
+			Text(playerEntry.playerPoolEntry.player.fullName)
+			   .font(.body)
+			   .bold()
+			   .frame(maxWidth: .infinity, alignment: .leading)
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+		 }
+		 HStack(spacing: 16) {
+			// Player Image
+			LivePlayerImageView(playerID: playerEntry.playerPoolEntry.player.id, picSize: 65)
+			   .offset(x: -8, y: -15)
+			   .frame(width: 65, height: 65)
+
+			// Position and Score
+			VStack(alignment: .leading) {
+			   Text(positionString(playerEntry.lineupSlotId))
+				  .font(.footnote)
+				  .frame(maxWidth: .infinity, alignment: .leading)
+
+			   Text("\(playerEntry.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0, specifier: "%.2f")")
+				  .font(.footnote)
+				  .foregroundColor(.secondary)
+				  .frame(maxWidth: .infinity, alignment: .leading)
+			   
+			}
+			
+		 }
+		 .background(LinearGradient(gradient: Gradient(colors: [.gpDark1, .clear]), startPoint: .top, endPoint: .bottom))
+		 .cornerRadius(8)
+	  }
+	  
    }
 
    func positionString(_ lineupSlotId: Int) -> String {
