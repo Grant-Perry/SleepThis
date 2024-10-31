@@ -8,7 +8,7 @@ struct SleepThisApp: App {
 		 TabView {
 			ESPNFantasyListView()
 			   .tabItem {
-				  Label("Fantasy", systemImage: "livephoto.play")
+				  Label("Fantasy", systemImage: "fan.oscillation")
 			   }
 
 			LivePlayerListView()

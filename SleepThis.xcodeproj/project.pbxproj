@@ -63,11 +63,6 @@
 			path = SleepThisUITests;
 			sourceTree = "<group>";
 		};
-		9BCADD7E2CC5977A00B6FCAA /* Python */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Python;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,7 +93,6 @@
 		9B4B881C2C753A290026E11B = {
 			isa = PBXGroup;
 			children = (
-				9BCADD7E2CC5977A00B6FCAA /* Python */,
 				9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */,
 				9B4B88262C753A290026E11B /* Products */,
 				9B4B88272C753A290026E11B /* SleepThis */,
@@ -134,7 +128,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				9B4B88272C753A290026E11B /* SleepThis */,
-				9BCADD7E2CC5977A00B6FCAA /* Python */,
 			);
 			name = SleepThis;
 			packageProductDependencies = (
@@ -437,7 +430,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6;
+				MARKETING_VERSION = 2.71;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -468,7 +461,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.6;
+				MARKETING_VERSION = 2.71;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
