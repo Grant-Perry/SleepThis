@@ -137,7 +137,8 @@ struct ESPNFantasyListView: View {
 								 .padding()
 								 .frame(maxWidth: .infinity, alignment: .leading)
 								 .frame(height: 30)
-								 .background(LinearGradient(gradient: Gradient(colors: [.gpMinty, .clear]), startPoint: .top, endPoint: .bottom).opacity(0.5))
+								 .background(LinearGradient(gradient: Gradient(colors: [.gpMinty, .clear]),
+															startPoint: .top, endPoint: .bottom).opacity(0.5))
 								 .opacity(0.7)
 						   }
 
