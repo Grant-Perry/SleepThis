@@ -6,7 +6,7 @@ struct SleepThisApp: App {
    var body: some Scene {
 	  WindowGroup {
 		 TabView {
-			ESPNFantasyListView()
+			FantasyMatchupListView(fantasyViewModel: FantasyMatchupViewModel())
 			   .tabItem {
 				  Label("Fantasy", systemImage: "fan.oscillation")
 			   }

@@ -10,19 +10,18 @@ struct AppConstants {
 
    static let GpManagerID = "1117588009542615040"
    static let sleeperID = "1117588009542615040"
+   static let GpSleeperID = "1117588009542615040"
    static let rossManagerID = "1044843366334828544"
    static let managerID = rossManagerID
    
    static let BigBoysLeagueID = "1136822872179224576"
    static let BigBoysDraftID = "1136822873030782976"
    
-   //   static let TwoBrothersLeagueID = "1051207774316683264"
-   //   static let TwoBrothersDraftID = "1116901677971398656"
-   
    static let TwoBrothersLeagueID = "1044844006657982464"
    static let TwoBrothersDraftID = "1044844007601504256"
    
    static let leagueID = TwoBrothersLeagueID
+   static let SleeperLeagueID = TwoBrothersLeagueID
    static let draftID = TwoBrothersDraftID
    static let teamColor = Color(hex: "008C96")
    static let SWID = "{8A3B2780-FA70-4A52-9AFD-3BEE4D5A7468}"
