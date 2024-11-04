@@ -5,28 +5,30 @@ struct FantasyMatchupListView: View {
    @State private var selectedTimerInterval: Int = 0 // Initialize with 0 for 'off'
 
    var body: some View {
-	  VStack(alignment: .leading) {
-		 HStack {
-			yearPicker
-			weekPicker
-			leaguePicker
-			refreshPicker
-		 }
-		 .padding(.horizontal)
+	  NavigationView { // Ensure the list is wrapped in a NavigationView
+		 VStack(alignment: .leading) {
+			HStack {
+			   yearPicker
+			   weekPicker
+			   leaguePicker
+			   refreshPicker
+			}
+			.padding(.horizontal)
 
-		 if fantasyViewModel.isLoading {
-			ProgressView("Loading matchups...")
-		 } else if let errorMessage = fantasyViewModel.errorMessage {
-			Text("Error: \(errorMessage)")
-		 } else {
-			matchupList
+			if fantasyViewModel.isLoading {
+			   ProgressView("Loading matchups...")
+			} else if let errorMessage = fantasyViewModel.errorMessage {
+			   Text("Error: \(errorMessage)")
+			} else {
+			   matchupList
+			}
 		 }
+		 .onAppear {
+			fantasyViewModel.fetchFantasyMatchupViewModelSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+			fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
+		 }
+		 .padding()
 	  }
-	  .onAppear {
-		 fantasyViewModel.fetchFantasyMatchupViewModelSleeperLeagues(forUserID: AppConstants.GpSleeperID)
-		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
-	  }
-	  .padding()
    }
 
    private var yearPicker: some View {
@@ -35,7 +37,7 @@ struct FantasyMatchupListView: View {
 			Text(String(year)).tag(year)
 		 }
 	  }
-	  .onChange(of: fantasyViewModel.selectedYear) { _ in
+	  .onChange(of: fantasyViewModel.selectedYear) {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -46,7 +48,7 @@ struct FantasyMatchupListView: View {
 			Text("Week \(week)").tag(week)
 		 }
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) { _ in
+	  .onChange(of: fantasyViewModel.selectedWeek) {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -59,7 +61,7 @@ struct FantasyMatchupListView: View {
 		 }
 		 Text("ESPN League").tag(AppConstants.ESPNLeagueID)
 	  }
-	  .onChange(of: fantasyViewModel.leagueID) { _ in
+	  .onChange(of: fantasyViewModel.leagueID) {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -80,9 +82,11 @@ struct FantasyMatchupListView: View {
 	  List(fantasyViewModel.matchups.indices, id: \.self) { index in
 		 if index < fantasyViewModel.matchups.count {
 			let matchup = fantasyViewModel.matchups[index]
+
 			NavigationLink(destination: FantasyMatchupDetailView(matchup: matchup, fantasyViewModel: fantasyViewModel, selectedWeek: fantasyViewModel.selectedWeek)) {
 			   matchupRow(for: matchup)
 			}
+			.buttonStyle(PlainButtonStyle()) // Ensures it looks correct across iOS versions
 		 }
 	  }
    }

@@ -100,13 +100,16 @@ struct AnyFantasyMatchup: FantasyMatchupProtocol {
    let managerNames: [String]
    let homeTeamID: Int
    let awayTeamID: Int
+   let sleeperData: FantasyScores.SleeperMatchup?
 
-   init(_ matchup: FantasyScores.FantasyMatchup) {
+   init(_ matchup: FantasyScores.FantasyMatchup, sleeperData: FantasyScores.SleeperMatchup? = nil) {
 	  self.teamNames = matchup.teamNames
 	  self.scores = matchup.scores
 	  self.avatarURLs = matchup.avatarURLs
 	  self.managerNames = matchup.managerNames
 	  self.homeTeamID = matchup.homeTeamID
 	  self.awayTeamID = matchup.awayTeamID
+	  self.sleeperData = sleeperData
    }
 }
+

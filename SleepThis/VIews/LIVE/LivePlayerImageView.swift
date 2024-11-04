@@ -11,9 +11,9 @@ struct LivePlayerImageView: View {
 	  AsyncImage(url: imageUrl) { phase in
 		 switch phase {
 			case .empty:
-			   Image(systemName: "person.crop.circle.fill")
+			   Image(systemName: "american.football")
 				  .resizable()
-				  .frame(width: picSize, height: picSize)
+				  .frame(width: 25, height: 25)
 			case .success(let image):
 			   image
 				  .resizable()
@@ -21,9 +21,9 @@ struct LivePlayerImageView: View {
 				  .frame(width: picSize, height: picSize)
 //				  .clipShape(Circle())
 			case .failure:
-			   Image(systemName: "person.crop.circle.fill")
+			   Image(systemName: "american.football")
 				  .resizable()
-				  .frame(width: picSize, height: picSize)
+				  .frame(width: 25, height: 25)
 			@unknown default:
 			   EmptyView()
 		 }
