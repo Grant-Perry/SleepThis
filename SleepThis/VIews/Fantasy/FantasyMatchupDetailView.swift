@@ -40,9 +40,9 @@ struct FantasyMatchupDetailView: View {
 			   .foregroundColor(.white)
 
 			HStack(alignment: .top, spacing: 16) {
-			   rosterView(for: matchup, teamIndex: 0, isBench: false)
+			   rosterView(for: matchup, teamIndex: 0, isBench: false, isHome: false)
 			   Spacer()
-			   rosterView(for: matchup, teamIndex: 1, isBench: false)
+			   rosterView(for: matchup, teamIndex: 1, isBench: false, isHome: true)
 			}
 			.padding(.horizontal)
 
@@ -56,9 +56,9 @@ struct FantasyMatchupDetailView: View {
 			   .foregroundColor(.white)
 
 			HStack(alignment: .top, spacing: 16) {
-			   rosterView(for: matchup, teamIndex: 0, isBench: true)
+			   rosterView(for: matchup, teamIndex: 0, isBench: true, isHome: false)
 			   Spacer()
-			   rosterView(for: matchup, teamIndex: 1, isBench: true)
+			   rosterView(for: matchup, teamIndex: 1, isBench: true, isHome: true)
 			}
 			.padding(.horizontal)
 		 }
@@ -66,12 +66,14 @@ struct FantasyMatchupDetailView: View {
 	  .navigationTitle("Week \(selectedWeek)")
    }
 
-   private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> some View {
-	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex, isBench: isBench)
+   private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool, isHome: Bool) -> some View {
+	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex).filter { player in
+		 isBench ? player.lineupSlotId >= 20 && player.lineupSlotId != 23 : player.lineupSlotId < 20 || player.lineupSlotId == 23
+	  }
 
 	  return VStack(alignment: .leading, spacing: 16) {
 		 ForEach(roster, id: \.playerPoolEntry.player.id) { playerEntry in
-			playerCard(for: playerEntry, isBench: isBench)
+			playerCard(for: playerEntry, isBench: isBench, isHome: isHome)
 		 }
 		 Text("\(roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: selectedWeek) }, specifier: "%.2f")")
 			.font(.system(size: 20, weight: .medium))
@@ -81,7 +83,7 @@ struct FantasyMatchupDetailView: View {
 	  }
    }
 
-   private func playerCard(for playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry, isBench: Bool) -> some View {
+   private func playerCard(for playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry, isBench: Bool, isHome: Bool) -> some View {
 	  VStack {
 		 HStack {
 			LivePlayerImageView(playerID: playerEntry.playerPoolEntry.player.id, picSize: 65)
@@ -106,7 +108,7 @@ struct FantasyMatchupDetailView: View {
 			}
 		 }
 		 .padding(.vertical, 4)
-		 .background(LinearGradient(gradient: Gradient(colors: [isBench ? .gpDark1 : .gpBlueLight, .clear]), startPoint: .top, endPoint: .bottom))
+		 .background(LinearGradient(gradient: Gradient(colors: [isHome ? .gpBlueDark : .gpBlueLight, .clear]), startPoint: .top, endPoint: .bottom))
 		 .cornerRadius(10)
 		 .opacity(isBench ? 0.75 : 1) // Bench players at 75% opacity
 	  }

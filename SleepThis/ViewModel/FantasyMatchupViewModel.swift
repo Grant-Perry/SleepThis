@@ -37,22 +37,15 @@ class FantasyMatchupViewModel: ObservableObject {
 	  if leagueID == AppConstants.ESPNLeagueID {
 		 fetchFantasyData(forWeek: selectedWeek)
 	  } else {
-		 fetchSleeperMatchups()
+		 fetchFantasyMatchupViewModelSleeperMatchups()
 	  }
    }
 
-   func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
+   func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
 	  let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
 	  guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return [] }
-
-	  // Utilize sleeperData's starters to determine active players if available
-	  let starters = Set(matchup.sleeperData?.starters ?? [])
-	  return team.roster?.entries.filter { player in
-		 let isActive = starters.contains(String(player.playerPoolEntry.player.id))
-		 return isBench ? !isActive : isActive
-	  } ?? []
+	  return team.roster?.entries ?? []
    }
-
 
    func getPlayerScore(for player: FantasyScores.FantasyModel.Team.PlayerEntry, week: Int) -> Double {
 	  return player.playerPoolEntry.player.stats.first(where: { $0.scoringPeriodId == week && $0.statSourceId == 0 })?.appliedTotal ?? 0.0
@@ -153,14 +146,16 @@ class FantasyMatchupViewModel: ObservableObject {
 		 .store(in: &cancellables)
    }
 
-   func fetchSleeperMatchups() {
+   func fetchFantasyMatchupViewModelSleeperMatchups() {
 	  guard leagueID != AppConstants.ESPNLeagueID else { return }
 
 	  let week = selectedWeek
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/matchups/\(week)") else { return }
 
 	  URLSession.shared.dataTaskPublisher(for: url)
-		 .map { $0.data }
+		 .map { response -> Data in
+			return response.data
+		 }
 		 .decode(type: [FantasyScores.SleeperMatchup].self, decoder: JSONDecoder())
 		 .receive(on: DispatchQueue.main)
 		 .sink(receiveCompletion: { [weak self] completion in
@@ -171,29 +166,12 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }, receiveValue: { [weak self] sleeperMatchups in
 			guard let self = self else { return }
 
-			// Group by matchup ID to pair teams in each matchup
 			let groupedMatchups = Dictionary(grouping: sleeperMatchups, by: { $0.matchup_id })
 			var processedMatchups: [AnyFantasyMatchup] = []
 
 			for (_, matchups) in groupedMatchups where matchups.count == 2 {
 			   let team1 = matchups[0]
 			   let team2 = matchups[1]
-
-			   // Define the correct order for active players
-			   let activeOrder = ["QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "D/ST", "K"]
-
-			   // Helper function to get score for a player ID in starters list
-			   func getPlayerScore(playerID: String) -> Double {
-				  return team1.players.contains(playerID) ? team1.points : team2.points
-			   }
-
-			   // Sort active players in specified order for display
-			   let sortedStartersTeam1 = team1.starters.sorted {
-				  activeOrder.firstIndex(of: getPlayerPosition($0)) ?? Int.max < activeOrder.firstIndex(of: getPlayerPosition($1)) ?? Int.max
-			   }
-			   let sortedStartersTeam2 = team2.starters.sorted {
-				  activeOrder.firstIndex(of: getPlayerPosition($0)) ?? Int.max < activeOrder.firstIndex(of: getPlayerPosition($1)) ?? Int.max
-			   }
 
 			   let fantasyMatchup = FantasyScores.FantasyMatchup(
 				  homeTeamName: "Team \(team1.roster_id)",
@@ -215,8 +193,6 @@ class FantasyMatchupViewModel: ObservableObject {
 		 })
 		 .store(in: &cancellables)
    }
-
-
 
    func getScore(for matchup: AnyFantasyMatchup, teamIndex: Int) -> Double {
 	  return matchup.scores[teamIndex]
