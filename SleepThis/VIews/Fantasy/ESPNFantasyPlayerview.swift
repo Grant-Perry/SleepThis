@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ESPNFantasyPlayerView: View {
-   let playerEntry: ESPNFantasy.ESPNFantasyModel.Team.PlayerEntry
+   let playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry
    let week: Int
    @State private var lastScore: Double? = nil
 

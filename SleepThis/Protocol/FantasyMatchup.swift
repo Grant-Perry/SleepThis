@@ -1,16 +1,15 @@
 import SwiftUI
 import Combine
 
-protocol FantasyMatchup {
+protocol FantasyMatchupProtocol {
    var teamNames: [String] { get }
    var scores: [Double] { get }
    var avatarURLs: [URL?] { get }
    var managerNames: [String] { get }
 }
 
-
-enum ESPNFantasy {
-   struct ESPNFantasyModel: Codable {
+enum FantasyScores {
+   struct FantasyModel: Codable {
 	  let teams: [Team]
 	  let schedule: [Matchup]
 
@@ -56,84 +55,58 @@ enum ESPNFantasy {
 		 }
 	  }
    }
-}
 
-struct SleeperMatchup: Codable, FantasyMatchup {
-   let roster_id: Int
-   let points: Double
-   let matchup_id: Int
-   let starters: [String]
-   let players: [String]
+   struct FantasyMatchup: FantasyMatchupProtocol {
+	  let teamNames: [String]
+	  let scores: [Double]
+	  let avatarURLs: [URL?]
+	  let managerNames: [String]
+	  let homeTeamID: Int
+	  let awayTeamID: Int
 
-   // FantasyMatchup protocol properties
-   var teamNames: [String] {
-	  return ["Team \(roster_id)"]
+	  init(homeTeamName: String, awayTeamName: String, homeScore: Double, awayScore: Double, homeAvatarURL: URL?, awayAvatarURL: URL?, homeManagerName: String, awayManagerName: String, homeTeamID: Int, awayTeamID: Int) {
+		 self.teamNames = [awayTeamName, homeTeamName]
+		 self.scores = [awayScore, homeScore]
+		 self.avatarURLs = [awayAvatarURL, homeAvatarURL]
+		 self.managerNames = [awayManagerName, homeManagerName]
+		 self.homeTeamID = homeTeamID
+		 self.awayTeamID = awayTeamID
+	  }
    }
 
-   var scores: [Double] {
-	  return [points]
+   struct SleeperLeagueResponse: Codable {
+	  let leagueID: String
+	  let name: String
+
+	  enum CodingKeys: String, CodingKey {
+		 case leagueID = "league_id"
+		 case name
+	  }
    }
 
-   var avatarURLs: [URL?] {
-	  return [nil] // Placeholder; populate with actual URL if available
-   }
-
-   var managerNames: [String] {
-	  return ["Manager \(roster_id)"] // Placeholder; populate with actual manager name if available
-   }
-}
-
-
-struct ESPNFantasyMatchup: FantasyMatchup {
-   var teamNames: [String]
-   var scores: [Double]
-   var avatarURLs: [URL?]
-   var managerNames: [String]
-
-   init(homeTeamName: String, awayTeamName: String, homeScore: Double, awayScore: Double, homeAvatarURL: URL? = nil, awayAvatarURL: URL? = nil, homeManagerName: String, awayManagerName: String) {
-	  self.teamNames = [awayTeamName, homeTeamName]
-	  self.scores = [awayScore, homeScore]
-	  self.avatarURLs = [awayAvatarURL, homeAvatarURL]
-	  self.managerNames = [awayManagerName, homeManagerName]
+   struct SleeperMatchup: Codable {
+	  let roster_id: Int
+	  let points: Double
+	  let matchup_id: Int
+	  let starters: [String]
+	  let players: [String]
    }
 }
 
+struct AnyFantasyMatchup: FantasyMatchupProtocol {
+   let teamNames: [String]
+   let scores: [Double]
+   let avatarURLs: [URL?]
+   let managerNames: [String]
+   let homeTeamID: Int
+   let awayTeamID: Int
 
-
-struct SleeperLeagueResponse: Codable {
-   let leagueID: String
-   let name: String
-
-   enum CodingKeys: String, CodingKey {
-	  case leagueID = "league_id"
-	  case name
+   init(_ matchup: FantasyScores.FantasyMatchup) {
+	  self.teamNames = matchup.teamNames
+	  self.scores = matchup.scores
+	  self.avatarURLs = matchup.avatarURLs
+	  self.managerNames = matchup.managerNames
+	  self.homeTeamID = matchup.homeTeamID
+	  self.awayTeamID = matchup.awayTeamID
    }
 }
-
-struct AnyFantasyMatchup: FantasyMatchup {
-   private let _teamNames: () -> [String]
-   private let _scores: () -> [Double]
-   private let _avatarURLs: () -> [URL?]
-   private let _managerNames: () -> [String]
-
-   init<T: FantasyMatchup>(_ matchup: T) {
-	  _teamNames = { matchup.teamNames }
-	  _scores = { matchup.scores }
-	  _avatarURLs = { matchup.avatarURLs }
-	  _managerNames = { matchup.managerNames }
-   }
-
-   var teamNames: [String] { _teamNames() }
-   var scores: [Double] { _scores() }
-   var avatarURLs: [URL?] { _avatarURLs() }
-   var managerNames: [String] { _managerNames() }
-}
-
-
-
-
-
-
-
-
-
