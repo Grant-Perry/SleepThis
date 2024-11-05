@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct FantasyMatchupDetailView: View {
    let matchup: AnyFantasyMatchup
@@ -67,15 +68,13 @@ struct FantasyMatchupDetailView: View {
    }
 
    private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool, isHome: Bool) -> some View {
-	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex).filter { player in
-		 isBench ? player.lineupSlotId >= 20 && player.lineupSlotId != 23 : player.lineupSlotId < 20 || player.lineupSlotId == 23
-	  }
+	  let roster = fantasyViewModel.getOrderedRoster(for: matchup, teamIndex: teamIndex, isBench: isBench, scoringSettings: fantasyViewModel.scoringSettings)
 
 	  return VStack(alignment: .leading, spacing: 16) {
 		 ForEach(roster, id: \.playerPoolEntry.player.id) { playerEntry in
 			playerCard(for: playerEntry, isBench: isBench, isHome: isHome)
 		 }
-		 Text("\(roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: selectedWeek) }, specifier: "%.2f")")
+		 Text("\(roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: selectedWeek, scoringSettings: fantasyViewModel.scoringSettings) }, specifier: "%.2f")")
 			.font(.system(size: 20, weight: .medium))
 			.foregroundColor(.pink)
 			.frame(maxWidth: .infinity, alignment: .trailing)
@@ -102,13 +101,13 @@ struct FantasyMatchupDetailView: View {
 				  .foregroundColor(.primary)
 				  .frame(maxWidth: .infinity, alignment: .leading)
 
-			   Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: selectedWeek), specifier: "%.2f") pts")
+			   Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: selectedWeek, scoringSettings: fantasyViewModel.scoringSettings), specifier: "%.2f") pts")
 				  .font(.system(size: 20, weight: .medium))
 				  .foregroundColor(.secondary)
 			}
 		 }
 		 .padding(.vertical, 4)
-		 .background(LinearGradient(gradient: Gradient(colors: [isHome ? .gpBlueDark : .gpBlueLight, .clear]), startPoint: .top, endPoint: .bottom))
+		 .background(LinearGradient(gradient: Gradient(colors: [isHome ?  .gpBlueLight : .gpBlueLight, .clear]), startPoint: .top, endPoint: .bottom))
 		 .cornerRadius(10)
 		 .opacity(isBench ? 0.75 : 1) // Bench players at 75% opacity
 	  }
