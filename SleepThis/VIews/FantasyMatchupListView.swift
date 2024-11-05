@@ -24,16 +24,9 @@ struct FantasyMatchupListView: View {
 			}
 		 }
 		 .onAppear {
-			if fantasyViewModel.leagueID != AppConstants.ESPNLeagueID {
-			   // Fetch leagues for Sleeper, then matchups
-			   fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
-			} else {
-			   // Directly fetch ESPN matchups if league is ESPN
-			   fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
-			}
+			fantasyViewModel.fetchFantasyMatchupViewModelSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+			fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 		 }
-
-
 		 .padding()
 	  }
    }
