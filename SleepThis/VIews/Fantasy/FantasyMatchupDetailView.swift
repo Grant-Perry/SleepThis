@@ -102,10 +102,15 @@ struct FantasyMatchupDetailView: View {
 				  .font(.system(size: 10, weight: .light))
 				  .foregroundColor(.primary)
 				  .frame(maxWidth: .infinity, alignment: .leading)
-
-			   Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: selectedWeek), specifier: "%.2f") pts")
-				  .font(.system(size: 20, weight: .medium))
-				  .foregroundColor(.secondary)
+			   HStack {
+			      Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: selectedWeek), specifier: "%.2f")")
+					 .font(.system(size: 20, weight: .medium))
+					 .foregroundColor(.secondary)
+					 .padding(.trailing)
+					 .offset(x: 25, y: -9)
+			   }
+			   .frame(maxWidth: .infinity, alignment: .trailing)
+			   .padding(.trailing)
 			}
 		 }
 		 .padding(.vertical, 4)
