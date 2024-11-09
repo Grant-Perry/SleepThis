@@ -59,7 +59,7 @@ enum FantasyScores {
    struct FantasyMatchup: FantasyMatchupProtocol {
 	  let teamNames: [String]
 	  let scores: [Double]
-	  let avatarURLs: [URL?]
+	  let avatarURLs: [URL?]  // Add URLs here for avatars
 	  let managerNames: [String]
 	  let homeTeamID: Int
 	  let awayTeamID: Int
@@ -112,6 +112,30 @@ enum FantasyScores {
 	  let player: SleeperPlayer
 	  let score: Double
    }
+
+   static var leagueName: String {
+	  if AppConstants.leagueID == AppConstants.ESPNLeagueID {
+		 return "ESPN League"
+	  } else if AppConstants.leagueID == AppConstants.SleeperLeagueID {
+		 // Assuming you have a way to map league IDs to names, you can add more cases if needed
+		 return "Sleeper League"
+	  } else {
+		 return "Unknown League"
+	  }
+   }
+
+   
+}
+
+struct SleeperUser: Codable {
+   let user_id: String
+   let display_name: String
+}
+
+struct SleeperRoster: Codable {
+   let roster_id: Int
+   let owner_id: String
+   let metadata: [String: String]?
 }
 
 struct AnyFantasyMatchup: FantasyMatchupProtocol {

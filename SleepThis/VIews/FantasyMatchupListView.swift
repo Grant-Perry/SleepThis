@@ -24,7 +24,7 @@ struct FantasyMatchupListView: View {
 			}
 		 }
 		 .onAppear {
-			fantasyViewModel.fetchFantasyMatchupViewModelSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+			fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
 			fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 		 }
 		 .padding()
@@ -48,7 +48,7 @@ struct FantasyMatchupListView: View {
 			Text("Week \(week)").tag(week)
 		 }
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) { _ in
+	  .onChange(of: fantasyViewModel.selectedWeek) {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -61,10 +61,16 @@ struct FantasyMatchupListView: View {
 		 }
 		 Text("ESPN League").tag(AppConstants.ESPNLeagueID)
 	  }
-	  .onChange(of: fantasyViewModel.leagueID) { _ in
+	  .onChange(of: fantasyViewModel.leagueID) {
+		 if let selectedLeague = fantasyViewModel.sleeperLeagues.first(where: { $0.leagueID == fantasyViewModel.leagueID }) {
+			fantasyViewModel.leagueName = selectedLeague.name // Set league name based on selection
+		 } else if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+			fantasyViewModel.leagueName = "ESPN League" // Set name for ESPN
+		 }
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
+
 
    private var refreshPicker: some View {
 	  Picker("Refresh", selection: $selectedTimerInterval) {
@@ -79,30 +85,33 @@ struct FantasyMatchupListView: View {
    }
 
    private var matchupList: some View {
-	  List(fantasyViewModel.matchups.indices, id: \.self) { index in
-		 if index < fantasyViewModel.matchups.count {
-			let matchup = fantasyViewModel.matchups[index]
-
-			NavigationLink(destination: FantasyMatchupDetailView(matchup: matchup, fantasyViewModel: fantasyViewModel, selectedWeek: fantasyViewModel.selectedWeek)) {
-			   matchupRow(for: matchup)
-			}
-			.buttonStyle(PlainButtonStyle())
+	  List(fantasyViewModel.matchups, id: \.teamNames) { matchup in
+		 NavigationLink(
+			destination: FantasyMatchupDetailView(
+			   matchup: matchup,
+			   fantasyViewModel: fantasyViewModel,
+			   leagueName: fantasyViewModel.leagueName // Pass the league name here
+			)
+		 ) {
+			matchupRow(for: matchup)
 		 }
+		 .buttonStyle(PlainButtonStyle())
 	  }
    }
+
 
    private func matchupRow(for matchup: AnyFantasyMatchup) -> some View {
 	  VStack(alignment: .leading, spacing: 16) {
 		 HStack {
 			VStack(alignment: .leading) {
-			   Text(matchup.teamNames[0])
+			   Text(matchup.managerNames[0])
 				  .font(.headline)
 			   Text("Score: \(fantasyViewModel.getScore(for: matchup, teamIndex: 0), specifier: "%.2f")")
 				  .font(.subheadline)
 			}
 			Spacer()
 			VStack(alignment: .trailing) {
-			   Text(matchup.teamNames[1])
+			   Text(matchup.managerNames[1])
 				  .font(.headline)
 			   Text("Score: \(fantasyViewModel.getScore(for: matchup, teamIndex: 1), specifier: "%.2f")")
 				  .font(.subheadline)
@@ -112,4 +121,5 @@ struct FantasyMatchupListView: View {
 	  .padding()
 	  .background(RoundedRectangle(cornerRadius: 10).fill(Color(UIColor.systemGray5)))
    }
+
 }
