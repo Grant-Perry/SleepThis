@@ -4,9 +4,20 @@ struct LivePlayerImageView: View {
    let playerID: Int?
    let picSize: CGFloat
 
+   // Default initializer with Int? for playerID
+   init(playerID: Int?, picSize: CGFloat) {
+	  self.playerID = playerID
+	  self.picSize = picSize
+   }
+
+   // Additional initializer accepting a String playerID
+   init(playerID: String, picSize: CGFloat) {
+	  self.playerID = Int(playerID)  // Convert String to Int?
+	  self.picSize = picSize
+   }
+
    var body: some View {
-	  let playerID = playerID ?? 0
-	  let imageUrl = URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(playerID).png")
+	  let imageUrl = URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(playerID ?? 0).png")
 
 	  AsyncImage(url: imageUrl) { phase in
 		 switch phase {
@@ -19,7 +30,6 @@ struct LivePlayerImageView: View {
 				  .resizable()
 				  .scaledToFill()
 				  .frame(width: picSize, height: picSize)
-//				  .clipShape(Circle())
 			case .failure:
 			   Image(systemName: "american.football")
 				  .resizable()

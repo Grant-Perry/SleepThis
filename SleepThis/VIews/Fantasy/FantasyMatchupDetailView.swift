@@ -67,12 +67,10 @@ struct FantasyMatchupDetailView: View {
    }
 
    private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool, isHome: Bool) -> some View {
-	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex).filter { player in
-		 isBench ? player.lineupSlotId >= 20 && player.lineupSlotId != 23 : player.lineupSlotId < 20 || player.lineupSlotId == 23
-	  }
+	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex, isBench: isBench)
 
 	  return VStack(alignment: .leading, spacing: 16) {
-		 ForEach(roster, id: \.playerPoolEntry.player.id) { playerEntry in
+		 ForEach(roster, id: \.playerPoolEntry.player.id) { (playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry) in
 			playerCard(for: playerEntry, isBench: isBench, isHome: isHome)
 		 }
 		 Text("\(roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: selectedWeek) }, specifier: "%.2f")")
@@ -84,9 +82,25 @@ struct FantasyMatchupDetailView: View {
    }
 
 
+
+   private func positionString(_ lineupSlotId: Int) -> String {
+	  switch lineupSlotId {
+		 case 0: return "QB"
+		 case 2, 3: return "RB"
+		 case 4, 5: return "WR"
+		 case 6: return "TE"
+		 case 16: return "D/ST"
+		 case 17: return "K"
+		 case 23: return "FLEX"
+		 default: return ""
+	  }
+   }
+
+
    private func playerCard(for playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry, isBench: Bool, isHome: Bool) -> some View {
 	  VStack {
 		 HStack {
+			// Assuming `LivePlayerImageView` accepts `playerEntry.playerPoolEntry.player.id` as the correct property path
 			LivePlayerImageView(playerID: playerEntry.playerPoolEntry.player.id, picSize: 65)
 			   .frame(width: 65, height: 65)
 
@@ -102,8 +116,9 @@ struct FantasyMatchupDetailView: View {
 				  .font(.system(size: 10, weight: .light))
 				  .foregroundColor(.primary)
 				  .frame(maxWidth: .infinity, alignment: .leading)
+
 			   HStack {
-			      Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: selectedWeek), specifier: "%.2f")")
+				  Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: selectedWeek), specifier: "%.2f")")
 					 .font(.system(size: 20, weight: .medium))
 					 .foregroundColor(.secondary)
 					 .padding(.trailing)
@@ -120,16 +135,4 @@ struct FantasyMatchupDetailView: View {
 	  }
    }
 
-   private func positionString(_ lineupSlotId: Int) -> String {
-	  switch lineupSlotId {
-		 case 0: return "QB"
-		 case 2, 3: return "RB"
-		 case 4, 5: return "WR"
-		 case 6: return "TE"
-		 case 16: return "D/ST"
-		 case 17: return "K"
-		 case 23: return "FLEX"
-		 default: return ""
-	  }
-   }
 }

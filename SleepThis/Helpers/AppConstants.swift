@@ -13,13 +13,13 @@ struct AppConstants {
    static let GpSleeperID = "1117588009542615040"
    static let rossManagerID = "1044843366334828544"
    static let managerID = rossManagerID
-   
+
    static let BigBoysLeagueID = "1136822872179224576"
    static let BigBoysDraftID = "1136822873030782976"
-   
+
    static let TwoBrothersLeagueID = "1044844006657982464"
    static let TwoBrothersDraftID = "1044844007601504256"
-   
+
    static let leagueID = TwoBrothersLeagueID
    static let SleeperLeagueID = TwoBrothersLeagueID
    static let draftID = TwoBrothersDraftID
@@ -32,18 +32,4 @@ struct AppConstants {
    static func getVersion() -> String {
 	  return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
    }
-
-   /*
-
-	document.cookie = "SWID={8A3B2780-FA70-4A52-9AFD-3BEE4D5A7468}; ESPN_S2=AEAs7iuz4j6mHD9HJyTiXfTC35XqZ3n2mz3wGD9VbaQb9091HVxiUcyVYgGMEz0DHd77lYuB11RWWVy65M5lsDwQpEJadkY7wH%2F9u%2FJEtQWQeYeNE89q9DOk849MKB0zWzxdSQ1mWIKo%2BFC1kqVu9p%2F9itqThIXzizifnZrnCt0V01JWJnAq%2FYesiUbTS1EVbBB%2FIkvB8IE8jOobZXUGuhsi4r1OsexJwARKl%2B03i2T2TPdn5jTE7ZVNbbQIvX%2FTepfuTSKtVPr1iOFBmqfsF8nHfzORFdHsWYaKNJmuH2fiSQ%3D%3D";
-
-
-	curl -H "Cookie: SWID={8A3B2780-FA70-4A52-9AFD-3BEE4D5A7468}; ESPN_S2=AEAeVzZPwaU96GaPziNkt7%2BlIW7oWK7yyUkwTPLwpvxRnGimr0diZhG3u2HdNjGWn96SPd6asmBIuK0MLahC2cWz85aDKcm3Jjpkm4IVDRWbbh60ux62JUrRTKDUVVBPw%2BmehFbRJOK0tIROmoehaJtNpYUR%2BBnZvC9ac0mjMxvKLhoMqEKmx2hiWH%2FG%2BjFMKWiFZe%2FPpXiH5UOEwnfzXOvxJx3SX4vYoz2eFqNIP8ZnIZUHn0ll4vbdOs4fsotCGzw6ImbPNhJgyH3bre1b9obBYsv0smX9pDXAhsurHlgFaQ%3D%3D"
-
-	https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2024/segments/0/leagues/1241361400?view=mMatchupScore&view=mLiveScoring&view=mRoster
-
-
-
-	*/
 }
-

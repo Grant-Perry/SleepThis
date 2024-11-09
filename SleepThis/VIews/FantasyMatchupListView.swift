@@ -5,7 +5,7 @@ struct FantasyMatchupListView: View {
    @State private var selectedTimerInterval: Int = 0 // Initialize with 0 for 'off'
 
    var body: some View {
-	  NavigationView { // Ensure the list is wrapped in a NavigationView
+	  NavigationView {
 		 VStack(alignment: .leading) {
 			HStack {
 			   yearPicker
@@ -37,7 +37,7 @@ struct FantasyMatchupListView: View {
 			Text(String(year)).tag(year)
 		 }
 	  }
-	  .onChange(of: fantasyViewModel.selectedYear) {
+	  .onChange(of: fantasyViewModel.selectedYear) { _ in
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -48,7 +48,7 @@ struct FantasyMatchupListView: View {
 			Text("Week \(week)").tag(week)
 		 }
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) {
+	  .onChange(of: fantasyViewModel.selectedWeek) { _ in
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -61,7 +61,7 @@ struct FantasyMatchupListView: View {
 		 }
 		 Text("ESPN League").tag(AppConstants.ESPNLeagueID)
 	  }
-	  .onChange(of: fantasyViewModel.leagueID) {
+	  .onChange(of: fantasyViewModel.leagueID) { _ in
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
@@ -72,7 +72,7 @@ struct FantasyMatchupListView: View {
 			Text("\(interval == 0 ? "Off" : "\(interval) sec")").tag(interval)
 		 }
 	  }
-	  .onChange(of: selectedTimerInterval) {
+	  .onChange(of: selectedTimerInterval) { _ in
 		 fantasyViewModel.setupRefreshTimer(with: selectedTimerInterval)
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups() // Refresh immediately
 	  }
@@ -86,7 +86,7 @@ struct FantasyMatchupListView: View {
 			NavigationLink(destination: FantasyMatchupDetailView(matchup: matchup, fantasyViewModel: fantasyViewModel, selectedWeek: fantasyViewModel.selectedWeek)) {
 			   matchupRow(for: matchup)
 			}
-			.buttonStyle(PlainButtonStyle()) // Ensures it looks correct across iOS versions
+			.buttonStyle(PlainButtonStyle())
 		 }
 	  }
    }

@@ -1,5 +1,4 @@
-import SwiftUI
-import Combine
+import Foundation
 
 protocol FantasyMatchupProtocol {
    var teamNames: [String] { get }
@@ -9,6 +8,7 @@ protocol FantasyMatchupProtocol {
 }
 
 enum FantasyScores {
+   // ESPN Models
    struct FantasyModel: Codable {
 	  let teams: [Team]
 	  let schedule: [Matchup]
@@ -74,6 +74,7 @@ enum FantasyScores {
 	  }
    }
 
+   // Sleeper Models
    struct SleeperLeagueResponse: Codable {
 	  let leagueID: String
 	  let name: String
@@ -91,6 +92,26 @@ enum FantasyScores {
 	  let starters: [String]
 	  let players: [String]
    }
+
+   struct SleeperLeagueSettings: Codable {
+	  let scoringSettings: [String: Double]
+
+	  enum CodingKeys: String, CodingKey {
+		 case scoringSettings = "scoring_settings"
+	  }
+   }
+
+   struct SleeperPlayer: Codable {
+	  let player_id: String
+	  let full_name: String
+	  let position: String
+	  let stats: [String: [String: [String: Double]]]?
+   }
+
+   struct SleeperPlayerScore {
+	  let player: SleeperPlayer
+	  let score: Double
+   }
 }
 
 struct AnyFantasyMatchup: FantasyMatchupProtocol {
@@ -100,9 +121,9 @@ struct AnyFantasyMatchup: FantasyMatchupProtocol {
    let managerNames: [String]
    let homeTeamID: Int
    let awayTeamID: Int
-   let sleeperData: FantasyScores.SleeperMatchup?
+   let sleeperData: (FantasyScores.SleeperMatchup, FantasyScores.SleeperMatchup)?
 
-   init(_ matchup: FantasyScores.FantasyMatchup, sleeperData: FantasyScores.SleeperMatchup? = nil) {
+   init(_ matchup: FantasyScores.FantasyMatchup, sleeperData: (FantasyScores.SleeperMatchup, FantasyScores.SleeperMatchup)? = nil) {
 	  self.teamNames = matchup.teamNames
 	  self.scores = matchup.scores
 	  self.avatarURLs = matchup.avatarURLs
@@ -112,4 +133,3 @@ struct AnyFantasyMatchup: FantasyMatchupProtocol {
 	  self.sleeperData = sleeperData
    }
 }
-
