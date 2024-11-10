@@ -87,10 +87,10 @@ enum FantasyScores {
 
    struct SleeperMatchup: Codable {
 	  let roster_id: Int
-	  let points: Double
+	  let points: Double?
 	  let matchup_id: Int
-	  let starters: [String]
-	  let players: [String]
+	  let starters: [String]?
+	  let players: [String]?
    }
 
    struct SleeperLeagueSettings: Codable {

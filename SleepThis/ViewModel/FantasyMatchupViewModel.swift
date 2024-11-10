@@ -6,13 +6,14 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var matchups: [AnyFantasyMatchup] = []
    @Published var isLoading: Bool = false
    @Published var leagueName: String = "" // holder to show league name on detailView
+   @Published var lastSelectedMatchup: AnyFantasyMatchup?
 
    @Published var errorMessage: String? = nil
    @Published var leagueID: String = AppConstants.ESPNLeagueID
    @Published var sleeperLeagues: [FantasyScores.SleeperLeagueResponse] = []
    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
    @Published var selectedWeek: Int = {
-	  let firstWeek = 37
+	  let firstWeek = 36
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
 	  let offset = currentWeek >= firstWeek ? currentWeek - firstWeek + 1 : 0
 	  return min(max(1, offset), 17)
@@ -226,8 +227,8 @@ class FantasyMatchupViewModel: ObservableObject {
 		 let fantasyMatchup = FantasyScores.FantasyMatchup(
 			homeTeamName: homeTeamName,
 			awayTeamName: awayTeamName,
-			homeScore: team1.points,
-			awayScore: team2.points,
+			homeScore: team1.points ?? 0,
+			awayScore: team2.points ?? 0,
 			homeAvatarURL: nil, // Update if you have avatar URLs
 			awayAvatarURL: nil, // Update if you have avatar URLs
 			homeManagerName: homeManagerName,

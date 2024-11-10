@@ -10,6 +10,8 @@ struct FantasyMatchupListView: View {
 			HStack {
 			   yearPicker
 			   weekPicker
+			}
+			HStack {
 			   leaguePicker
 			   refreshPicker
 			}
