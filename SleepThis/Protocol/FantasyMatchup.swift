@@ -138,7 +138,7 @@ struct SleeperRoster: Codable {
    let metadata: [String: String]?
 }
 
-struct AnyFantasyMatchup: FantasyMatchupProtocol {
+struct AnyFantasyMatchup: FantasyMatchupProtocol, Hashable {
    let teamNames: [String]
    let scores: [Double]
    let avatarURLs: [URL?]
@@ -156,4 +156,23 @@ struct AnyFantasyMatchup: FantasyMatchupProtocol {
 	  self.awayTeamID = matchup.awayTeamID
 	  self.sleeperData = sleeperData
    }
+
+   // Implement the `hash(into:)` method to conform to `Hashable`
+   func hash(into hasher: inout Hasher) {
+	  hasher.combine(teamNames)
+	  hasher.combine(scores)
+	  hasher.combine(managerNames)
+	  hasher.combine(homeTeamID)
+	  hasher.combine(awayTeamID)
+   }
+
+   // Implement the `==` operator for `Equatable` conformance, required by `Hashable`
+   static func == (lhs: AnyFantasyMatchup, rhs: AnyFantasyMatchup) -> Bool {
+	  return lhs.teamNames == rhs.teamNames &&
+	  lhs.scores == rhs.scores &&
+	  lhs.managerNames == rhs.managerNames &&
+	  lhs.homeTeamID == rhs.homeTeamID &&
+	  lhs.awayTeamID == rhs.awayTeamID
+   }
 }
+

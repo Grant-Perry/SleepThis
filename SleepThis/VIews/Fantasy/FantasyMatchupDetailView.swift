@@ -63,9 +63,7 @@ struct FantasyMatchupDetailView: View {
 			.padding(.horizontal)
 		 }
 	  }
-//	  .navigationTitle("Week \(fantasyViewModel.selectedWeek)")
 	  .navigationTitle(leagueName) // Display the league name directly
-
    }
 
    private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> some View {
@@ -125,7 +123,7 @@ struct FantasyMatchupDetailView: View {
 		 case 2, 3: return "RB"
 		 case 4, 5: return "WR"
 		 case 6: return "TE"
-		 case 16: return "D/ST"
+		 case 16: return "D/ST" // Ensure D/ST is mapped correctly here
 		 case 17: return "K"
 		 case 23: return "FLEX"
 		 default: return ""

@@ -3,9 +3,10 @@ import SwiftUI
 struct FantasyMatchupListView: View {
    @ObservedObject var fantasyViewModel: FantasyMatchupViewModel
    @State private var selectedTimerInterval: Int = 0 // Initialize with 0 for 'off'
+   @State private var path = NavigationPath() // This path will be used by NavigationStack
 
    var body: some View {
-	  NavigationView {
+	  NavigationStack(path: $path) { // Use NavigationStack with a custom path
 		 VStack(alignment: .leading) {
 			HStack {
 			   yearPicker
@@ -73,7 +74,6 @@ struct FantasyMatchupListView: View {
 	  }
    }
 
-
    private var refreshPicker: some View {
 	  Picker("Refresh", selection: $selectedTimerInterval) {
 		 ForEach([0, 10, 20, 30, 40, 50, 60], id: \.self) { interval in
@@ -88,19 +88,19 @@ struct FantasyMatchupListView: View {
 
    private var matchupList: some View {
 	  List(fantasyViewModel.matchups, id: \.teamNames) { matchup in
-		 NavigationLink(
-			destination: FantasyMatchupDetailView(
-			   matchup: matchup,
-			   fantasyViewModel: fantasyViewModel,
-			   leagueName: fantasyViewModel.leagueName // Pass the league name here
-			)
-		 ) {
+		 NavigationLink(value: matchup) { // Use the matchup as the value in NavigationLink
 			matchupRow(for: matchup)
 		 }
 		 .buttonStyle(PlainButtonStyle())
 	  }
+	  .navigationDestination(for: AnyFantasyMatchup.self) { matchup in
+		 FantasyMatchupDetailView(
+			matchup: matchup,
+			fantasyViewModel: fantasyViewModel,
+			leagueName: fantasyViewModel.leagueName // Pass the league name here
+		 )
+	  }
    }
-
 
    private func matchupRow(for matchup: AnyFantasyMatchup) -> some View {
 	  VStack(alignment: .leading, spacing: 16) {
@@ -123,5 +123,4 @@ struct FantasyMatchupListView: View {
 	  .padding()
 	  .background(RoundedRectangle(cornerRadius: 10).fill(Color(UIColor.systemGray5)))
    }
-
 }

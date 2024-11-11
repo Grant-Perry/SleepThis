@@ -7,17 +7,27 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var isLoading: Bool = false
    @Published var leagueName: String = "" // holder to show league name on detailView
    @Published var lastSelectedMatchup: AnyFantasyMatchup?
-
    @Published var errorMessage: String? = nil
    @Published var leagueID: String = AppConstants.ESPNLeagueID
    @Published var sleeperLeagues: [FantasyScores.SleeperLeagueResponse] = []
    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
+
    @Published var selectedWeek: Int = {
-	  let firstWeek = 36
+	  let firstWeek = 36 // Adjust for the NFL season's starting week
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
-	  let offset = currentWeek >= firstWeek ? currentWeek - firstWeek + 1 : 0
-	  return min(max(1, offset), 17)
+	  var offset = currentWeek >= firstWeek ? currentWeek - firstWeek + 1 : 0
+
+	  // Check if today is Monday or Tuesday and adjust the offset if needed
+	  let today = Date()
+	  let weekday = Calendar.current.component(.weekday, from: today) // 1 = Sunday, 2 = Monday, ..., 7 = Saturday
+	  if weekday == 2 || weekday == 3 { // Monday or Tuesday
+		 offset -= 1
+	  }
+
+	  return min(max(1, offset), 17) // Clamp the week between 1 and 17
    }()
+
+
    var sleeperScoringSettings: [String: Double] = [:]
    var sleeperPlayers: [String: FantasyScores.SleeperPlayer] = [:]
    var rosterIDToManagerName: [Int: String] = [:]
@@ -73,9 +83,12 @@ class FantasyMatchupViewModel: ObservableObject {
 	  let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
 	  guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return [] }
 
-	  let activeSlots: [Int] = [0, 2, 3, 4, 5, 6, 16, 17, 23] // Standard active slots
-	  let benchSlots: [Int] = Array(20...30) // Typical ESPN bench slots range
-	  let relevantSlots = isBench ? benchSlots : activeSlots
+	  // Define the active slots in the specified order
+	  let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17] // QB, RB, RB, WR, WR, TE, FLEX, D/ST, K
+	  let benchSlots = Array(20...30) // Typical ESPN bench slots range
+	  let relevantSlots = isBench ? benchSlots : activeSlotsOrder
+
+	  // Create a slot order dictionary for sorting
 	  let slotOrder = Dictionary(uniqueKeysWithValues: relevantSlots.enumerated().map { ($1, $0) })
 
 	  return team.roster?.entries
