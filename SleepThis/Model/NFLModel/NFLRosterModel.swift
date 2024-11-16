@@ -1,5 +1,6 @@
 import Foundation
 
+// MARK: - ESPN Fantasy Models - holds the complete fantasy data structure for the ESPN API
 enum NFLRosterModel {
    struct TeamRosterResponse: Codable {
 	  let timestamp: String

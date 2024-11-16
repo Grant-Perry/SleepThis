@@ -10,21 +10,35 @@ struct FantasyMatchupDetailView: View {
 		 // Header with Team Names and Scores
 		 HStack {
 			VStack(alignment: .leading) {
-			   Text(matchup.managerNames[0]) // Display manager name
+			   Text(matchup.managerNames[0])
 				  .font(.system(size: 25, weight: .bold))
 				  .foregroundColor(.pink)
 			   Text("\(fantasyViewModel.getScore(for: matchup, teamIndex: 0), specifier: "%.2f")")
 				  .font(.system(size: 30, weight: .bold))
 				  .foregroundColor(fantasyViewModel.getScore(for: matchup, teamIndex: 0) > fantasyViewModel.getScore(for: matchup, teamIndex: 1) ? .gpGreen : .primary)
+			   let projected0 = fantasyViewModel.getProjectedScore(for: matchup, teamIndex: 0)
+			   let winProb0 = fantasyViewModel.getWinProbability(for: matchup, teamIndex: 0)
+			   let isProjectedWinner0 = projected0 > fantasyViewModel.getProjectedScore(for: matchup, teamIndex: 1)
+			   Text("(\(projected0, specifier: "%.1f") | \(winProb0, specifier: "%.0f")% \(isProjectedWinner0 ? "win" : "lose")")
+				  .font(.system(size: 12))
+				  .foregroundColor(Color(.gray))
+				  .foregroundColor(isProjectedWinner0 ? .gpGreen : .gpRed)
 			}
 			Spacer()
 			VStack(alignment: .trailing) {
-			   Text(matchup.managerNames[1]) // Display manager name
+			   Text(matchup.managerNames[1])
 				  .font(.system(size: 25, weight: .bold))
 				  .foregroundColor(.pink)
 			   Text("\(fantasyViewModel.getScore(for: matchup, teamIndex: 1), specifier: "%.2f")")
 				  .font(.system(size: 30, weight: .bold))
 				  .foregroundColor(fantasyViewModel.getScore(for: matchup, teamIndex: 1) > fantasyViewModel.getScore(for: matchup, teamIndex: 0) ? .gpGreen : .primary)
+			   let projected1 = fantasyViewModel.getProjectedScore(for: matchup, teamIndex: 1)
+			   let winProb1 = fantasyViewModel.getWinProbability(for: matchup, teamIndex: 1)
+			   let isProjectedWinner1 = projected1 > fantasyViewModel.getProjectedScore(for: matchup, teamIndex: 0)
+			   Text("(\(projected1, specifier: "%.1f") | \(winProb1, specifier: "%.0f")% \(isProjectedWinner1 ? "win" : "lose")")
+				  .font(.system(size: 12))
+				  .foregroundColor(Color(.gray))
+				  .foregroundColor(isProjectedWinner1 ? .gpGreen : .gpRed)
 			}
 		 }
 		 .padding()
@@ -63,9 +77,10 @@ struct FantasyMatchupDetailView: View {
 			.padding(.horizontal)
 		 }
 	  }
-	  .navigationTitle(leagueName) // Display the league name directly
+	  .navigationTitle(leagueName)
    }
 
+   // Roster View for Each Team
    private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> some View {
 	  // Only swap for ESPN leagues
 	  let adjustedTeamIndex = fantasyViewModel.leagueID == AppConstants.ESPNLeagueID ?
@@ -91,6 +106,7 @@ struct FantasyMatchupDetailView: View {
 	  }
    }
 
+   // Player Card View
    private func playerCard(for playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry, isBench: Bool) -> some View {
 	  VStack {
 		 HStack {
@@ -135,6 +151,7 @@ struct FantasyMatchupDetailView: View {
 				  .font(.system(size: 10, weight: .light))
 				  .foregroundColor(.primary)
 				  .frame(maxWidth: .infinity, alignment: .leading)
+
 			   HStack {
 				  let playerScore = fantasyViewModel.getPlayerScore(for: playerEntry, week: fantasyViewModel.selectedWeek)
 				  Text("\(playerScore, specifier: "%.2f")")
@@ -154,6 +171,7 @@ struct FantasyMatchupDetailView: View {
 	  }
    }
 
+   // Helper to determine position string
    private func positionString(_ lineupSlotId: Int) -> String {
 	  switch lineupSlotId {
 		 case 0: return "QB"
@@ -167,3 +185,22 @@ struct FantasyMatchupDetailView: View {
 	  }
    }
 }
+//
+//// Preview for SwiftUI Canvas
+//struct FantasyMatchupDetailView_Previews: PreviewProvider {
+//   static var previews: some View {
+//	  // Sample data for preview
+//	  let sampleMatchup = AnyFantasyMatchup(
+//		 teamNames: ["Away Team", "Home Team"],
+//		 scores: [150.0, 160.0],
+//		 avatarURLs: [nil, nil],
+//		 managerNames: ["Manager A", "Manager B"],
+//		 homeTeamID: 1,
+//		 awayTeamID: 2,
+//		 sleeperData: nil
+//	  )
+//
+//	  let viewModel = FantasyMatchupViewModel()
+//	  return FantasyMatchupDetailView(matchup: sampleMatchup, fantasyViewModel: viewModel, leagueName: "Sample League")
+//   }
+//}
