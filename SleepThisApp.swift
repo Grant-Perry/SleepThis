@@ -21,15 +21,28 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-			ManagerSwipeView(
-			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
-			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID,
-												draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
-			   playerViewModel: PlayerViewModel()
+//			ManagerSwipeView(
+//			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
+//			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID,
+//												draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+//			   playerViewModel: PlayerViewModel()
+//			)
+//			.tabItem {
+//			   Label("Swipe", systemImage: "person.2.square.stack.fill")
+//			}
+
+			LeagueListView(
+			   managerID: AppConstants.managerID,
+			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)
 			)
 			.tabItem {
-			   Label("Swipe", systemImage: "person.2.square.stack.fill")
+			   Label("League", systemImage: "list.bullet.rectangle")
 			}
+
+			NFLTeamListView()
+			   .tabItem {
+				  Label("NFL Roster", systemImage: "person.3.fill")
+			   }
 
 			ManagerListView(
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
@@ -43,18 +56,7 @@ struct SleepThisApp: App {
 			   Label("Rosters", systemImage: "pencil.and.list.clipboard")
 			}
 
-			NFLTeamListView()
-			   .tabItem {
-				  Label("NFL Roster", systemImage: "person.3.fill")
-			   }
 
-			LeagueListView(
-			   managerID: AppConstants.managerID,
-			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)
-			)
-			.tabItem {
-			   Label("League", systemImage: "list.bullet.rectangle")
-			}
 		 }
 		 .preferredColorScheme(.dark)
 		 .showVersionNumber()
