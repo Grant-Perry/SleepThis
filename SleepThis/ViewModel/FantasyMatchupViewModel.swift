@@ -460,14 +460,22 @@ class FantasyMatchupViewModel: ObservableObject {
 		 self.rosterIDToTeamName = [:]
 
 		 for roster in rosters {
-			let managerName = userIDToDisplayName[roster.owner_id] ?? "Manager \(roster.roster_id)"
-			self.rosterIDToManagerName[roster.roster_id] = managerName
+			// Handle null owner_id
+			if let ownerId = roster.owner_id {
+			   let managerName = userIDToDisplayName[ownerId] ?? "Manager \(roster.roster_id)"
+			   self.rosterIDToManagerName[roster.roster_id] = managerName
 
-			// Set the team name if available; fallback to the manager name
-			if let teamName = roster.metadata?["team_name"] ?? roster.metadata?["team_name_update"] {
-			   self.rosterIDToTeamName[roster.roster_id] = teamName
+			   // Set the team name if available; fallback to the manager name
+			   if let teamName = roster.metadata?["team_name"] ?? roster.metadata?["team_name_update"] {
+				  self.rosterIDToTeamName[roster.roster_id] = teamName
+			   } else {
+				  self.rosterIDToTeamName[roster.roster_id] = managerName
+			   }
 			} else {
-			   self.rosterIDToTeamName[roster.roster_id] = managerName
+			   // Handle case where owner_id is null
+			   let defaultName = "Manager \(roster.roster_id)"
+			   self.rosterIDToManagerName[roster.roster_id] = defaultName
+			   self.rosterIDToTeamName[roster.roster_id] = defaultName
 			}
 		 }
 
@@ -523,7 +531,7 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }.resume()
    }
 
-   private func getPlayerName(for playerId: String) -> String {
+   func getPlayerName(for playerId: String) -> String {
 	  // Get player name from cached player data
 	  if let playerData = playerViewModel.players.first(where: { $0.id == playerId }) {
 		 return "\(playerData.firstName ?? "") \(playerData.lastName ?? "")"
@@ -531,7 +539,7 @@ class FantasyMatchupViewModel: ObservableObject {
 	  return "Unknown Player"
    }
 
-   private func getPositionSlotId(for playerId: String) -> Int {
+   func getPositionSlotId(for playerId: String) -> Int {
 	  // Map Sleeper positions to our slot IDs
 	  if let playerData = playerViewModel.players.first(where: { $0.id == playerId }) {
 		 switch playerData.position {

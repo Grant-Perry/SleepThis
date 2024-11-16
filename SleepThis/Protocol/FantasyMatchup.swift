@@ -134,7 +134,7 @@ struct SleeperUser: Codable {
 
 struct SleeperRoster: Codable {
    let roster_id: Int
-   let owner_id: String
+   let owner_id: String?
    let metadata: [String: String]?
 }
 
