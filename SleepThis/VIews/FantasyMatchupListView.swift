@@ -1,9 +1,16 @@
 import SwiftUI
 
 struct FantasyMatchupListView: View {
-   @ObservedObject var fantasyViewModel: FantasyMatchupViewModel
+//   @ObservedObject var fantasyViewModel: FantasyMatchupViewModel
    @State private var selectedTimerInterval: Int = 0 // Initialize with 0 for 'off'
    @State private var path = NavigationPath() // This path will be used by NavigationStack
+   @StateObject private var playerViewModel = PlayerViewModel()
+   @StateObject var fantasyViewModel: FantasyMatchupViewModel
+
+   init() {
+	  let playerVM = PlayerViewModel()
+	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel(playerViewModel: playerVM))
+   }
 
    var body: some View {
 	  NavigationStack(path: $path) { // Use NavigationStack with a custom path

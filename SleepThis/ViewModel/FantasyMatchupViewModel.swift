@@ -35,8 +35,6 @@ class FantasyMatchupViewModel: ObservableObject {
 
    private var weeklyStats: [String: [String: Double]] = [:]
    private var sleeperLeagueSettings: [String: Any]? = nil
-   private var sleeperScoringRules: [String: Double] = [:]
-   private var sleeperRosters: [SleeperRoster] = []
 
 
    private var cancellables = Set<AnyCancellable>()
@@ -46,11 +44,17 @@ class FantasyMatchupViewModel: ObservableObject {
 
    private let playerViewModel: PlayerViewModel
 
-   // Update init to include PlayerViewModel
+   // Add playerViewModel to init
    init(playerViewModel: PlayerViewModel = PlayerViewModel()) {
 	  self.playerViewModel = playerViewModel
-   }
 
+	  // Initialize playerViewModel data
+	  playerViewModel.loadPlayersFromCache()
+	  if playerViewModel.players.isEmpty {
+		 playerViewModel.fetchAllPlayers()
+	  }
+   }
+   
    func setupRefreshTimer(with interval: Int) {
 	  refreshTimer?.cancel()
 	  guard interval > 0 else { return }
@@ -90,11 +94,10 @@ class FantasyMatchupViewModel: ObservableObject {
 	  return matchup.scores[teamIndex]
    }
 
-
    func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
 	  if leagueID == AppConstants.ESPNLeagueID {
-		 // Keep existing ESPN logic
-		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
+		 // Keep existing ESPN implementation exactly as is
+		 let teamId = teamIndex == 0 ? matchup.homeTeamID : matchup.awayTeamID
 		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return [] }
 
 		 let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
@@ -107,37 +110,42 @@ class FantasyMatchupViewModel: ObservableObject {
 			.filter { relevantSlots.contains($0.lineupSlotId) }
 			.sorted { (slotOrder[$0.lineupSlotId] ?? Int.max) < (slotOrder[$1.lineupSlotId] ?? Int.max) } ?? []
 	  } else {
-		 // Sleeper logic
-		 guard let sleeperMatchupData = matchup.sleeperData else {
-			print("No Sleeper matchup data available")
-			return []
-		 }
+		 // Fixed Sleeper implementation
+		 guard let sleeperMatchupData = matchup.sleeperData else { return [] }
 
-		 let sleeperMatchup = teamIndex == 0 ? sleeperMatchupData.0 : sleeperMatchupData.1
-		 print("Processing Sleeper matchup for roster_id: \(sleeperMatchup.roster_id)")
+		 // Fix the team order by swapping the index
+		 let sleeperMatchup = teamIndex == 0 ? sleeperMatchupData.1 : sleeperMatchupData.0
 
 		 let playerIds = isBench ?
 		 (sleeperMatchup.players?.filter { !(sleeperMatchup.starters?.contains($0) ?? false) } ?? []) :
 		 (sleeperMatchup.starters ?? [])
 
-		 print("Player IDs for \(isBench ? "bench" : "starters"): \(playerIds)")
-
 		 return playerIds.map { playerId in
-			let entry = createPlayerEntry(from: playerId)
-			print("Created entry for player ID: \(playerId)")
-			return entry
+			createPlayerEntry(from: playerId)
 		 }
 	  }
    }
 
    func getPlayerScore(for player: FantasyScores.FantasyModel.Team.PlayerEntry, week: Int) -> Double {
 	  if leagueID == AppConstants.ESPNLeagueID {
-		 return player.playerPoolEntry.player.stats.first {
-			$0.scoringPeriodId == week && $0.statSourceId == 0
-		 }?.appliedTotal ?? 0.0
+		 return player.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0.0
 	  } else {
+		 // Sleeper scoring logic
 		 let playerId = String(player.playerPoolEntry.player.id)
-		 return calculateSleeperPlayerScore(playerId: playerId)
+		 guard let playerStats = weeklyStats[playerId],
+			   let scoringSettings = sleeperLeagueSettings else {
+			print("Missing data for player \(playerId) - stats: \(weeklyStats[playerId] != nil), settings: \(sleeperLeagueSettings != nil)")
+			return 0.0
+		 }
+
+		 var totalScore = 0.0
+		 for (statKey, statValue) in playerStats {
+			if let scoring = scoringSettings[statKey] as? Double {
+			   let points = statValue * scoring
+			   totalScore += points
+			}
+		 }
+		 return totalScore
 	  }
    }
 
@@ -162,26 +170,44 @@ class FantasyMatchupViewModel: ObservableObject {
    }
 
    private func createPlayerEntry(from playerId: String) -> FantasyScores.FantasyModel.Team.PlayerEntry {
-	  print("Creating player entry for ID: \(playerId)")
+	  // Get player details from PlayerViewModel
+	  let player = playerViewModel.players.first { $0.id == playerId }
 
-	  // Create a stat that matches our structure
-	  let stat = FantasyScores.FantasyModel.Team.PlayerEntry.PlayerPoolEntry.Player.Stat(
-		 scoringPeriodId: selectedWeek,
-		 statSourceId: 0,
-		 appliedTotal: calculateSleeperPlayerScore(playerId: playerId)
-	  )
+	  let fullName = if let player = player {
+		 "\(player.firstName ?? "") \(player.lastName ?? "")"
+	  } else {
+		 playerId // Fallback if player not found
+	  }
+
+	  // Get position for slot ID
+	  let position = player?.position ?? "FLEX"
+	  let slotId = getPositionSlotId(position: position)
 
 	  return FantasyScores.FantasyModel.Team.PlayerEntry(
 		 playerPoolEntry: .init(
 			player: .init(
 			   id: Int(playerId) ?? 0,
-			   fullName: getPlayerName(for: playerId),
-			   stats: [stat]
+			   fullName: fullName,
+			   stats: []
 			)
 		 ),
-		 lineupSlotId: getPositionSlotId(for: playerId)
+		 lineupSlotId: slotId
 	  )
    }
+
+   // Helper function for position slot IDs
+   private func getPositionSlotId(position: String) -> Int {
+	  switch position {
+		 case "QB": return 0
+		 case "RB": return 2
+		 case "WR": return 4
+		 case "TE": return 6
+		 case "K": return 17
+		 case "DEF": return 16
+		 default: return 23 // FLEX
+	  }
+   }
+
    func fetchFantasyData(forWeek week: Int) {
 	  guard leagueID == AppConstants.ESPNLeagueID,
 			let url = URL(string: "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/\(selectedYear)/segments/0/leagues/\(leagueID)?view=mMatchupScore&view=mLiveScoring&view=mRoster&scoringPeriodId=\(week)") else {

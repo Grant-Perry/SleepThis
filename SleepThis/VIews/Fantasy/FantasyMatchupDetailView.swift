@@ -67,12 +67,15 @@ struct FantasyMatchupDetailView: View {
    }
 
    private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> some View {
-	  // Swap the team index here to match the correct roster with the correct team
-	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex == 0 ? 1 : 0, isBench: isBench)
-	  let score = roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
+	  // Only swap for ESPN leagues
+	  let adjustedTeamIndex = fantasyViewModel.leagueID == AppConstants.ESPNLeagueID ?
+	  (teamIndex == 0 ? 1 : 0) : teamIndex
 
-	  // Get opposing team's score for comparison
-	  let opposingRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex == 0 ? 0 : 1, isBench: isBench)
+	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: adjustedTeamIndex, isBench: isBench)
+
+	  // Calculate scores for color comparison
+	  let score = roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
+	  let opposingRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: adjustedTeamIndex == 0 ? 1 : 0, isBench: isBench)
 	  let opposingScore = opposingRoster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
 
 	  return VStack(alignment: .leading, spacing: 16) {
@@ -81,7 +84,7 @@ struct FantasyMatchupDetailView: View {
 		 }
 
 		 Text("Total \(isBench ? "Bench" : "Active"): \(score, specifier: "%.2f")")
-			.font(.system(size: 14, weight: .medium))
+			.font(.system(size: 20, weight: .medium))
 			.foregroundColor(score > opposingScore ? .gpGreen : .primary)
 			.frame(maxWidth: .infinity, alignment: .trailing)
 			.padding(.top, 8)
@@ -91,8 +94,34 @@ struct FantasyMatchupDetailView: View {
    private func playerCard(for playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry, isBench: Bool) -> some View {
 	  VStack {
 		 HStack {
-			LivePlayerImageView(playerID: playerEntry.playerPoolEntry.player.id, picSize: 65)
+			if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+			   LivePlayerImageView(
+				  playerID: playerEntry.playerPoolEntry.player.id,
+				  picSize: 65
+			   )
 			   .frame(width: 65, height: 65)
+			} else {
+			   AsyncImage(url: URL(string: "https://sleepercdn.com/content/nfl/players/\(playerEntry.playerPoolEntry.player.id).jpg")) { phase in
+				  switch phase {
+					 case .empty:
+						Image(systemName: "american.football")
+						   .resizable()
+						   .frame(width: 25, height: 25)
+					 case .success(let image):
+						image
+						   .resizable()
+						   .scaledToFill()
+						   .frame(width: 65, height: 65)
+					 case .failure:
+						Image(systemName: "american.football")
+						   .resizable()
+						   .frame(width: 25, height: 25)
+					 @unknown default:
+						EmptyView()
+				  }
+			   }
+			   .frame(width: 65, height: 65)
+			}
 
 			VStack(alignment: .leading) {
 			   Text(playerEntry.playerPoolEntry.player.fullName)
@@ -131,7 +160,7 @@ struct FantasyMatchupDetailView: View {
 		 case 2, 3: return "RB"
 		 case 4, 5: return "WR"
 		 case 6: return "TE"
-		 case 16: return "D/ST" // Ensure D/ST is mapped correctly here
+		 case 16: return "D/ST"
 		 case 17: return "K"
 		 case 23: return "FLEX"
 		 default: return ""
