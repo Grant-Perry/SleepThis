@@ -67,15 +67,22 @@ struct FantasyMatchupDetailView: View {
    }
 
    private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> some View {
-	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex, isBench: isBench)
+	  // Swap the team index here to match the correct roster with the correct team
+	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex == 0 ? 1 : 0, isBench: isBench)
+	  let score = roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
+
+	  // Get opposing team's score for comparison
+	  let opposingRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: teamIndex == 0 ? 0 : 1, isBench: isBench)
+	  let opposingScore = opposingRoster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
 
 	  return VStack(alignment: .leading, spacing: 16) {
 		 ForEach(roster, id: \.playerPoolEntry.player.id) { playerEntry in
 			playerCard(for: playerEntry, isBench: isBench)
 		 }
-		 Text("\(roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }, specifier: "%.2f")")
-			.font(.system(size: 20, weight: .medium))
-			.foregroundColor(.pink)
+
+		 Text("Total \(isBench ? "Bench" : "Active"): \(score, specifier: "%.2f")")
+			.font(.system(size: 14, weight: .medium))
+			.foregroundColor(score > opposingScore ? .gpGreen : .primary)
 			.frame(maxWidth: .infinity, alignment: .trailing)
 			.padding(.top, 8)
 	  }
@@ -100,8 +107,9 @@ struct FantasyMatchupDetailView: View {
 				  .foregroundColor(.primary)
 				  .frame(maxWidth: .infinity, alignment: .leading)
 			   HStack {
-				  Text("\(fantasyViewModel.getPlayerScore(for: playerEntry, week: fantasyViewModel.selectedWeek), specifier: "%.2f")")
-					 .font(.system(size: 20, weight: .medium))
+				  let playerScore = fantasyViewModel.getPlayerScore(for: playerEntry, week: fantasyViewModel.selectedWeek)
+				  Text("\(playerScore, specifier: "%.2f")")
+					 .font(.system(size: playerScore == 0 ? 15 : 20, weight: .medium))
 					 .foregroundColor(.secondary)
 					 .padding(.trailing)
 					 .offset(x: 25, y: -9)
@@ -113,7 +121,7 @@ struct FantasyMatchupDetailView: View {
 		 .padding(.vertical, 4)
 		 .background(LinearGradient(gradient: Gradient(colors: [isBench ? .gpBlueLight : .gpBlueDark, .clear]), startPoint: .top, endPoint: .bottom))
 		 .cornerRadius(10)
-		 .opacity(isBench ? 0.75 : 1) // Bench players at 75% opacity
+		 .opacity(isBench ? 0.75 : 1)
 	  }
    }
 

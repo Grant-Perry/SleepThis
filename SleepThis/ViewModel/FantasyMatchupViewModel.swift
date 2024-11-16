@@ -34,6 +34,7 @@ class FantasyMatchupViewModel: ObservableObject {
    var rosterIDToTeamName: [Int: String] = [:]
 
    private var weeklyStats: [String: [String: Double]] = [:]
+   private var sleeperLeagueSettings: [String: Any]? = nil
    private var sleeperScoringRules: [String: Double] = [:]
    private var sleeperRosters: [SleeperRoster] = []
 
@@ -142,13 +143,22 @@ class FantasyMatchupViewModel: ObservableObject {
 
    // Add function to calculate Sleeper player scores
    private func calculateSleeperPlayerScore(playerId: String) -> Double {
-	  guard let playerStats = weeklyStats[playerId] else { return 0.0 }
-
-	  return playerStats.reduce(0.0) { total, stat in
-		 let statValue = stat.value
-		 let statPoints = sleeperScoringRules[stat.key] ?? 0.0
-		 return total + (statValue * statPoints)
+	  guard let playerStats = weeklyStats[playerId],
+			let scoringSettings = sleeperLeagueSettings else {
+		 print("Missing data for player \(playerId) - stats: \(weeklyStats[playerId] != nil), settings: \(sleeperLeagueSettings != nil)")
+		 return 0.0
 	  }
+
+	  var totalScore = 0.0
+	  for (statKey, statValue) in playerStats {
+		 if let scoring = scoringSettings[statKey] as? Double {
+			let points = statValue * scoring
+			print("Stat \(statKey): \(statValue) * \(scoring) = \(points)")
+			totalScore += points
+		 }
+	  }
+	  print("Final calculated score for player \(playerId): \(totalScore)")
+	  return totalScore
    }
 
    private func createPlayerEntry(from playerId: String) -> FantasyScores.FantasyModel.Team.PlayerEntry {
@@ -264,34 +274,46 @@ class FantasyMatchupViewModel: ObservableObject {
    }
 
    private func fetchSleeperScoringSettings() {
+	  print("Fetching scoring settings for league: \(leagueID)")
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)") else { return }
 
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-		 guard let data = data else { return }
+		 guard let data = data else {
+			print("No scoring settings data received")
+			return
+		 }
 
 		 do {
-			let leagueData = try JSONDecoder().decode(FantasyScores.SleeperLeagueSettings.self, from: data)
-			DispatchQueue.main.async {
-			   self?.sleeperScoringRules = leagueData.scoringSettings
-			   self?.fetchSleeperWeeklyStats()
+			let decoder = JSONDecoder()
+			if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+			   let settings = json["scoring_settings"] as? [String: Any] {
+			   DispatchQueue.main.async {
+				  self?.sleeperLeagueSettings = settings
+				  print("Scoring settings fetched: \(settings)")
+				  self?.fetchSleeperWeeklyStats()
+			   }
 			}
 		 } catch {
-			print("Error decoding scoring settings: \(error)")
+			print("Error decoding league settings: \(error)")
 		 }
 	  }.resume()
    }
 
    private func fetchSleeperWeeklyStats() {
+	  print("Fetching Sleeper weekly stats for week \(selectedWeek)")
 	  guard let url = URL(string: "https://api.sleeper.app/v1/stats/nfl/regular/\(selectedYear)/\(selectedWeek)") else { return }
 
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-		 guard let data = data else { return }
+		 guard let data = data else {
+			print("No weekly stats data received")
+			return
+		 }
 
 		 do {
 			let statsData = try JSONDecoder().decode([String: [String: Double]].self, from: data)
 			DispatchQueue.main.async {
 			   self?.weeklyStats = statsData
-			   // Force refresh UI
+			   print("Weekly stats fetched for \(statsData.count) players")
 			   self?.objectWillChange.send()
 			}
 		 } catch {
@@ -299,8 +321,12 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
+
+
+
    func fetchSleeperMatchups() {
 	  guard leagueID != AppConstants.ESPNLeagueID else { return }
+	  fetchSleeperScoringSettings() // This will trigger weekly stats fetch after completion
 	  let week = selectedWeek
 	  print("Fetching Sleeper matchups for leagueID: \(leagueID), week: \(week)")
 
