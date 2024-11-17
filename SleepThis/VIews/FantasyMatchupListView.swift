@@ -5,7 +5,6 @@ struct FantasyMatchupListView: View {
    @State private var selectedTimerInterval: Int = 0
 
    init() {
-	  // Initialize without trying to modify the StateObject
 	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel())
    }
 
@@ -31,6 +30,11 @@ struct FantasyMatchupListView: View {
 	  }
 	  .onAppear {
 		 fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+		 // Restore auto-refresh setting
+		 if let savedInterval = UserDefaults.standard.value(forKey: "autoRefreshInterval") as? Int {
+			selectedTimerInterval = savedInterval
+			fantasyViewModel.setupRefreshTimer(with: savedInterval)
+		 }
 	  }
    }
 
@@ -38,14 +42,14 @@ struct FantasyMatchupListView: View {
    private var controlsSection: some View {
 	  VStack(spacing: 12) {
 		 HStack(spacing: 16) {
-			yearPickerView
-			weekPickerView
+			leaguePickerView
+			refreshPickerView
 		 }
 		 .padding(.horizontal)
 
 		 HStack(spacing: 16) {
-			leaguePickerView
-			refreshPickerView
+			yearPickerView
+			weekPickerView
 		 }
 		 .padding(.horizontal)
 	  }
@@ -71,7 +75,7 @@ struct FantasyMatchupListView: View {
 		 .cornerRadius(8)
 	  }
 	  .onChange(of: fantasyViewModel.selectedYear) {
-		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
+		 fantasyViewModel.handlePickerChange()
 	  }
    }
 
@@ -93,8 +97,8 @@ struct FantasyMatchupListView: View {
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) { 
-		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
+	  .onChange(of: fantasyViewModel.selectedWeek) {
+		 fantasyViewModel.handlePickerChange()
 	  }
    }
 
@@ -119,7 +123,7 @@ struct FantasyMatchupListView: View {
 	  }
 	  .onChange(of: fantasyViewModel.leagueID) {
 		 updateLeagueName()
-		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
+		 fantasyViewModel.handlePickerChange()
 	  }
    }
 
@@ -142,6 +146,7 @@ struct FantasyMatchupListView: View {
 		 .cornerRadius(8)
 	  }
 	  .onChange(of: selectedTimerInterval) {
+		 UserDefaults.standard.set(selectedTimerInterval, forKey: "autoRefreshInterval")
 		 fantasyViewModel.setupRefreshTimer(with: selectedTimerInterval)
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
@@ -172,7 +177,10 @@ struct FantasyMatchupListView: View {
 		 LazyVStack(spacing: 16) {
 			ForEach(fantasyViewModel.matchups, id: \.self) { matchup in
 			   NavigationLink(value: matchup) {
-				  FantasyMatchupCardView(matchup: matchup, fantasyViewModel: fantasyViewModel)
+				  FantasyMatchupCardView(
+					 matchup: matchup,
+					 fantasyViewModel: fantasyViewModel
+				  )
 			   }
 			}
 		 }
@@ -206,6 +214,3 @@ struct FantasyMatchupListView: View {
 	  }
    }
 }
-
-
-

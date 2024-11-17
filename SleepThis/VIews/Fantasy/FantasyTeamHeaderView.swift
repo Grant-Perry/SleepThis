@@ -44,7 +44,7 @@ struct FantasyTeamHeaderView: View {
 			   .lineLimit(1)
 			   .minimumScaleFactor(0.8)
 
-			Text(String(format: "%.1f", score))
+			Text(String(format: "%.2f", score))
 			   .font(.title2)
 			   .fontWeight(.bold)
 			   .foregroundColor(isWinning ? .green : .primary)

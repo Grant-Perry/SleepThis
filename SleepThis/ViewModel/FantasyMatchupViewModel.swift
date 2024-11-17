@@ -42,6 +42,7 @@ class FantasyMatchupViewModel: ObservableObject {
    private var lastLoadedLeagueID: String?
    private var lastLoadedWeek: Int?
    private let playerViewModel: PlayerViewModel
+   private var rosterIDToManager: [Int: SleeperFantasy.Manager] = [:]
 
    init(playerViewModel: PlayerViewModel = PlayerViewModel()) {
 	  // Initialize leagueID directly during initialization
@@ -64,11 +65,26 @@ class FantasyMatchupViewModel: ObservableObject {
    func setupRefreshTimer(with interval: Int) {
 	  refreshTimer?.cancel()
 	  guard interval > 0 else { return }
+
 	  refreshTimer = Timer.publish(every: TimeInterval(interval), on: .main, in: .common)
 		 .autoconnect()
 		 .sink { [weak self] _ in
 			self?.fetchFantasyMatchupViewModelMatchups()
 		 }
+   }
+
+   func handlePickerChange() {
+	  // Cancel existing timer
+	  refreshTimer?.cancel()
+
+	  // Fetch new data immediately
+	  fetchFantasyMatchupViewModelMatchups()
+
+	  // Restart timer if auto-refresh is enabled
+	  if let interval = UserDefaults.standard.value(forKey: "autoRefreshInterval") as? Int,
+		 interval > 0 {
+		 setupRefreshTimer(with: interval)
+	  }
    }
 
    func fetchFantasyMatchupViewModelMatchups() {
@@ -97,46 +113,50 @@ class FantasyMatchupViewModel: ObservableObject {
 
    func getScore(for matchup: AnyFantasyMatchup, teamIndex: Int) -> Double {
 	  if leagueID == AppConstants.ESPNLeagueID {
-		 // Get the correct team ID
-		 let teamId = teamIndex == 0 ? matchup.homeTeamID : matchup.awayTeamID
+		 // TODO: I just changed teamIndex to == 1 - change it back if this breaks
+		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
 		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return 0.0 }
-
-		 // Only sum active roster scores (not bench)
-		 let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
-
-		 return team.roster?.entries
-			.filter { activeSlotsOrder.contains($0.lineupSlotId) }
-			.reduce(0.0) { sum, entry in
-			   sum + (entry.playerPoolEntry.player.stats.first {
-				  $0.scoringPeriodId == selectedWeek && $0.statSourceId == 0
-			   }?.appliedTotal ?? 0.0)
-			} ?? 0.0
+		 // Only calculate active roster scores
+		 return calculateESPNTeamActiveScore(team: team, week: selectedWeek)
 	  } else {
+		 // For Sleeper, only use active roster scores
 		 return matchup.scores[teamIndex]
 	  }
    }
 
+   private func calculateESPNTeamActiveScore(team: FantasyScores.FantasyModel.Team?, week: Int) -> Double {
+	  guard let team = team else { return 0.0 }
+	  let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
+
+	  return team.roster?.entries
+		 .filter { activeSlotsOrder.contains($0.lineupSlotId) }
+		 .reduce(0.0) { sum, entry in
+			sum + (entry.playerPoolEntry.player.stats.first {
+			   $0.scoringPeriodId == week && $0.statSourceId == 0
+			}?.appliedTotal ?? 0.0)
+		 } ?? 0.0
+   }
+
    func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
+	  // teamIndex 0 is always visitor/away, 1 is always home
 	  if leagueID == AppConstants.ESPNLeagueID {
-		 // Keep existing ESPN implementation exactly as is
-		 let teamId = teamIndex == 0 ? matchup.homeTeamID : matchup.awayTeamID
+		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
 		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return [] }
 
 		 let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
 		 let benchSlots = Array(20...30)
 		 let relevantSlots = isBench ? benchSlots : activeSlotsOrder
 
-		 let slotOrder = Dictionary(uniqueKeysWithValues: relevantSlots.enumerated().map { ($1, $0) })
-
 		 return team.roster?.entries
 			.filter { relevantSlots.contains($0.lineupSlotId) }
-			.sorted { (slotOrder[$0.lineupSlotId] ?? Int.max) < (slotOrder[$1.lineupSlotId] ?? Int.max) } ?? []
+			.sorted { player1, player2 in
+			   let index1 = relevantSlots.firstIndex(of: player1.lineupSlotId) ?? Int.max
+			   let index2 = relevantSlots.firstIndex(of: player2.lineupSlotId) ?? Int.max
+			   return index1 < index2
+			} ?? []
 	  } else {
-		 // Fixed Sleeper implementation
 		 guard let sleeperMatchupData = matchup.sleeperData else { return [] }
-
-		 // Fix the team order by swapping the index
-		 let sleeperMatchup = teamIndex == 0 ? sleeperMatchupData.1 : sleeperMatchupData.0
+		 let sleeperMatchup = teamIndex == 0 ? sleeperMatchupData.0 : sleeperMatchupData.1
 
 		 let playerIds = isBench ?
 		 (sleeperMatchup.players?.filter { !(sleeperMatchup.starters?.contains($0) ?? false) } ?? []) :
@@ -265,22 +285,19 @@ class FantasyMatchupViewModel: ObservableObject {
 	  var processedMatchups: [AnyFantasyMatchup] = []
 
 	  for matchup in model.schedule.filter({ $0.matchupPeriodId == selectedWeek }) {
-		 let homeTeamId = matchup.home.teamId
 		 let awayTeamId = matchup.away.teamId
-		 let homeTeam = model.teams.first { $0.id == homeTeamId }
+		 let homeTeamId = matchup.home.teamId
 		 let awayTeam = model.teams.first { $0.id == awayTeamId }
+		 let homeTeam = model.teams.first { $0.id == homeTeamId }
 
-		 let homeTeamName = homeTeam?.name ?? "Unknown"
 		 let awayTeamName = awayTeam?.name ?? "Unknown"
+		 let homeTeamName = homeTeam?.name ?? "Unknown"
 
 		 // Calculate scores
-		 let homeTeamScore = homeTeam?.roster?.entries.reduce(0.0) {
-			$0 + getPlayerScore(for: $1, week: selectedWeek)
-		 } ?? 0.0
-		 let awayTeamScore = awayTeam?.roster?.entries.reduce(0.0) {
-			$0 + getPlayerScore(for: $1, week: selectedWeek)
-		 } ?? 0.0
+		 let awayTeamScore = calculateESPNTeamScore(team: awayTeam, week: selectedWeek)
+		 let homeTeamScore = calculateESPNTeamScore(team: homeTeam, week: selectedWeek)
 
+		 // Create FantasyMatchup with consistent visitor/home designation
 		 let fantasyMatchup = FantasyScores.FantasyMatchup(
 			homeTeamName: homeTeamName,
 			awayTeamName: awayTeamName,
@@ -298,6 +315,16 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
 
 	  self.matchups = processedMatchups
+   }
+
+   // MARK: Helper for processESPNMatchups
+   private func calculateESPNTeamScore(team: FantasyScores.FantasyModel.Team?, week: Int) -> Double {
+	  guard let team = team else { return 0.0 }
+	  return team.roster?.entries.reduce(0.0) { sum, entry in
+		 sum + (entry.playerPoolEntry.player.stats.first {
+			$0.scoringPeriodId == week && $0.statSourceId == 0
+		 }?.appliedTotal ?? 0.0)
+	  } ?? 0.0
    }
 
    func fetchSleeperLeagues(forUserID userID: String) {
@@ -370,8 +397,6 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }.resume()
    }
 
-
-
    func fetchSleeperMatchups() {
 	  guard leagueID != AppConstants.ESPNLeagueID else { return }
 	  fetchSleeperScoringSettings() // This will trigger weekly stats fetch after completion
@@ -413,24 +438,27 @@ class FantasyMatchupViewModel: ObservableObject {
 		 let team1 = matchups[0]
 		 let team2 = matchups[1]
 
-		 // Use team name if available, otherwise fall back to manager name
-		 let homeTeamName = rosterIDToTeamName[team1.roster_id] ?? rosterIDToManagerName[team1.roster_id] ?? "Unknown Team"
-		 let awayTeamName = rosterIDToTeamName[team2.roster_id] ?? rosterIDToManagerName[team2.roster_id] ?? "Unknown Team"
-
+		 // Get manager names
 		 let homeManagerName = rosterIDToManagerName[team1.roster_id] ?? "Unknown Manager"
 		 let awayManagerName = rosterIDToManagerName[team2.roster_id] ?? "Unknown Manager"
 
-		 // Get avatar URLs using manager IDs
+		 // Get manager IDs for avatars
 		 let homeManagerID = rosterIDToManagerID[team1.roster_id] ?? ""
 		 let awayManagerID = rosterIDToManagerID[team2.roster_id] ?? ""
-		 let homeAvatarURL = URL(string: "https://sleepercdn.com/avatars/\(homeManagerID)")
-		 let awayAvatarURL = URL(string: "https://sleepercdn.com/avatars/\(awayManagerID)")
+
+		 // Construct avatar URLs using the actual avatar string from SleeperUser
+		 let homeAvatarURL = userAvatars[homeManagerID]?.absoluteString.components(separatedBy: "/").last
+			.flatMap { URL(string: "https://sleepercdn.com/avatars/\($0)") }
+
+		 let awayAvatarURL = userAvatars[awayManagerID]?.absoluteString.components(separatedBy: "/").last
+			.flatMap { URL(string: "https://sleepercdn.com/avatars/\($0)") }
+
 
 		 let fantasyMatchup = FantasyScores.FantasyMatchup(
-			homeTeamName: homeTeamName,
-			awayTeamName: awayTeamName,
-			homeScore: team1.points ?? 0,
-			awayScore: team2.points ?? 0,
+			homeTeamName: homeManagerName,
+			awayTeamName: awayManagerName,
+			homeScore: calculateSleeperTeamScore(matchup: team1),
+			awayScore: calculateSleeperTeamScore(matchup: team2),
 			homeAvatarURL: homeAvatarURL,
 			awayAvatarURL: awayAvatarURL,
 			homeManagerName: homeManagerName,
@@ -447,7 +475,31 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
    }
 
-   private var rosterIDToManager: [Int: SleeperFantasy.Manager] = [:]
+   private func getSleeperAvatarURL(userID: String) -> URL? {
+	  if let avatarID = userAvatars[userID] {
+		 return URL(string: "https://sleepercdn.com/avatars/\(avatarID)")
+	  }
+	  // Fetch avatar if not cached
+	  fetchSleeperUser(userID: userID)
+	  return nil
+   }
+
+   private func calculateSleeperTeamScore(matchup: FantasyScores.SleeperMatchup) -> Double {
+	  guard let starters = matchup.starters else { return 0.0 }
+
+	  return starters.reduce(0.0) { total, playerId in
+		 if let playerStats = weeklyStats[playerId] {
+			var playerScore = 0.0
+			for (statKey, statValue) in playerStats {
+			   if let scoring = sleeperLeagueSettings?[statKey] as? Double {
+				  playerScore += statValue * scoring
+			   }
+			}
+			return total + playerScore
+		 }
+		 return total
+	  }
+   }
 
 
    func fetchSleeperLeagueUsersAndRosters(completion: @escaping () -> Void) {
@@ -657,5 +709,6 @@ class FantasyMatchupViewModel: ObservableObject {
 		 default: return "Unknown"
 	  }
    }
+
 
 }

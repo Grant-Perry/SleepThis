@@ -132,7 +132,7 @@ struct SleeperUser: Codable {
    let display_name: String
    let avatar: String?
    let metadata: [String: String]?
-   let username: String?  // Made optional
+   let username: String?
    let is_owner: Bool?
 }
 

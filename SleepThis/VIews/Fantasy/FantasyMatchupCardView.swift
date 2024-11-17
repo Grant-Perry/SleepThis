@@ -41,7 +41,7 @@ struct FantasyMatchupCardView: View {
 
    private var teamMatchupSection: some View {
 	  HStack(alignment: .center, spacing: 20) {
-		 // Away Team (first in array)
+		 // Away Team
 		 FantasyTeamHeaderView(
 			managerName: matchup.managerNames[0],
 			score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
@@ -59,7 +59,7 @@ struct FantasyMatchupCardView: View {
 			   .foregroundColor(.secondary)
 		 }
 
-		 // Home Team (second in array)
+		 // Home Team
 		 FantasyTeamHeaderView(
 			managerName: matchup.managerNames[1],
 			score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
