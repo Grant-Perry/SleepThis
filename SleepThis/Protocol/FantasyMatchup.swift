@@ -130,12 +130,29 @@ enum FantasyScores {
 struct SleeperUser: Codable {
    let user_id: String
    let display_name: String
+   let avatar: String?
+   let metadata: [String: String]?
+   let username: String?  // Made optional
+   let is_owner: Bool?
 }
 
 struct SleeperRoster: Codable {
    let roster_id: Int
-   let owner_id: String
+   let owner_id: String?
+   let players: [String]?
+   let starters: [String]?
    let metadata: [String: String]?
+   let settings: RosterSettings?
+
+   struct RosterSettings: Codable {
+	  let wins: Int?
+	  let losses: Int?
+	  let ties: Int?
+	  let fpts: Double?
+	  let fpts_decimal: Double?
+	  let fpts_against: Double?
+	  let fpts_against_decimal: Double?
+   }
 }
 
 struct AnyFantasyMatchup: FantasyMatchupProtocol, Hashable {

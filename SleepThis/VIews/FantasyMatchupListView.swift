@@ -1,133 +1,211 @@
 import SwiftUI
 
 struct FantasyMatchupListView: View {
-//   @ObservedObject var fantasyViewModel: FantasyMatchupViewModel
-   @State private var selectedTimerInterval: Int = 0 // Initialize with 0 for 'off'
-   @State private var path = NavigationPath() // This path will be used by NavigationStack
-   @StateObject private var playerViewModel = PlayerViewModel()
-   @StateObject var fantasyViewModel: FantasyMatchupViewModel
+   @StateObject private var fantasyViewModel: FantasyMatchupViewModel
+   @State private var selectedTimerInterval: Int = 0
 
    init() {
-	  let playerVM = PlayerViewModel()
-	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel(playerViewModel: playerVM))
+	  // Initialize without trying to modify the StateObject
+	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel())
    }
 
    var body: some View {
-	  NavigationStack(path: $path) { // Use NavigationStack with a custom path
-		 VStack(alignment: .leading) {
-			HStack {
-			   yearPicker
-			   weekPicker
-			}
-			HStack {
-			   leaguePicker
-			   refreshPicker
-			}
-			.padding(.horizontal)
+	  NavigationStack {
+		 ZStack {
+			Color(.systemGroupedBackground)
+			   .ignoresSafeArea()
 
-			if fantasyViewModel.isLoading {
-			   ProgressView("Loading matchups...")
-			} else if let errorMessage = fantasyViewModel.errorMessage {
-			   Text("Error: \(errorMessage)")
-			} else {
-			   matchupList
+			VStack(spacing: 16) {
+			   controlsSection
+
+			   if fantasyViewModel.isLoading {
+				  loadingView
+			   } else if let errorMessage = fantasyViewModel.errorMessage {
+				  errorView(message: errorMessage)
+			   } else {
+				  matchupsListView
+			   }
 			}
 		 }
-		 .onAppear {
-			fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
-			fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
-		 }
-		 .padding()
+		 .navigationTitle("Fantasy Football")
+	  }
+	  .onAppear {
+		 fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
 	  }
    }
 
-   private var yearPicker: some View {
-	  Picker("Year", selection: $fantasyViewModel.selectedYear) {
-		 ForEach(2015...Calendar.current.component(.year, from: Date()), id: \.self) { year in
-			Text(String(year)).tag(year)
+   // MARK: - Header Controls Section
+   private var controlsSection: some View {
+	  VStack(spacing: 12) {
+		 HStack(spacing: 16) {
+			yearPickerView
+			weekPickerView
 		 }
+		 .padding(.horizontal)
+
+		 HStack(spacing: 16) {
+			leaguePickerView
+			refreshPickerView
+		 }
+		 .padding(.horizontal)
 	  }
-	  .onChange(of: fantasyViewModel.selectedYear) { _ in
+	  .padding(.top)
+   }
+
+   private var yearPickerView: some View {
+	  Menu {
+		 Picker("Year", selection: $fantasyViewModel.selectedYear) {
+			ForEach(2015...Calendar.current.component(.year, from: Date()), id: \.self) { year in
+			   Text(String(format: "%d", year)).tag(year)
+			}
+		 }
+	  } label: {
+		 HStack {
+			Text("Year: \(String(format: "%d", fantasyViewModel.selectedYear))")
+			Image(systemName: "chevron.down")
+			   .font(.caption)
+		 }
+		 .padding(8)
+		 .frame(maxWidth: .infinity)
+		 .background(Color(.secondarySystemBackground))
+		 .cornerRadius(8)
+	  }
+	  .onChange(of: fantasyViewModel.selectedYear) {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
 
-   private var weekPicker: some View {
-	  Picker("Week", selection: $fantasyViewModel.selectedWeek) {
-		 ForEach(1..<18) { week in
-			Text("Week \(week)").tag(week)
+   private var weekPickerView: some View {
+	  Menu {
+		 Picker("Week", selection: $fantasyViewModel.selectedWeek) {
+			ForEach(1..<18) { week in
+			   Text("Week \(week)").tag(week)
+			}
 		 }
+	  } label: {
+		 HStack {
+			Text("Week \(fantasyViewModel.selectedWeek)")
+			Image(systemName: "chevron.down")
+			   .font(.caption)
+		 }
+		 .padding(8)
+		 .frame(maxWidth: .infinity)
+		 .background(Color(.secondarySystemBackground))
+		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) {
+	  .onChange(of: fantasyViewModel.selectedWeek) { 
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
 
-   private var leaguePicker: some View {
-	  Picker("League", selection: $fantasyViewModel.leagueID) {
-		 Text("Select League").tag("")
-		 ForEach(fantasyViewModel.sleeperLeagues, id: \.leagueID) { league in
-			Text(league.name).tag(league.leagueID)
+   private var leaguePickerView: some View {
+	  Menu {
+		 Picker("League", selection: $fantasyViewModel.leagueID) {
+			Text("ESPN League").tag(AppConstants.ESPNLeagueID)
+			ForEach(fantasyViewModel.sleeperLeagues, id: \.leagueID) { league in
+			   Text(league.name).tag(league.leagueID)
+			}
 		 }
-		 Text("ESPN League").tag(AppConstants.ESPNLeagueID)
+	  } label: {
+		 HStack {
+			Text(getLeagueName())
+			Image(systemName: "chevron.down")
+			   .font(.caption)
+		 }
+		 .padding(8)
+		 .frame(maxWidth: .infinity)
+		 .background(Color(.secondarySystemBackground))
+		 .cornerRadius(8)
 	  }
 	  .onChange(of: fantasyViewModel.leagueID) {
-		 if let selectedLeague = fantasyViewModel.sleeperLeagues.first(where: { $0.leagueID == fantasyViewModel.leagueID }) {
-			fantasyViewModel.leagueName = selectedLeague.name // Set league name based on selection
-		 } else if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
-			fantasyViewModel.leagueName = "ESPN League" // Set name for ESPN
-		 }
+		 updateLeagueName()
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
 
-   private var refreshPicker: some View {
-	  Picker("Refresh", selection: $selectedTimerInterval) {
-		 ForEach([0, 10, 20, 30, 40, 50, 60], id: \.self) { interval in
-			Text("\(interval == 0 ? "Off" : "\(interval) sec")").tag(interval)
+   private var refreshPickerView: some View {
+	  Menu {
+		 Picker("Refresh", selection: $selectedTimerInterval) {
+			ForEach([0, 10, 20, 30, 40, 50, 60], id: \.self) { interval in
+			   Text("\(interval == 0 ? "Off" : "\(interval) sec")").tag(interval)
+			}
 		 }
+	  } label: {
+		 HStack {
+			Text(selectedTimerInterval == 0 ? "Auto Refresh: Off" : "Refresh: \(selectedTimerInterval)s")
+			Image(systemName: "chevron.down")
+			   .font(.caption)
+		 }
+		 .padding(8)
+		 .frame(maxWidth: .infinity)
+		 .background(Color(.secondarySystemBackground))
+		 .cornerRadius(8)
 	  }
-	  .onChange(of: selectedTimerInterval) { _ in
+	  .onChange(of: selectedTimerInterval) {
 		 fantasyViewModel.setupRefreshTimer(with: selectedTimerInterval)
-		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups() // Refresh immediately
+		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
 
-   private var matchupList: some View {
-	  List(fantasyViewModel.matchups, id: \.teamNames) { matchup in
-		 NavigationLink(value: matchup) { // Use the matchup as the value in NavigationLink
-			matchupRow(for: matchup)
+   // MARK: - Loading & Error Views
+   private var loadingView: some View {
+	  VStack {
+		 Spacer()
+		 ProgressView("Loading matchups...")
+			.progressViewStyle(CircularProgressViewStyle())
+		 Spacer()
+	  }
+   }
+
+   private func errorView(message: String) -> some View {
+	  VStack {
+		 Spacer()
+		 Text("Error: \(message)")
+			.foregroundColor(.red)
+		 Spacer()
+	  }
+   }
+
+   // MARK: - Matchups List
+   private var matchupsListView: some View {
+	  ScrollView {
+		 LazyVStack(spacing: 16) {
+			ForEach(fantasyViewModel.matchups, id: \.self) { matchup in
+			   NavigationLink(value: matchup) {
+				  FantasyMatchupCardView(matchup: matchup, fantasyViewModel: fantasyViewModel)
+			   }
+			}
 		 }
-		 .buttonStyle(PlainButtonStyle())
+		 .padding(.vertical)
 	  }
 	  .navigationDestination(for: AnyFantasyMatchup.self) { matchup in
 		 FantasyMatchupDetailView(
 			matchup: matchup,
 			fantasyViewModel: fantasyViewModel,
-			leagueName: fantasyViewModel.leagueName // Pass the league name here
+			leagueName: fantasyViewModel.leagueName
 		 )
 	  }
    }
 
-   private func matchupRow(for matchup: AnyFantasyMatchup) -> some View {
-	  VStack(alignment: .leading, spacing: 16) {
-		 HStack {
-			VStack(alignment: .leading) {
-			   Text(matchup.managerNames[0])
-				  .font(.headline)
-			   Text("Score: \(fantasyViewModel.getScore(for: matchup, teamIndex: 0), specifier: "%.2f")")
-				  .font(.subheadline)
-			}
-			Spacer()
-			VStack(alignment: .trailing) {
-			   Text(matchup.managerNames[1])
-				  .font(.headline)
-			   Text("Score: \(fantasyViewModel.getScore(for: matchup, teamIndex: 1), specifier: "%.2f")")
-				  .font(.subheadline)
-			}
-		 }
+   // MARK: - Helper Functions
+   private func getLeagueName() -> String {
+	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+		 return "ESPN League"
+	  } else if let league = fantasyViewModel.sleeperLeagues.first(where: { $0.leagueID == fantasyViewModel.leagueID }) {
+		 return league.name
+	  } else {
+		 return "Select League"
 	  }
-	  .padding()
-	  .background(RoundedRectangle(cornerRadius: 10).fill(Color(UIColor.systemGray5)))
+   }
+
+   private func updateLeagueName() {
+	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+		 fantasyViewModel.leagueName = "ESPN League"
+	  } else if let league = fantasyViewModel.sleeperLeagues.first(where: { $0.leagueID == fantasyViewModel.leagueID }) {
+		 fantasyViewModel.leagueName = league.name
+	  }
    }
 }
+
+
+

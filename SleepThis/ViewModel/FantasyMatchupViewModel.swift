@@ -5,56 +5,62 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var fantasyModel: FantasyScores.FantasyModel?
    @Published var matchups: [AnyFantasyMatchup] = []
    @Published var isLoading: Bool = false
-   @Published var leagueName: String = "" // holder to show league name on detailView
+   @Published var leagueName: String = "ESPN League"
    @Published var lastSelectedMatchup: AnyFantasyMatchup?
    @Published var errorMessage: String? = nil
    @Published var leagueID: String = AppConstants.ESPNLeagueID
    @Published var sleeperLeagues: [FantasyScores.SleeperLeagueResponse] = []
    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
+   @Published private var userAvatars: [String: URL] = [:] // Cache for user avatars
 
    @Published var selectedWeek: Int = {
-	  let firstWeek = 36 // Adjust for the NFL season's starting week
+	  let firstWeek = 36 // NFL season typically starts around week 36
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
 	  var offset = currentWeek >= firstWeek ? currentWeek - firstWeek + 1 : 0
 
-	  // Check if today is Monday or Tuesday and adjust the offset if needed
+	  // Check if it's Sunday or Monday - if so, stay on current week
 	  let today = Date()
-	  let weekday = Calendar.current.component(.weekday, from: today) // 1 = Sunday, 2 = Monday, ..., 7 = Saturday
-	  if weekday == 2 || weekday == 3 { // Monday or Tuesday
-		 offset -= 1
+	  let weekday = Calendar.current.component(.weekday, from: today) // 1 = Sunday, 2 = Monday
+	  if weekday == 1 || weekday == 2 { // Sunday or Monday
+		 offset = max(1, offset - 1) // Stay on current week
 	  }
 
-	  return min(max(1, offset), 17) // Clamp the week between 1 and 17
+	  return min(max(1, offset), 17) // Clamp between 1 and 17
    }()
-
 
    var sleeperScoringSettings: [String: Double] = [:]
    var sleeperPlayers: [String: FantasyScores.SleeperPlayer] = [:]
    var rosterIDToManagerName: [Int: String] = [:]
    var rosterIDToTeamName: [Int: String] = [:]
+   private var rosterIDToManagerID: [Int: String] = [:]
+   private var userIDs: [String: String] = [:]
 
    private var weeklyStats: [String: [String: Double]] = [:]
    private var sleeperLeagueSettings: [String: Any]? = nil
-
-
    private var cancellables = Set<AnyCancellable>()
    private var refreshTimer: AnyCancellable?
    private var lastLoadedLeagueID: String?
    private var lastLoadedWeek: Int?
-
    private let playerViewModel: PlayerViewModel
 
-   // Add playerViewModel to init
    init(playerViewModel: PlayerViewModel = PlayerViewModel()) {
+	  // Initialize leagueID directly during initialization
+	  self.leagueID = AppConstants.ESPNLeagueID
 	  self.playerViewModel = playerViewModel
 
-	  // Initialize playerViewModel data
+	  // Initialize data
 	  playerViewModel.loadPlayersFromCache()
 	  if playerViewModel.players.isEmpty {
 		 playerViewModel.fetchAllPlayers()
 	  }
+
+	  // Now fetch data
+	  DispatchQueue.main.async {
+		 self.fetchFantasyMatchupViewModelMatchups()
+		 self.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+	  }
    }
-   
+
    func setupRefreshTimer(with interval: Int) {
 	  refreshTimer?.cancel()
 	  guard interval > 0 else { return }
@@ -89,9 +95,25 @@ class FantasyMatchupViewModel: ObservableObject {
 	  lastLoadedWeek = selectedWeek
    }
 
-
    func getScore(for matchup: AnyFantasyMatchup, teamIndex: Int) -> Double {
-	  return matchup.scores[teamIndex]
+	  if leagueID == AppConstants.ESPNLeagueID {
+		 // Get the correct team ID
+		 let teamId = teamIndex == 0 ? matchup.homeTeamID : matchup.awayTeamID
+		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return 0.0 }
+
+		 // Only sum active roster scores (not bench)
+		 let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
+
+		 return team.roster?.entries
+			.filter { activeSlotsOrder.contains($0.lineupSlotId) }
+			.reduce(0.0) { sum, entry in
+			   sum + (entry.playerPoolEntry.player.stats.first {
+				  $0.scoringPeriodId == selectedWeek && $0.statSourceId == 0
+			   }?.appliedTotal ?? 0.0)
+			} ?? 0.0
+	  } else {
+		 return matchup.scores[teamIndex]
+	  }
    }
 
    func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
@@ -384,7 +406,6 @@ class FantasyMatchupViewModel: ObservableObject {
    }
 
    private func processSleeperMatchups(_ sleeperMatchups: [FantasyScores.SleeperMatchup]) {
-	  print("Processing \(sleeperMatchups.count) Sleeper matchups")
 	  let groupedMatchups = Dictionary(grouping: sleeperMatchups, by: { $0.matchup_id })
 	  var processedMatchups: [AnyFantasyMatchup] = []
 
@@ -392,88 +413,148 @@ class FantasyMatchupViewModel: ObservableObject {
 		 let team1 = matchups[0]
 		 let team2 = matchups[1]
 
-		 print("Processing matchup between roster_ids: \(team1.roster_id) and \(team2.roster_id)")
+		 // Use team name if available, otherwise fall back to manager name
+		 let homeTeamName = rosterIDToTeamName[team1.roster_id] ?? rosterIDToManagerName[team1.roster_id] ?? "Unknown Team"
+		 let awayTeamName = rosterIDToTeamName[team2.roster_id] ?? rosterIDToManagerName[team2.roster_id] ?? "Unknown Team"
 
-		 // Get names from mappings
-		 let homeManagerName = self.rosterIDToManagerName[team1.roster_id] ?? "Manager \(team1.roster_id)"
-		 let awayManagerName = self.rosterIDToManagerName[team2.roster_id] ?? "Manager \(team2.roster_id)"
-		 let homeTeamName = self.rosterIDToTeamName[team1.roster_id] ?? homeManagerName
-		 let awayTeamName = self.rosterIDToTeamName[team2.roster_id] ?? awayManagerName
+		 let homeManagerName = rosterIDToManagerName[team1.roster_id] ?? "Unknown Manager"
+		 let awayManagerName = rosterIDToManagerName[team2.roster_id] ?? "Unknown Manager"
+
+		 // Get avatar URLs using manager IDs
+		 let homeManagerID = rosterIDToManagerID[team1.roster_id] ?? ""
+		 let awayManagerID = rosterIDToManagerID[team2.roster_id] ?? ""
+		 let homeAvatarURL = URL(string: "https://sleepercdn.com/avatars/\(homeManagerID)")
+		 let awayAvatarURL = URL(string: "https://sleepercdn.com/avatars/\(awayManagerID)")
 
 		 let fantasyMatchup = FantasyScores.FantasyMatchup(
 			homeTeamName: homeTeamName,
 			awayTeamName: awayTeamName,
 			homeScore: team1.points ?? 0,
 			awayScore: team2.points ?? 0,
-			homeAvatarURL: nil,
-			awayAvatarURL: nil,
+			homeAvatarURL: homeAvatarURL,
+			awayAvatarURL: awayAvatarURL,
 			homeManagerName: homeManagerName,
 			awayManagerName: awayManagerName,
 			homeTeamID: team1.roster_id,
 			awayTeamID: team2.roster_id
 		 )
 
-		 // Create AnyFantasyMatchup with Sleeper data
 		 processedMatchups.append(AnyFantasyMatchup(fantasyMatchup, sleeperData: (team1, team2)))
 	  }
 
-	  self.matchups = processedMatchups
+	  DispatchQueue.main.async {
+		 self.matchups = processedMatchups
+	  }
    }
+
+   private var rosterIDToManager: [Int: SleeperFantasy.Manager] = [:]
+
 
    func fetchSleeperLeagueUsersAndRosters(completion: @escaping () -> Void) {
-	  let group = DispatchGroup()
-	  var rosters: [SleeperRoster] = []
-	  var users: [SleeperUser] = []
+	  // Reset mappings
+	  self.userIDs = [:]
+	  self.rosterIDToManagerName = [:]
+	  self.rosterIDToManagerID = [:]
+	  self.rosterIDToTeamName = [:]
 
-	  // Fetch rosters
-	  group.enter()
-	  fetchSleeperLeagueRosters(leagueID: leagueID) { result in
-		 switch result {
-			case .success(let fetchedRosters):
-			   rosters = fetchedRosters
-			case .failure(let error):
-			   print("Error fetching rosters: \(error)")
-		 }
-		 group.leave()
-	  }
+	  print("DP - Starting to fetch users for league: \(leagueID)")
 
-	  // Fetch users
-	  group.enter()
-	  fetchSleeperLeagueUsers(leagueID: leagueID) { result in
-		 switch result {
-			case .success(let fetchedUsers):
-			   users = fetchedUsers
-			case .failure(let error):
-			   print("Error fetching users: \(error)")
-		 }
-		 group.leave()
-	  }
-
-	  group.notify(queue: .main) {
-		 // Create mapping for manager names and team names
-		 var userIDToDisplayName: [String: String] = [:]
-		 for user in users {
-			userIDToDisplayName[user.user_id] = user.display_name
-		 }
-
-		 self.rosterIDToManagerName = [:]
-		 self.rosterIDToTeamName = [:]
-
-		 for roster in rosters {
-			let managerName = userIDToDisplayName[roster.owner_id] ?? "Manager \(roster.roster_id)"
-			self.rosterIDToManagerName[roster.roster_id] = managerName
-
-			// Set the team name if available; fallback to the manager name
-			if let teamName = roster.metadata?["team_name"] ?? roster.metadata?["team_name_update"] {
-			   self.rosterIDToTeamName[roster.roster_id] = teamName
-			} else {
-			   self.rosterIDToTeamName[roster.roster_id] = managerName
-			}
-		 }
-
+	  // Create sequential chain of operations
+	  guard let usersURL = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/users") else {
+		 print("DP - Invalid users URL")
 		 completion()
+		 return
 	  }
+
+	  // First fetch users
+	  URLSession.shared.dataTask(with: usersURL) { [weak self] data, response, error in
+		 if let error = error {
+			print("DP - Error fetching users: \(error)")
+			completion()
+			return
+		 }
+
+		 guard let data = data else {
+			print("DP - No user data received")
+			completion()
+			return
+		 }
+
+		 do {
+			let users = try JSONDecoder().decode([SleeperUser].self, from: data)
+			print("DP - Successfully fetched \(users.count) users")
+
+			// Store users first
+			DispatchQueue.main.async {
+			   for user in users {
+				  print("DP - Processing user: \(user.display_name) with ID: \(user.user_id)")
+				  self?.userIDs[user.user_id] = user.display_name
+				  if let avatar = user.avatar {
+					 self?.userAvatars[user.user_id] = URL(string: "https://sleepercdn.com/avatars/\(avatar)")
+				  }
+			   }
+
+			   // Now fetch rosters after users are stored
+			   guard let self = self,
+					 let rostersURL = URL(string: "https://api.sleeper.app/v1/league/\(self.leagueID)/rosters") else {
+				  print("DP - Invalid rosters URL")
+				  completion()
+				  return
+			   }
+
+			   URLSession.shared.dataTask(with: rostersURL) { data, response, error in
+				  if let error = error {
+					 print("DP - Error fetching rosters: \(error)")
+					 completion()
+					 return
+				  }
+
+				  guard let data = data else {
+					 print("DP - No roster data received")
+					 completion()
+					 return
+				  }
+
+				  do {
+					 let rosters = try JSONDecoder().decode([SleeperRoster].self, from: data)
+					 print("DP - Successfully fetched \(rosters.count) rosters")
+
+					 DispatchQueue.main.async {
+						for roster in rosters {
+						   if let ownerID = roster.owner_id {
+							  print("DP - Processing roster \(roster.roster_id) for owner \(ownerID)")
+							  if let displayName = self.userIDs[ownerID] {
+								 print("DP - Found display name: \(displayName) for owner ID: \(ownerID)")
+								 self.rosterIDToManagerName[roster.roster_id] = displayName
+								 self.rosterIDToManagerID[roster.roster_id] = ownerID
+
+								 if let teamName = roster.metadata?["team_name"] ?? roster.metadata?["team_name_update"] {
+									print("DP - Using team name: \(teamName)")
+									self.rosterIDToTeamName[roster.roster_id] = teamName
+								 } else {
+									print("DP - Using display name as team name: \(displayName)")
+									self.rosterIDToTeamName[roster.roster_id] = displayName
+								 }
+							  }
+						   }
+						}
+
+						print("DP - Final manager mappings: \(self.rosterIDToManagerName)")
+						completion()
+					 }
+				  } catch {
+					 print("DP - Error decoding rosters: \(error)")
+					 completion()
+				  }
+			   }.resume()
+			}
+		 } catch {
+			print("DP - Error decoding users: \(error)")
+			completion()
+		 }
+	  }.resume()
    }
+
 
    func fetchSleeperLeagueRosters(leagueID: String, completion: @escaping (Result<[SleeperRoster], Error>) -> Void) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/rosters") else {
@@ -547,6 +628,34 @@ class FantasyMatchupViewModel: ObservableObject {
 	  return 23 // Default to FLEX
    }
 
+   private func fetchSleeperUser(userID: String) {
+	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)") else { return }
 
+	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+		 guard let data = data,
+			   let user = try? JSONDecoder().decode(SleeperUser.self, from: data) else { return }
+
+		 DispatchQueue.main.async {
+			if let avatar = user.avatar {
+			   self?.userAvatars[userID] = URL(string: "https://sleepercdn.com/avatars/\(avatar)")
+			   // Trigger UI update
+			   self?.objectWillChange.send()
+			}
+		 }
+	  }.resume()
+   }
+
+   func positionString(_ lineupSlotId: Int) -> String {
+	  switch lineupSlotId {
+		 case 0: return "QB"
+		 case 2, 3: return "RB"
+		 case 4, 5: return "WR"
+		 case 6: return "TE"
+		 case 16: return "D/ST"
+		 case 17: return "K"
+		 case 23: return "FLEX"
+		 default: return "Unknown"
+	  }
+   }
 
 }

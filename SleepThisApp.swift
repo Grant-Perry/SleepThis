@@ -21,16 +21,6 @@ struct SleepThisApp: App {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")
 			   }
 
-//			ManagerSwipeView(
-//			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
-//			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID,
-//												draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
-//			   playerViewModel: PlayerViewModel()
-//			)
-//			.tabItem {
-//			   Label("Swipe", systemImage: "person.2.square.stack.fill")
-//			}
-
 			LeagueListView(
 			   managerID: AppConstants.managerID,
 			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)

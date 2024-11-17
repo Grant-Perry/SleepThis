@@ -6,164 +6,131 @@ struct FantasyMatchupDetailView: View {
    let leagueName: String
 
    var body: some View {
-	  VStack {
-		 // Header with Team Names and Scores
-		 HStack {
-			VStack(alignment: .leading) {
-			   Text(matchup.managerNames[0]) // Display manager name
-				  .font(.system(size: 25, weight: .bold))
-				  .foregroundColor(.pink)
-			   Text("\(fantasyViewModel.getScore(for: matchup, teamIndex: 0), specifier: "%.2f")")
-				  .font(.system(size: 30, weight: .bold))
-				  .foregroundColor(fantasyViewModel.getScore(for: matchup, teamIndex: 0) > fantasyViewModel.getScore(for: matchup, teamIndex: 1) ? .gpGreen : .primary)
-			}
-			Spacer()
-			VStack(alignment: .trailing) {
-			   Text(matchup.managerNames[1]) // Display manager name
-				  .font(.system(size: 25, weight: .bold))
-				  .foregroundColor(.pink)
-			   Text("\(fantasyViewModel.getScore(for: matchup, teamIndex: 1), specifier: "%.2f")")
-				  .font(.system(size: 30, weight: .bold))
-				  .foregroundColor(fantasyViewModel.getScore(for: matchup, teamIndex: 1) > fantasyViewModel.getScore(for: matchup, teamIndex: 0) ? .gpGreen : .primary)
-			}
-		 }
-		 .padding()
+	  ScrollView {
+		 VStack(spacing: 16) {
+			// Header Card
+			VStack(spacing: 0) {
+			   Text(leagueName)
+				  .font(.caption)
+				  .foregroundColor(.secondary)
+				  .padding(.top)
 
-		 ScrollView {
+			   HStack {
+				  // Away Team (first in array)
+				  FantasyTeamHeaderView(
+					 managerName: matchup.managerNames[0],
+					 score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
+					 avatarURL: matchup.avatarURLs[0],
+					 isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 0) >
+					 fantasyViewModel.getScore(for: matchup, teamIndex: 1)
+				  )
+
+				  VStack {
+					 Text("VS")
+						.font(.headline)
+						.foregroundColor(.secondary)
+					 Text("Week \(fantasyViewModel.selectedWeek)")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				  }
+
+				  // Home Team (second in array)
+				  FantasyTeamHeaderView(
+					 managerName: matchup.managerNames[1],
+					 score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
+					 avatarURL: matchup.avatarURLs[1],
+					 isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 1) >
+					 fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+				  )
+			   }
+			   .padding()
+			}
+			.background(Color(.secondarySystemBackground))
+			.cornerRadius(16)
+			.shadow(color: .black.opacity(0.1), radius: 5)
+			.padding(.horizontal)
+
 			// Active Roster Section
-			Text("Active Roster")
-			   .font(.headline)
-			   .padding()
-			   .frame(maxWidth: .infinity, alignment: .leading)
-			   .frame(height: 35)
-			   .background(LinearGradient(gradient: Gradient(colors: [.gpBlueDark, .clear]), startPoint: .top, endPoint: .bottom))
-			   .foregroundColor(.white)
+			VStack(alignment: .leading, spacing: 12) {
+			   Text("Active Roster")
+				  .font(.headline)
+				  .padding(.horizontal)
 
-			HStack(alignment: .top, spacing: 16) {
-			   rosterView(for: matchup, teamIndex: 0, isBench: false)
-			   Spacer()
-			   rosterView(for: matchup, teamIndex: 1, isBench: false)
-			}
-			.padding(.horizontal)
+			   HStack(alignment: .top, spacing: 16) {
+				  // Away Team Active Roster
+				  VStack(spacing: 8) {
+					 let awayActiveRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: 0, isBench: false)
+					 ForEach(awayActiveRoster, id: \.playerPoolEntry.player.id) { player in
+						FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
+					 }
 
-			// Bench Roster Section
-			Text("Bench Roster")
-			   .font(.headline)
-			   .padding()
-			   .frame(maxWidth: .infinity, alignment: .leading)
-			   .frame(height: 35)
-			   .background(LinearGradient(gradient: Gradient(colors: [.gpDark1, .clear]), startPoint: .top, endPoint: .bottom))
-			   .foregroundColor(.white)
+					 // Away Team Active Total
+					 Text("Active Total: \(String(format: "%.2f", awayActiveRoster.reduce(0.0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }))")
+						.font(.subheadline)
+						.fontWeight(.semibold)
+						.padding(.top, 4)
+				  }
 
-			HStack(alignment: .top, spacing: 16) {
-			   rosterView(for: matchup, teamIndex: 0, isBench: true)
-			   Spacer()
-			   rosterView(for: matchup, teamIndex: 1, isBench: true)
-			}
-			.padding(.horizontal)
-		 }
-	  }
-	  .navigationTitle(leagueName) // Display the league name directly
-   }
+				  // Home Team Active Roster
+				  VStack(spacing: 8) {
+					 let homeActiveRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: 1, isBench: false)
+					 ForEach(homeActiveRoster, id: \.playerPoolEntry.player.id) { player in
+						FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
+					 }
 
-   private func rosterView(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> some View {
-	  // Only swap for ESPN leagues
-	  let adjustedTeamIndex = fantasyViewModel.leagueID == AppConstants.ESPNLeagueID ?
-	  (teamIndex == 0 ? 1 : 0) : teamIndex
-
-	  let roster = fantasyViewModel.getRoster(for: matchup, teamIndex: adjustedTeamIndex, isBench: isBench)
-
-	  // Calculate scores for color comparison
-	  let score = roster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
-	  let opposingRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: adjustedTeamIndex == 0 ? 1 : 0, isBench: isBench)
-	  let opposingScore = opposingRoster.reduce(0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }
-
-	  return VStack(alignment: .leading, spacing: 16) {
-		 ForEach(roster, id: \.playerPoolEntry.player.id) { playerEntry in
-			playerCard(for: playerEntry, isBench: isBench)
-		 }
-
-		 Text("Total \(isBench ? "Bench" : "Active"): \(score, specifier: "%.2f")")
-			.font(.system(size: 20, weight: .medium))
-			.foregroundColor(score > opposingScore ? .gpGreen : .primary)
-			.frame(maxWidth: .infinity, alignment: .trailing)
-			.padding(.top, 8)
-	  }
-   }
-
-   private func playerCard(for playerEntry: FantasyScores.FantasyModel.Team.PlayerEntry, isBench: Bool) -> some View {
-	  VStack {
-		 HStack {
-			if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
-			   LivePlayerImageView(
-				  playerID: playerEntry.playerPoolEntry.player.id,
-				  picSize: 65
-			   )
-			   .frame(width: 65, height: 65)
-			} else {
-			   AsyncImage(url: URL(string: "https://sleepercdn.com/content/nfl/players/\(playerEntry.playerPoolEntry.player.id).jpg")) { phase in
-				  switch phase {
-					 case .empty:
-						Image(systemName: "american.football")
-						   .resizable()
-						   .frame(width: 25, height: 25)
-					 case .success(let image):
-						image
-						   .resizable()
-						   .scaledToFill()
-						   .frame(width: 65, height: 65)
-					 case .failure:
-						Image(systemName: "american.football")
-						   .resizable()
-						   .frame(width: 25, height: 25)
-					 @unknown default:
-						EmptyView()
+					 // Home Team Active Total
+					 Text("Active Total: \(String(format: "%.2f", homeActiveRoster.reduce(0.0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }))")
+						.font(.subheadline)
+						.fontWeight(.semibold)
+						.padding(.top, 4)
 				  }
 			   }
-			   .frame(width: 65, height: 65)
+			   .padding(.horizontal)
 			}
 
-			VStack(alignment: .leading) {
-			   Text(playerEntry.playerPoolEntry.player.fullName)
-				  .font(.body)
-				  .bold()
-				  .frame(maxWidth: .infinity, alignment: .leading)
-				  .lineLimit(1)
-				  .minimumScaleFactor(0.5)
+			// Bench Section
+			VStack(alignment: .leading, spacing: 12) {
+			   Text("Bench")
+				  .font(.headline)
+				  .padding(.horizontal)
 
-			   Text(positionString(playerEntry.lineupSlotId))
-				  .font(.system(size: 10, weight: .light))
-				  .foregroundColor(.primary)
-				  .frame(maxWidth: .infinity, alignment: .leading)
-			   HStack {
-				  let playerScore = fantasyViewModel.getPlayerScore(for: playerEntry, week: fantasyViewModel.selectedWeek)
-				  Text("\(playerScore, specifier: "%.2f")")
-					 .font(.system(size: playerScore == 0 ? 15 : 20, weight: .medium))
-					 .foregroundColor(.secondary)
-					 .padding(.trailing)
-					 .offset(x: 25, y: -9)
+			   HStack(alignment: .top, spacing: 16) {
+				  // Away Team Bench
+				  VStack(spacing: 8) {
+					 let awayBenchRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: 0, isBench: true)
+					 ForEach(awayBenchRoster, id: \.playerPoolEntry.player.id) { player in
+						FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
+					 }
+
+					 // Away Team Bench Total
+					 Text("Bench Total: \(String(format: "%.2f", awayBenchRoster.reduce(0.0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }))")
+						.font(.subheadline)
+						.fontWeight(.semibold)
+						.padding(.top, 4)
+				  }
+
+				  // Home Team Bench
+				  VStack(spacing: 8) {
+					 let homeBenchRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: 1, isBench: true)
+					 ForEach(homeBenchRoster, id: \.playerPoolEntry.player.id) { player in
+						FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
+					 }
+
+					 // Home Team Bench Total
+					 Text("Bench Total: \(String(format: "%.2f", homeBenchRoster.reduce(0.0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }))")
+						.font(.subheadline)
+						.fontWeight(.semibold)
+						.padding(.top, 4)
+				  }
 			   }
-			   .frame(maxWidth: .infinity, alignment: .trailing)
-			   .padding(.trailing)
+			   .padding(.horizontal)
 			}
 		 }
-		 .padding(.vertical, 4)
-		 .background(LinearGradient(gradient: Gradient(colors: [isBench ? .gpBlueLight : .gpBlueDark, .clear]), startPoint: .top, endPoint: .bottom))
-		 .cornerRadius(10)
-		 .opacity(isBench ? 0.75 : 1)
+		 .padding(.vertical)
 	  }
-   }
-
-   private func positionString(_ lineupSlotId: Int) -> String {
-	  switch lineupSlotId {
-		 case 0: return "QB"
-		 case 2, 3: return "RB"
-		 case 4, 5: return "WR"
-		 case 6: return "TE"
-		 case 16: return "D/ST"
-		 case 17: return "K"
-		 case 23: return "FLEX"
-		 default: return ""
-	  }
+	  .background(Color(.systemGroupedBackground).ignoresSafeArea())
+	  .navigationTitle("Matchup Details")
    }
 }
+
+
