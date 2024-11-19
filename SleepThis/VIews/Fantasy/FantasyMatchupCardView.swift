@@ -1,5 +1,4 @@
 import SwiftUI
-
 struct FantasyMatchupCardView: View {
    let matchup: AnyFantasyMatchup
    let fantasyViewModel: FantasyMatchupViewModel
@@ -85,3 +84,4 @@ struct FantasyMatchupCardView: View {
 	  }
    }
 }
+

@@ -1,8 +1,11 @@
 import SwiftUI
+import PythonKit
+
 
 struct FantasyMatchupListView: View {
    @StateObject private var fantasyViewModel: FantasyMatchupViewModel
    @State private var selectedTimerInterval: Int = 0
+   @AppStorage("selectedLeagueID") private var selectedLeagueID: String = AppConstants.ESPNLeagueID
 
    init() {
 	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel())
@@ -15,6 +18,20 @@ struct FantasyMatchupListView: View {
 			   .ignoresSafeArea()
 
 			VStack(spacing: 16) {
+			   // Add this HStack under the navigation title
+			   HStack {
+				  Image("managerAvatar") // Replace with your actual avatar image
+					 .resizable()
+					 .scaledToFit()
+					 .frame(width: 40, height: 40)
+					 .clipShape(Circle())
+
+				  Text("Manager Name") // Replace with actual manager name
+					 .font(.system(size: 18))
+					 .foregroundColor(.gray) // This is equivalent to .gpGray
+			   }
+			   .padding(.top, 8) // Adjust padding as needed
+
 			   controlsSection
 
 			   if fantasyViewModel.isLoading {
@@ -28,14 +45,19 @@ struct FantasyMatchupListView: View {
 		 }
 		 .navigationTitle("Fantasy Football")
 	  }
+
 	  .onAppear {
-		 fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
 		 // Restore auto-refresh setting
 		 if let savedInterval = UserDefaults.standard.value(forKey: "autoRefreshInterval") as? Int {
 			selectedTimerInterval = savedInterval
 			fantasyViewModel.setupRefreshTimer(with: savedInterval)
 		 }
+		 // Set the leagueID from the persisted value
+		 fantasyViewModel.leagueID = selectedLeagueID
+		 // Fetch leagues for the current manager
+		 fantasyViewModel.fetchManagerLeagues(forUserID: fantasyViewModel.selectedManagerID)
 	  }
+
    }
 
    // MARK: - Header Controls Section
@@ -43,13 +65,13 @@ struct FantasyMatchupListView: View {
 	  VStack(spacing: 12) {
 		 HStack(spacing: 16) {
 			leaguePickerView
-			refreshPickerView
+			weekPickerView
 		 }
 		 .padding(.horizontal)
 
 		 HStack(spacing: 16) {
 			yearPickerView
-			weekPickerView
+			refreshPickerView
 		 }
 		 .padding(.horizontal)
 	  }
@@ -106,7 +128,7 @@ struct FantasyMatchupListView: View {
 	  Menu {
 		 Picker("League", selection: $fantasyViewModel.leagueID) {
 			Text("ESPN League").tag(AppConstants.ESPNLeagueID)
-			ForEach(fantasyViewModel.sleeperLeagues, id: \.leagueID) { league in
+			ForEach(fantasyViewModel.currentManagerLeagues, id: \.leagueID) { league in
 			   Text(league.name).tag(league.leagueID)
 			}
 		 }
@@ -121,9 +143,10 @@ struct FantasyMatchupListView: View {
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.leagueID) {
+	  .onChange(of: fantasyViewModel.leagueID) { newValue in
 		 updateLeagueName()
 		 fantasyViewModel.handlePickerChange()
+		 selectedLeagueID = newValue // Persist the selected league ID
 	  }
    }
 
@@ -181,6 +204,22 @@ struct FantasyMatchupListView: View {
 					 matchup: matchup,
 					 fantasyViewModel: fantasyViewModel
 				  )
+				  // Add tap gestures for avatars
+				  .overlay(
+					 HStack {
+						avatarOverlay(for: matchup.awayTeamID.description)
+						Spacer()
+						avatarOverlay(for: matchup.homeTeamID.description)
+					 }
+				  )
+			   }
+			   .contextMenu {
+				  Button("View \(matchup.managerNames[0])'s Leagues") {
+					 fantasyViewModel.updateSelectedManager(matchup.awayTeamID.description)
+				  }
+				  Button("View \(matchup.managerNames[1])'s Leagues") {
+					 fantasyViewModel.updateSelectedManager(matchup.homeTeamID.description)
+				  }
 			   }
 			}
 		 }
@@ -195,7 +234,18 @@ struct FantasyMatchupListView: View {
 	  }
    }
 
+
    // MARK: - Helper Functions
+
+   private func avatarOverlay(for managerID: String) -> some View {
+	  Circle()
+		 .fill(Color.clear)
+		 .frame(width: 40, height: 40)
+		 .onTapGesture {
+			fantasyViewModel.updateSelectedManager(managerID)
+		 }
+   }
+
    private func getLeagueName() -> String {
 	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
 		 return "ESPN League"
@@ -214,3 +264,5 @@ struct FantasyMatchupListView: View {
 	  }
    }
 }
+
+

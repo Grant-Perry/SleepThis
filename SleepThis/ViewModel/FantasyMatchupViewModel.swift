@@ -3,6 +3,9 @@ import Combine
 
 class FantasyMatchupViewModel: ObservableObject {
    @Published var fantasyModel: FantasyScores.FantasyModel?
+   @Published var selectedManagerID: String = AppConstants.GpSleeperID
+   @Published var currentManagerLeagues: [FantasyScores.SleeperLeagueResponse] = []
+
    @Published var matchups: [AnyFantasyMatchup] = []
    @Published var isLoading: Bool = false
    @Published var leagueName: String = "ESPN League"
@@ -12,7 +15,6 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var sleeperLeagues: [FantasyScores.SleeperLeagueResponse] = []
    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
    @Published private var userAvatars: [String: URL] = [:] // Cache for user avatars
-
    @Published var selectedWeek: Int = {
 	  let firstWeek = 36 // NFL season typically starts around week 36
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
@@ -24,7 +26,6 @@ class FantasyMatchupViewModel: ObservableObject {
 	  if weekday == 1 || weekday == 2 { // Sunday or Monday
 		 offset = max(1, offset - 1) // Stay on current week
 	  }
-
 	  return min(max(1, offset), 17) // Clamp between 1 and 17
    }()
 
@@ -57,9 +58,13 @@ class FantasyMatchupViewModel: ObservableObject {
 
 	  // Now fetch data
 	  DispatchQueue.main.async {
-		 self.fetchFantasyMatchupViewModelMatchups()
-		 self.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+		 self.fetchManagerLeagues(forUserID: self.selectedManagerID)
 	  }
+
+//	  DispatchQueue.main.async {
+//		 self.fetchFantasyMatchupViewModelMatchups()
+//		 self.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
+//	  }
    }
 
    func setupRefreshTimer(with interval: Int) {
@@ -176,7 +181,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 let playerId = String(player.playerPoolEntry.player.id)
 		 guard let playerStats = weeklyStats[playerId],
 			   let scoringSettings = sleeperLeagueSettings else {
-			print("Missing data for player \(playerId) - stats: \(weeklyStats[playerId] != nil), settings: \(sleeperLeagueSettings != nil)")
+			// Instead of printing an error, just return 0.0
 			return 0.0
 		 }
 
@@ -327,6 +332,12 @@ class FantasyMatchupViewModel: ObservableObject {
 	  } ?? 0.0
    }
 
+   func updateSelectedManager(_ managerID: String) {
+	  selectedManagerID = managerID
+	  fetchManagerLeagues(forUserID: managerID)
+   }
+
+
    func fetchSleeperLeagues(forUserID userID: String) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(selectedYear)") else { return }
 
@@ -340,13 +351,18 @@ class FantasyMatchupViewModel: ObservableObject {
 			}
 		 }, receiveValue: { [weak self] leagues in
 			self?.sleeperLeagues = leagues.map { FantasyScores.SleeperLeagueResponse(leagueID: $0.leagueID, name: $0.name) }
-			if let firstLeague = self?.sleeperLeagues.first {
+			// Update leagueID only if it's not already set
+			if self?.leagueID == AppConstants.ESPNLeagueID, let firstLeague = self?.sleeperLeagues.first {
 			   self?.leagueID = firstLeague.leagueID
+			   self?.leagueName = firstLeague.name
 			   self?.fetchFantasyMatchupViewModelMatchups()
 			}
+			// Notify observers that the data has changed
+			self?.objectWillChange.send()
 		 })
 		 .store(in: &cancellables)
    }
+
 
    private func fetchSleeperScoringSettings() {
 	  print("Fetching scoring settings for league: \(leagueID)")
@@ -709,6 +725,38 @@ class FantasyMatchupViewModel: ObservableObject {
 		 default: return "Unknown"
 	  }
    }
+
+   func fetchManagerLeagues(forUserID userID: String) {
+	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(selectedYear)") else { return }
+
+	  isLoading = true // Add this line to show loading state
+
+	  URLSession.shared.dataTaskPublisher(for: url)
+		 .map { $0.data }
+		 .decode(type: [FantasyScores.SleeperLeagueResponse].self, decoder: JSONDecoder())
+		 .receive(on: DispatchQueue.main)
+		 .sink(receiveCompletion: { [weak self] completion in
+			self?.isLoading = false // Add this line to hide loading state
+			if case .failure(let error) = completion {
+			   self?.errorMessage = "Error fetching leagues: \(error.localizedDescription)"
+			}
+		 }, receiveValue: { [weak self] leagues in
+			guard let self = self else { return }
+			self.currentManagerLeagues = leagues
+			self.sleeperLeagues = leagues // Update sleeperLeagues as well
+
+			// If the current leagueID is not in the new list of leagues, reset to ESPN
+			if !leagues.contains(where: { $0.leagueID == self.leagueID }) {
+			   self.leagueID = AppConstants.ESPNLeagueID
+			   self.leagueName = "ESPN League"
+			}
+
+			self.fetchFantasyMatchupViewModelMatchups()
+			self.objectWillChange.send()
+		 })
+		 .store(in: &cancellables)
+   }
+
 
 
 }
