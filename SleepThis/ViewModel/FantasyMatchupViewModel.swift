@@ -15,6 +15,7 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var sleeperLeagues: [FantasyScores.SleeperLeagueResponse] = []
    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
    @Published private var userAvatars: [String: URL] = [:] // Cache for user avatars
+   
    @Published var selectedWeek: Int = {
 	  let firstWeek = 36 // NFL season typically starts around week 36
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
@@ -333,10 +334,9 @@ class FantasyMatchupViewModel: ObservableObject {
    }
 
    func updateSelectedManager(_ managerID: String) {
-	  selectedManagerID = managerID
-	  fetchManagerLeagues(forUserID: managerID)
+	  self.selectedManagerID = managerID
+	  updateLeagueName()
    }
-
 
    func fetchSleeperLeagues(forUserID userID: String) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(selectedYear)") else { return }
@@ -726,6 +726,7 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
    }
 
+   // MARK: This is where it all starts
    func fetchManagerLeagues(forUserID userID: String) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(selectedYear)") else { return }
 
@@ -757,6 +758,15 @@ class FantasyMatchupViewModel: ObservableObject {
 		 .store(in: &cancellables)
    }
 
+   func updateLeagueName() {
+	  if leagueID == AppConstants.ESPNLeagueID {
+		 leagueName = "ESPN League"
+	  } else if let league = currentManagerLeagues.first(where: { $0.leagueID == leagueID }) {
+		 leagueName = league.name
+	  } else {
+		 leagueName = "Fantasy Football"
+	  }
+   }
 
 
 }

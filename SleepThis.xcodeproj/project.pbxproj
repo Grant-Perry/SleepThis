@@ -29,7 +29,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9B296F6D2CECDD8000F79681 /* PythonKit-master */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "PythonKit-master"; sourceTree = "<group>"; };
 		9B4B88252C753A290026E11B /* SleepThis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SleepThis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B88352C753A2A0026E11B /* SleepThisTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B883F2C753A2A0026E11B /* SleepThisUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -97,7 +96,6 @@
 			isa = PBXGroup;
 			children = (
 				9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */,
-				9B296F6D2CECDD8000F79681 /* PythonKit-master */,
 				9B4B88262C753A290026E11B /* Products */,
 				9B4B88272C753A290026E11B /* SleepThis */,
 				9B4B88382C753A2A0026E11B /* SleepThisTests */,
@@ -438,7 +436,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.01;
+				MARKETING_VERSION = 3.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -469,7 +467,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.01;
+				MARKETING_VERSION = 3.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

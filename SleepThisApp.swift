@@ -46,6 +46,18 @@ struct SleepThisApp: App {
 			   Label("Rosters", systemImage: "pencil.and.list.clipboard")
 			}
 
+			ManagerListView(
+			   draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID),
+			   rosterViewModel: RosterViewModel(leagueID: AppConstants.leagueID,
+												draftViewModel: DraftViewModel(leagueID: AppConstants.leagueID)),
+			   leagueID: AppConstants.leagueID,
+			   draftID: AppConstants.draftID,
+			   viewType: .draft
+			)
+			.tabItem {
+			   Label("Draft", systemImage: "dice")
+			}
+
 
 		 }
 		 .preferredColorScheme(.dark)
