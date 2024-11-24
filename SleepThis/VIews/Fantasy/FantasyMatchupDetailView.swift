@@ -179,7 +179,7 @@ struct FantasyMatchupDetailView: View {
 
    // Helper functions for Sleeper-specific logic
    private func getManagerName(teamIndex: Int) -> String {
-	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID[1] {
 		 return matchup.managerNames[teamIndex]
 	  } else {
 		 // Swap manager names for Sleeper leagues
@@ -188,7 +188,7 @@ struct FantasyMatchupDetailView: View {
    }
 
    private func getAvatarURL(teamIndex: Int) -> URL? {
-	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID[1] {
 		 return matchup.avatarURLs[teamIndex]
 	  } else {
 		 // Swap avatar URLs for Sleeper leagues

@@ -16,7 +16,7 @@ struct FantasyPlayerCard: View {
 		 HStack {
 			// Player Image
 			Group {
-			   if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID {
+			   if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID[1] {
 				  LivePlayerImageView(
 					 playerID: player.playerPoolEntry.player.id,
 					 picSize: 80

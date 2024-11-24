@@ -5,7 +5,9 @@ struct AppConstants {
    static let verSize = 11.0
    static let verColor = Color.gpGreen
 
-   static let ESPNLeagueID = "1241361400"
+   static let GpESPNID = "%7B8A3B2780-FA70-4A52-9AFD-3BEE4D5A7468%7D"
+   static let ESPNLeagueID = ["1241361400", "1365003638"]
+//   static let ESPNLeagueID2 = "1365003638"
    static let ESPNLeagueYear = "2024"
 
    static let GpManagerID = "1117588009542615040"
@@ -33,3 +35,11 @@ struct AppConstants {
 	  return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
    }
 }
+
+/*
+ to test api in browser:
+
+ document.cookie = "SWID={8A3B2780-FA70-4A52-9AFD-3BEE4D5A7468}; path=/; domain=.espn.com";
+ document.cookie = "ESPN_S2=AEAQAAVXgHBaJ%2Fq1pPpnsckBKlBKXxsRJyttQjQhae67N%2Bz5kVdRdn001uU8V30qYT3z9n7R%2FsLNqWd%2BskxNWwMKr7kpL1%2Fs2J6BCvH8su%2F8gsDOcv44fRm6zbxMq6kQHoFdwGjSf7bnoMp8j5gDC29iDExGMF%2B5ObIreHcchFk8AQGZVNi2cSTCdxevEuioMNPDTbehk%2B4kPI1n5KxqtXnm9Z5gz5UpJv42IJNmT0nwfqMq9Vjz0MYqvj%2BbN7%2B5%2Bky9PwK8%2FUgAeWXObJ9ezOlCZGMmEO4Wyrq2dDl8DeGJKg%3D%3D; path=/; domain=.espn.com";
+
+ */

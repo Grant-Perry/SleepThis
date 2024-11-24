@@ -56,34 +56,45 @@ enum FantasyScores {
 	  }
    }
 
-   struct FantasyMatchup: FantasyMatchupProtocol {
-	  let teamNames: [String]
-	  let scores: [Double]
-	  let avatarURLs: [URL?]  // Add URLs here for avatars
-	  let managerNames: [String]
-	  let homeTeamID: Int
-	  let awayTeamID: Int
-
-	  init(homeTeamName: String, awayTeamName: String, homeScore: Double, awayScore: Double, homeAvatarURL: URL?, awayAvatarURL: URL?, homeManagerName: String, awayManagerName: String, homeTeamID: Int, awayTeamID: Int) {
-		 self.teamNames = [awayTeamName, homeTeamName]
-		 self.scores = [awayScore, homeScore]
-		 self.avatarURLs = [awayAvatarURL, homeAvatarURL]
-		 self.managerNames = [awayManagerName, homeManagerName]
-		 self.homeTeamID = homeTeamID
-		 self.awayTeamID = awayTeamID
-	  }
-   }
-
    // Sleeper Models
-   struct SleeperLeagueResponse: Codable {
+   struct SleeperLeagueResponse: Codable, Hashable {
 	  let leagueID: String
 	  let name: String
+	  let type: LeagueType // Added type property
 
 	  enum CodingKeys: String, CodingKey {
 		 case leagueID = "league_id"
 		 case name
 	  }
+
+	  enum LeagueType: String, Codable {
+		 case sleeper
+		 case espn
+	  }
+
+	  // Decoding logic with default type
+	  init(from decoder: Decoder) throws {
+		 let container = try decoder.container(keyedBy: CodingKeys.self)
+		 leagueID = try container.decode(String.self, forKey: .leagueID)
+		 name = try container.decode(String.self, forKey: .name)
+		 type = .sleeper // Default to Sleeper type
+	  }
+
+	  func encode(to encoder: Encoder) throws {
+		 var container = encoder.container(keyedBy: CodingKeys.self)
+		 try container.encode(leagueID, forKey: .leagueID)
+		 try container.encode(name, forKey: .name)
+	  }
+
+	  func hash(into hasher: inout Hasher) {
+		 hasher.combine(leagueID)
+	  }
+
+	  static func == (lhs: SleeperLeagueResponse, rhs: SleeperLeagueResponse) -> Bool {
+		 return lhs.leagueID == rhs.leagueID
+	  }
    }
+
 
    struct SleeperMatchup: Codable {
 	  let roster_id: Int
@@ -113,8 +124,34 @@ enum FantasyScores {
 	  let score: Double
    }
 
+   struct ESPNLeagueResponse: Hashable, Identifiable, Decodable {
+	  let id: String
+	  let name: String
+	  let teamName: String
+	  let type: LeagueType = .espn
+
+	  enum LeagueType: String, Codable {
+		 case espn
+	  }
+
+	  enum CodingKeys: String, CodingKey {
+		 case id
+		 case name = "groupName"
+		 case teamName
+	  }
+
+	  func hash(into hasher: inout Hasher) {
+		 hasher.combine(id)
+	  }
+
+	  static func == (lhs: ESPNLeagueResponse, rhs: ESPNLeagueResponse) -> Bool {
+		 return lhs.id == rhs.id
+	  }
+   }
+
+
    static var leagueName: String {
-	  if AppConstants.leagueID == AppConstants.ESPNLeagueID {
+	  if AppConstants.leagueID == AppConstants.ESPNLeagueID[1] {
 		 return "ESPN League"
 	  } else if AppConstants.leagueID == AppConstants.SleeperLeagueID {
 		 // Assuming you have a way to map league IDs to names, you can add more cases if needed
@@ -124,7 +161,51 @@ enum FantasyScores {
 	  }
    }
 
-   
+   struct FantasyMatchup: FantasyMatchupProtocol {
+	  let teamNames: [String]
+	  let scores: [Double]
+	  let avatarURLs: [URL?]  // Add URLs here for avatars
+	  let managerNames: [String]
+	  let homeTeamID: Int
+	  let awayTeamID: Int
+
+	  init(homeTeamName: String, awayTeamName: String, homeScore: Double, awayScore: Double, homeAvatarURL: URL?, awayAvatarURL: URL?, homeManagerName: String, awayManagerName: String, homeTeamID: Int, awayTeamID: Int) {
+		 self.teamNames = [awayTeamName, homeTeamName]
+		 self.scores = [awayScore, homeScore]
+		 self.avatarURLs = [awayAvatarURL, homeAvatarURL]
+		 self.managerNames = [awayManagerName, homeManagerName]
+		 self.homeTeamID = homeTeamID
+		 self.awayTeamID = awayTeamID
+	  }
+   }
+
+   struct AnyLeagueResponse: Hashable, Identifiable {
+	  let id: String
+	  let name: String
+	  let type: LeagueType
+
+	  enum LeagueType: String {
+		 case espn
+		 case sleeper
+	  }
+
+	  func hash(into hasher: inout Hasher) {
+		 hasher.combine(id)
+	  }
+
+	  static func == (lhs: AnyLeagueResponse, rhs: AnyLeagueResponse) -> Bool {
+		 return lhs.id == rhs.id
+	  }
+   }
+
+
+   enum LeagueType: String {
+	  case espn
+	  case sleeper
+   }
+
+
+
 }
 
 struct SleeperUser: Codable {
@@ -192,4 +273,34 @@ struct AnyFantasyMatchup: FantasyMatchupProtocol, Hashable {
 	  lhs.awayTeamID == rhs.awayTeamID
    }
 }
+
+struct ESPNLeague: Codable {
+   let id: Int
+   let name: String
+   let members: [ESPNMember]?
+   let currentTeamId: Int?
+
+   enum CodingKeys: String, CodingKey {
+	  case id, name, members
+	  case currentTeamId = "currentMatchupPeriod"
+   }
+}
+
+// Keep the ESPNMember structure with Int for id
+struct ESPNMember: Codable {
+   let id: Int
+   let displayName: String
+}
+
+struct League: Hashable {
+   let leagueID: String
+   let name: String
+   let type: LeagueType // Add type property
+
+   enum LeagueType {
+	  case sleeper
+	  case espn
+   }
+}
+
 
