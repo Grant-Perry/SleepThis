@@ -68,6 +68,9 @@ struct FantasyMatchupListView: View {
 	  }
 
 	  .onAppear {
+		 // reset the timer 
+		 fantasyViewModel.setupRefreshTimer(with: 0)
+		 selectedTimerInterval = 0
 		 // Fetch ESPN and Sleeper leagues
 		 fantasyViewModel.fetchESPNManagerLeagues(forUserID: AppConstants.GpESPNID)
 		 // Use Task to call the async function
@@ -124,7 +127,7 @@ struct FantasyMatchupListView: View {
 		 .cornerRadius(8)
 	  }
 	  .onChange(of: fantasyViewModel.selectedYear) {
-		 fantasyViewModel.handlePickerChange()
+		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
 	  }
    }
 
@@ -147,7 +150,7 @@ struct FantasyMatchupListView: View {
 		 .cornerRadius(8)
 	  }
 	  .onChange(of: fantasyViewModel.selectedWeek) {
-		 fantasyViewModel.handlePickerChange()
+		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
 	  }
    }
 
@@ -169,8 +172,11 @@ struct FantasyMatchupListView: View {
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.leagueID) { newLeagueID in
-		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == newLeagueID }) {
+	  .onChange(of: fantasyViewModel.leagueID) { newValue in
+		 // Update this section
+		 fantasyViewModel.handlePickerChange(newLeagueID: newValue)
+		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == newValue }) {
+			fantasyViewModel.leagueName = selectedLeague.name
 			switch selectedLeague.type {
 			   case .espn:
 				  print("Fetching ESPN matchups for league: \(selectedLeague.name)")
@@ -184,6 +190,7 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
    }
+
 
    private var refreshPickerView: some View {
 	  Menu {
