@@ -10,12 +10,17 @@ struct FantasyMatchupCardView: View {
 			teamMatchupSection
 			matchupInfoSection
 		 }
-		 .padding()
+		 .padding(.vertical, 8)
+		 .padding(.horizontal, 12)
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(16)
+		 .overlay(
+			RoundedRectangle(cornerRadius: 16)
+			   .stroke(Color.gray, lineWidth: 1)
+		 )
 		 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
 	  }
-	  .padding(.horizontal)
+	  .padding(.horizontal, 4)
    }
 
    private var matchupStatusBar: some View {
@@ -42,9 +47,9 @@ struct FantasyMatchupCardView: View {
 	  HStack(alignment: .center, spacing: 20) {
 		 // Away Team
 		 FantasyTeamHeaderView(
-			managerName: matchup.managerNames[0],
+			managerName: matchup.managerNames[1],
 			score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
-			avatarURL: matchup.avatarURLs[0],
+			avatarURL: matchup.avatarURLs[1],
 			isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 0) >
 			fantasyViewModel.getScore(for: matchup, teamIndex: 1)
 		 )
@@ -60,14 +65,14 @@ struct FantasyMatchupCardView: View {
 
 		 // Home Team
 		 FantasyTeamHeaderView(
-			managerName: matchup.managerNames[1],
+			managerName: matchup.managerNames[0],
 			score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
-			avatarURL: matchup.avatarURLs[1],
+			avatarURL: matchup.avatarURLs[0],
 			isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 1) >
 			fantasyViewModel.getScore(for: matchup, teamIndex: 0)
 		 )
 	  }
-	  .padding(.vertical, 12)
+	  .padding(.vertical, 8)
    }
 
    private var matchupInfoSection: some View {
@@ -84,4 +89,3 @@ struct FantasyMatchupCardView: View {
 	  }
    }
 }
-
