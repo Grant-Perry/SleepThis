@@ -15,7 +15,7 @@ struct FantasyMatchupDetailView: View {
 				  .font(.caption)
 				  .foregroundColor(.secondary)
 				  .padding(.top)
-			   
+
 			   HStack {
 				  // Away/Visitor Team
 				  FantasyTeamHeaderView(
@@ -28,7 +28,7 @@ struct FantasyMatchupDetailView: View {
 				  .onTapGesture {
 					 fantasyViewModel.updateSelectedManager(matchup.awayTeamID.description)
 				  }
-				  
+
 				  VStack {
 					 Text("VS")
 						.font(.headline)
@@ -37,7 +37,7 @@ struct FantasyMatchupDetailView: View {
 						.font(.caption)
 						.foregroundColor(.secondary)
 				  }
-				  
+
 				  // Home Team
 				  FantasyTeamHeaderView(
 					 managerName: getManagerName(teamIndex: 1),
@@ -54,10 +54,10 @@ struct FantasyMatchupDetailView: View {
 			}
 			.background(Color(.secondarySystemBackground))
 			.cornerRadius(16)
-			.shadow(color: .black.opacity(0.1), radius: 5)
+			.shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
 			.padding(.horizontal)
 			.padding(.top)
-			
+
 			// Scrollable Content
 			ScrollView {
 			   VStack(spacing: 16) {
@@ -66,7 +66,7 @@ struct FantasyMatchupDetailView: View {
 					 Text("Active Roster")
 						.font(.headline)
 						.padding(.horizontal)
-					 
+
 					 HStack(alignment: .top, spacing: 16) {
 						// Away/Visitor Team Active Roster
 						VStack(spacing: 8) {
@@ -74,7 +74,7 @@ struct FantasyMatchupDetailView: View {
 						   ForEach(awayActiveRoster, id: \.playerPoolEntry.player.id) { player in
 							  FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
 						   }
-						   
+
 						   // Away Team Active Total
 						   Text("Active Total: \(String(format: "%.2f", fantasyViewModel.getScore(for: matchup, teamIndex: 0)))")
 							  .font(.subheadline)
@@ -89,14 +89,14 @@ struct FantasyMatchupDetailView: View {
 								 )
 							  )
 						}
-						
+
 						// Home Team Active Roster
 						VStack(spacing: 8) {
 						   let homeActiveRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: 1, isBench: false)
 						   ForEach(homeActiveRoster, id: \.playerPoolEntry.player.id) { player in
 							  FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
 						   }
-						   
+
 						   // Home Team Active Total
 						   Text("Active Total: \(String(format: "%.2f", fantasyViewModel.getScore(for: matchup, teamIndex: 1)))")
 							  .font(.subheadline)
@@ -114,13 +114,13 @@ struct FantasyMatchupDetailView: View {
 					 }
 					 .padding(.horizontal)
 				  }
-				  
+
 				  // Bench Section
 				  VStack(alignment: .leading, spacing: 12) {
 					 Text("Bench")
 						.font(.headline)
 						.padding(.horizontal)
-					 
+
 					 HStack(alignment: .top, spacing: 16) {
 						// Away/Visitor Team Bench
 						VStack(spacing: 8) {
@@ -128,7 +128,7 @@ struct FantasyMatchupDetailView: View {
 						   ForEach(awayBenchRoster, id: \.playerPoolEntry.player.id) { player in
 							  FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
 						   }
-						   
+
 						   // Away Team Bench Total
 						   Text("Bench Total: \(String(format: "%.2f", awayBenchRoster.reduce(0.0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }))")
 							  .font(.subheadline)
@@ -143,14 +143,14 @@ struct FantasyMatchupDetailView: View {
 								 )
 							  )
 						}
-						
+
 						// Home Team Bench
 						VStack(spacing: 8) {
 						   let homeBenchRoster = fantasyViewModel.getRoster(for: matchup, teamIndex: 1, isBench: true)
 						   ForEach(homeBenchRoster, id: \.playerPoolEntry.player.id) { player in
 							  FantasyPlayerCard(player: player, fantasyViewModel: fantasyViewModel)
 						   }
-						   
+
 						   // Home Team Bench Total
 						   Text("Bench Total: \(String(format: "%.2f", homeBenchRoster.reduce(0.0) { $0 + fantasyViewModel.getPlayerScore(for: $1, week: fantasyViewModel.selectedWeek) }))")
 							  .font(.subheadline)

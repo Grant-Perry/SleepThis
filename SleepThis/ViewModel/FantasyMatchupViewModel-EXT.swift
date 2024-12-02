@@ -1,12 +1,3 @@
-//   FantasyMatchupViewModel-EXT.swift
-//   SleepThis
-//
-//   Created by: Gp. on 11/24/24 at 10:24 AM
-//     Modified:
-//
-//  Copyright  2024 Delicious Studios, LLC. - Grant Perry
-//
-
 import SwiftUI
 
 extension FantasyMatchupViewModel {
@@ -15,7 +6,7 @@ extension FantasyMatchupViewModel {
 	  print("DP - Fetching fantasy data for league ID: \(leagueID), week: \(week)")
 
 	  // Remove the guard statement that checks for a specific leagueID
-	  guard let url = URL(string: "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/\(selectedYear)/segments/0/leagues/\(leagueID)?view=mMatchupScore&view=mLiveScoring&view=mRoster&scoringPeriodId=\(week)") else {
+	  guard let url = URL(string: "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/\(selectedYear)/segments/0/leagues/\(leagueID)?view=mMatchupScore&view=mLiveScoring&view=mRoster&view=mStats&scoringPeriodId=\(week)") else {
 		 print("DP - Invalid URL for ESPN data fetch.")
 
 		 isLoading = false
@@ -108,6 +99,9 @@ extension FantasyMatchupViewModel {
 		 self.debugESPNRosters()
 	  }
 
+	  // Process player stats first
+	  processPlayerStats(from: model)
+
 	  // Update matchups on the main thread
 
 	  DispatchQueue.main.async {
@@ -123,45 +117,46 @@ extension FantasyMatchupViewModel {
    }
 
    func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
-	  // teamIndex 0 is always visitor/away, 1 is always home
-	  if leagueID.starts(with: "1") { // Check if it's an ESPN league (assuming ESPN league IDs start with 1)
-		 print("DP - Getting roster for ESPN league: \(leagueID)")
+	  if leagueID == AppConstants.ESPNLeagueID[1] {
+		 // ESPN league
 		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
+		 // Add debug print
+		 print("DP - Getting roster for ESPN league: \(leagueID) for team ID: \(teamId)")
 		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else {
-			print("DP - Error: Team not found for ID \(teamId)")
+			print("DP - Error: Team not found for ID \(teamId) in ESPN league \(leagueID)")
+			// Return an empty array instead of fatalError
 			return []
 		 }
-
 		 let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
-		 let benchSlots = Array(20...30)
-		 let relevantSlots = isBench ? benchSlots : activeSlotsOrder
-
-		 print("DP - Team \(team.name) roster entries count: \(team.roster?.entries.count ?? 0)")
-
-		 // Return the filtered and sorted roster entries
-		 return team.roster?.entries
-			.filter { relevantSlots.contains($0.lineupSlotId) }
-			.sorted { player1, player2 in
-			   let index1 = relevantSlots.firstIndex(of: player1.lineupSlotId) ?? Int.max
-			   let index2 = relevantSlots.firstIndex(of: player2.lineupSlotId) ?? Int.max
-			   return index1 < index2
-			} ?? []
+		 return team.roster?.entries.filter { entry in
+			isBench ? !activeSlotsOrder.contains(entry.lineupSlotId) : activeSlotsOrder.contains(entry.lineupSlotId)
+		 } ?? []
 	  } else {
-		 // Existing Sleeper logic
-		 guard let sleeperMatchupData = matchup.sleeperData else { return [] }
-		 let sleeperMatchup = teamIndex == 0 ? sleeperMatchupData.0 : sleeperMatchupData.1
-
-		 let playerIds = isBench ?
-		 (sleeperMatchup.players?.filter { !(sleeperMatchup.starters?.contains($0) ?? false) } ?? []) :
-		 (sleeperMatchup.starters ?? [])
-
-		 return playerIds.map { playerId in
-			createPlayerEntry(from: playerId)
+		 // Sleeper league
+		 let sleeperMatchup = teamIndex == 0 ? matchup.sleeperData?.0 : matchup.sleeperData?.1
+		 guard let playerIds = isBench ? sleeperMatchup?.players : sleeperMatchup?.starters else {
+			print("DP - Error: No \(isBench ? "bench" : "starter") players found for Sleeper matchup")
+			return []
 		 }
+		 return playerIds.compactMap { createPlayerEntry(from: $0) }
 	  }
    }
 
-   // Add this function to debug ESPN rosters
+   // Add this function to create a default player entry when a player is not found
+   func createDefaultPlayerEntry(playerId: String) -> FantasyScores.FantasyModel.Team.PlayerEntry {
+	  return FantasyScores.FantasyModel.Team.PlayerEntry(
+		 playerPoolEntry: .init(
+			player: .init(
+			   id: Int(playerId) ?? 0,
+			   fullName: "Unknown Player",
+			   stats: []
+			)
+		 ),
+		 lineupSlotId: 23 // Default to FLEX
+	  )
+   }
+
+
    func debugESPNRosters() {
 	  guard let model = fantasyModel else {
 		 print("DP - Error: No fantasy model available")
@@ -185,4 +180,27 @@ extension FantasyMatchupViewModel {
 	  return "https://example.com/default-player-image.png"
    }
 
+   private func processPlayerStats(from model: FantasyScores.FantasyModel) {
+	  playerStats.removeAll()
+
+	  for team in model.teams {
+		 guard let roster = team.roster else { continue }
+
+		 for entry in roster.entries {
+			let playerId = String(entry.playerPoolEntry.player.id)
+			let playerStats = entry.playerPoolEntry.player.stats.reduce(into: [String: Double]()) { result, stat in
+			   // Check if the stat is for the current week
+			   if stat.scoringPeriodId == selectedWeek && stat.statSourceId == 0 {
+				  // Instead of trying to access 'stats', we'll use the 'appliedTotal'
+				  result["total"] = stat.appliedTotal ?? 0.0
+				  // You can add more specific stats here if needed
+			   }
+			}
+			self.playerStats[playerId] = playerStats
+		 }
+	  }
+
+	  print("DP - Processed stats for \(playerStats.count) players")
+   }
 }
+
