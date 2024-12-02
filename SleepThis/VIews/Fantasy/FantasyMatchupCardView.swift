@@ -7,11 +7,14 @@ struct FantasyMatchupCardView: View {
    var body: some View {
 	  VStack(spacing: 0) {
 		 VStack {
-			matchupStatusBar
+			// CHANGE: Remove matchupStatusBar to reduce height
+			// matchupStatusBar
 			teamMatchupSection
-			matchupInfoSection
+			// CHANGE: Remove matchupInfoSection to reduce height
+			// matchupInfoSection
 		 }
-		 .padding(.vertical, 8)
+		 // CHANGE: Reduce vertical padding
+		 .padding(.vertical, 4) // Changed from 8
 		 .padding(.horizontal, 12)
 		 .cornerRadius(16)
 		 .overlay(
@@ -49,10 +52,9 @@ struct FantasyMatchupCardView: View {
 
    private var teamMatchupSection: some View {
 	  HStack(alignment: .center, spacing: 20) {
-		 // Away Team
 		 let isESPNLeague = fantasyViewModel.leagueID == AppConstants.ESPNLeagueID[1]
-		 let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: isESPNLeague ? 0 : 0) // 0 : 1
-		 let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: isESPNLeague ? 1 : 1) // 1 : 0
+		 let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: isESPNLeague ? 0 : 0)
+		 let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: isESPNLeague ? 1 : 1)
 		 let awayTeamIsWinning = awayTeamScore > homeTeamScore
 		 let homeTeamIsWinning = homeTeamScore > awayTeamScore
 
@@ -62,26 +64,28 @@ struct FantasyMatchupCardView: View {
 			avatarURL: matchup.avatarURLs[isESPNLeague ? 0 : 1],
 			isWinning: awayTeamIsWinning
 		 )
+		 .frame(height: 60) // Add this to reduce height
 
-		 VStack(spacing: 8) {
+		 VStack(spacing: 4) { // Reduced spacing
 			Text("VS")
-			   .font(.caption)
+			   .font(.caption2) // Reduced font size
 			   .foregroundColor(.secondary)
 
-			Text(String(format: "%.2f", awayTeamScore - homeTeamScore))
+			Text(String(format: "%.2f", abs(awayTeamScore - homeTeamScore)))
 			   .font(.caption2)
-			   .foregroundColor(awayTeamIsWinning ? .green : .red)
+			   .foregroundColor(awayTeamIsWinning ? .gpGreen : .gpGreen)
 		 }
 
-		 // Home Team
 		 FantasyTeamHeaderView(
 			managerName: matchup.managerNames[isESPNLeague ? 1 : 0],
 			score: homeTeamScore,
 			avatarURL: matchup.avatarURLs[isESPNLeague ? 1 : 0],
 			isWinning: homeTeamIsWinning
 		 )
+		 .frame(height: 135) // Add this to reduce height
 	  }
-	  .padding(.vertical, 8)
+	  // CHANGE: Reduce vertical padding
+	  .padding(.vertical, 4) // Changed from 8
    }
 
    private var matchupInfoSection: some View {

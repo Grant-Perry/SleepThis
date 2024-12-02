@@ -47,9 +47,9 @@ struct FantasyMatchupDetailView: View {
 						.font(.caption)
 						.foregroundColor(.secondary)
 
-					 Text(String(format: "%.2f", awayTeamScore - homeTeamScore))
+					 Text(String(format: "%.2f", abs(awayTeamScore - homeTeamScore)))
 						.font(.caption2)
-						.foregroundColor(awayTeamIsWinning ? .green : .red)
+						.foregroundColor(awayTeamIsWinning ? .gpGreen : .gpGreen)
 				  }
 
 				  // Home Team

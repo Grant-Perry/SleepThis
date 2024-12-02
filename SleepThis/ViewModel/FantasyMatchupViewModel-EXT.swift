@@ -81,13 +81,18 @@ extension FantasyMatchupViewModel {
 
 		 // Create FantasyMatchup with consistent visitor/home designation
 
+		 let awayAvatarURL = getESPNAvatarURL(for: awayTeamId)
+		 let homeAvatarURL = getESPNAvatarURL(for: homeTeamId)
+		 print("DP - Away avatar URL: \(awayAvatarURL?.absoluteString ?? "N/A")")
+		 print("DP - Home avatar URL: \(homeAvatarURL?.absoluteString ?? "N/A")")
+
 		 let fantasyMatchup = FantasyScores.FantasyMatchup(
 			homeTeamName: homeTeamName,
 			awayTeamName: awayTeamName,
 			homeScore: calculateESPNTeamActiveScore(team: homeTeam, week: selectedWeek),
 			awayScore: calculateESPNTeamActiveScore(team: awayTeam, week: selectedWeek),
-			homeAvatarURL: nil,
-			awayAvatarURL: nil,
+			homeAvatarURL: homeAvatarURL,
+			awayAvatarURL: awayAvatarURL,
 			homeManagerName: homeTeamName,
 			awayManagerName: awayTeamName,
 			homeTeamID: homeTeamId,
@@ -204,3 +209,8 @@ extension FantasyMatchupViewModel {
    }
 }
 
+// Add this function to get ESPN avatar URLs
+func getESPNAvatarURL(for teamId: Int) -> URL? {
+   // ESPN avatar URL format
+   return URL(string: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/\(teamId).png")
+}
