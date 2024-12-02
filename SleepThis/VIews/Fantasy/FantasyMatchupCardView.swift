@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct FantasyMatchupCardView: View {
    let matchup: AnyFantasyMatchup
    let fantasyViewModel: FantasyMatchupViewModel
@@ -12,11 +13,14 @@ struct FantasyMatchupCardView: View {
 		 }
 		 .padding(.vertical, 8)
 		 .padding(.horizontal, 12)
-		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(16)
 		 .overlay(
 			RoundedRectangle(cornerRadius: 16)
 			   .stroke(Color.gray, lineWidth: 1)
+		 )
+		 .background(
+			LinearGradient(gradient: Gradient(colors: [.gpBlueDarkL, .clear]), startPoint: .top, endPoint: .bottom)
+			   .clipShape(RoundedRectangle(cornerRadius: 16))
 		 )
 		 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
 	  }
@@ -46,30 +50,34 @@ struct FantasyMatchupCardView: View {
    private var teamMatchupSection: some View {
 	  HStack(alignment: .center, spacing: 20) {
 		 // Away Team
+		 let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 1)
+		 let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+		 let awayTeamIsWinning = awayTeamScore > homeTeamScore
+		 let homeTeamIsWinning = homeTeamScore > awayTeamScore
+
 		 FantasyTeamHeaderView(
 			managerName: matchup.managerNames[1],
-			score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
+			score: homeTeamScore,
 			avatarURL: matchup.avatarURLs[1],
-			isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 0) >
-			fantasyViewModel.getScore(for: matchup, teamIndex: 1)
+			isWinning: homeTeamIsWinning
 		 )
 
 		 VStack(spacing: 8) {
 			Text("VS")
 			   .font(.caption)
 			   .foregroundColor(.secondary)
-			Text("@")
+
+			Text(String(format: "%.2f", homeTeamScore - awayTeamScore))
 			   .font(.caption2)
-			   .foregroundColor(.secondary)
+			   .foregroundColor(homeTeamIsWinning ? .green : .red)
 		 }
 
 		 // Home Team
 		 FantasyTeamHeaderView(
 			managerName: matchup.managerNames[0],
-			score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
+			score: awayTeamScore,
 			avatarURL: matchup.avatarURLs[0],
-			isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 1) >
-			fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+			isWinning: awayTeamIsWinning
 		 )
 	  }
 	  .padding(.vertical, 8)

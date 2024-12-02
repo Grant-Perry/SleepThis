@@ -43,11 +43,11 @@ struct FantasyTeamHeaderView: View {
 			   .fontWeight(.medium)
 			   .lineLimit(1)
 			   .minimumScaleFactor(0.8)
-
+			   .foregroundColor(.gpYellow)
 			Text(String(format: "%.2f", score))
 			   .font(.title2)
 			   .fontWeight(.bold)
-			   .foregroundColor(isWinning ? .green : .primary)
+			   .foregroundColor(isWinning ? .green : .gpRedLight)
 		 }
 	  }
 	  .frame(maxWidth: .infinity)

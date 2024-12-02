@@ -6,6 +6,14 @@ struct FantasyMatchupDetailView: View {
    let leagueName: String
 
    var body: some View {
+
+	  let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+	  let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 1)
+	  let awayTeamIsWinning = awayTeamScore > homeTeamScore
+	  let homeTeamIsWinning = homeTeamScore > awayTeamScore
+
+
+
 	  VStack(spacing: 0) {
 		 // Fixed Header
 		 VStack(spacing: 0) {
@@ -22,8 +30,10 @@ struct FantasyMatchupDetailView: View {
 					 managerName: getManagerName(teamIndex: 0),
 					 score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
 					 avatarURL: getAvatarURL(teamIndex: 0),
-					 isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 0) >
-					 fantasyViewModel.getScore(for: matchup, teamIndex: 1)
+					 isWinning: awayTeamIsWinning
+				  // fantasyViewModel.getScore(for: matchup, teamIndex: 0) >
+//					 fantasyViewModel.getScore(for: matchup, teamIndex: 1)
+
 				  )
 				  .onTapGesture {
 					 fantasyViewModel.updateSelectedManager(matchup.awayTeamID.description)
@@ -36,6 +46,10 @@ struct FantasyMatchupDetailView: View {
 					 Text("Week \(fantasyViewModel.selectedWeek)")
 						.font(.caption)
 						.foregroundColor(.secondary)
+
+					 Text(String(format: "%.2f", awayTeamScore - homeTeamScore))
+						.font(.caption2)
+						.foregroundColor(awayTeamIsWinning ? .green : .red)
 				  }
 
 				  // Home Team
@@ -43,8 +57,9 @@ struct FantasyMatchupDetailView: View {
 					 managerName: getManagerName(teamIndex: 1),
 					 score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
 					 avatarURL: getAvatarURL(teamIndex: 1),
-					 isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 1) >
-					 fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+					 isWinning: homeTeamIsWinning
+//					 fantasyViewModel.getScore(for: matchup, teamIndex: 1) >
+//					 fantasyViewModel.getScore(for: matchup, teamIndex: 0),
 				  )
 				  .onTapGesture {
 					 fantasyViewModel.updateSelectedManager(matchup.homeTeamID.description)

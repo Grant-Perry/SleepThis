@@ -249,17 +249,17 @@ struct FantasyMatchupListView: View {
 				  // Add tap gestures for avatars
 				  .overlay(
 					 HStack {
-						avatarOverlay(for: matchup.awayTeamID.description)
-						Spacer()
 						avatarOverlay(for: matchup.homeTeamID.description)
+						Spacer()
+						avatarOverlay(for: matchup.awayTeamID.description)
 					 }
 				  )
 			   }
 			   .contextMenu {
-				  Button("View \(matchup.managerNames[0])'s Leagues") {
+				  Button("View \(matchup.managerNames[1])'s Leagues") {
 					 fantasyViewModel.updateSelectedManager(matchup.awayTeamID.description)
 				  }
-				  Button("View \(matchup.managerNames[1])'s Leagues") {
+				  Button("View \(matchup.managerNames[0])'s Leagues") {
 					 fantasyViewModel.updateSelectedManager(matchup.homeTeamID.description)
 				  }
 			   }

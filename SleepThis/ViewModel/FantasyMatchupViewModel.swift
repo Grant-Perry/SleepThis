@@ -133,7 +133,8 @@ class FantasyMatchupViewModel: ObservableObject {
    }
    
    func getScore(for matchup: AnyFantasyMatchup, teamIndex: Int) -> Double {
-	  if leagueID == AppConstants.ESPNLeagueID[1] {
+	  // TODO: I changed ESPNLeagueID[] from 1 to 0 here - if it breaks go here
+	  if leagueID == AppConstants.ESPNLeagueID[0] {
 		 // ESPN scoring
 		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
 		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else { return 0.0 }
