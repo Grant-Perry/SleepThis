@@ -50,16 +50,17 @@ struct FantasyMatchupCardView: View {
    private var teamMatchupSection: some View {
 	  HStack(alignment: .center, spacing: 20) {
 		 // Away Team
-		 let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 1)
-		 let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+		 let isESPNLeague = fantasyViewModel.leagueID == AppConstants.ESPNLeagueID[1]
+		 let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: isESPNLeague ? 0 : 0) // 0 : 1
+		 let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: isESPNLeague ? 1 : 1) // 1 : 0
 		 let awayTeamIsWinning = awayTeamScore > homeTeamScore
 		 let homeTeamIsWinning = homeTeamScore > awayTeamScore
 
 		 FantasyTeamHeaderView(
-			managerName: matchup.managerNames[1],
-			score: homeTeamScore,
-			avatarURL: matchup.avatarURLs[1],
-			isWinning: homeTeamIsWinning
+			managerName: matchup.managerNames[isESPNLeague ? 0 : 1],
+			score: awayTeamScore,
+			avatarURL: matchup.avatarURLs[isESPNLeague ? 0 : 1],
+			isWinning: awayTeamIsWinning
 		 )
 
 		 VStack(spacing: 8) {
@@ -67,17 +68,17 @@ struct FantasyMatchupCardView: View {
 			   .font(.caption)
 			   .foregroundColor(.secondary)
 
-			Text(String(format: "%.2f", homeTeamScore - awayTeamScore))
+			Text(String(format: "%.2f", awayTeamScore - homeTeamScore))
 			   .font(.caption2)
-			   .foregroundColor(homeTeamIsWinning ? .green : .red)
+			   .foregroundColor(awayTeamIsWinning ? .green : .red)
 		 }
 
 		 // Home Team
 		 FantasyTeamHeaderView(
-			managerName: matchup.managerNames[0],
-			score: awayTeamScore,
-			avatarURL: matchup.avatarURLs[0],
-			isWinning: awayTeamIsWinning
+			managerName: matchup.managerNames[isESPNLeague ? 1 : 0],
+			score: homeTeamScore,
+			avatarURL: matchup.avatarURLs[isESPNLeague ? 1 : 0],
+			isWinning: homeTeamIsWinning
 		 )
 	  }
 	  .padding(.vertical, 8)
