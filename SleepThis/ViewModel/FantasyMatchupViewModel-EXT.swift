@@ -123,13 +123,11 @@ extension FantasyMatchupViewModel {
 
    func getRoster(for matchup: AnyFantasyMatchup, teamIndex: Int, isBench: Bool) -> [FantasyScores.FantasyModel.Team.PlayerEntry] {
 	  if leagueID == AppConstants.ESPNLeagueID[1] {
-		 // ESPN league
+		 // ESPN league logic remains unchanged
 		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
-		 // Add debug print
 		 print("DP - Getting roster for ESPN league: \(leagueID) for team ID: \(teamId)")
 		 guard let team = fantasyModel?.teams.first(where: { $0.id == teamId }) else {
 			print("DP - Error: Team not found for ID \(teamId) in ESPN league \(leagueID)")
-			// Return an empty array instead of fatalError
 			return []
 		 }
 		 let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
@@ -137,15 +135,20 @@ extension FantasyMatchupViewModel {
 			isBench ? !activeSlotsOrder.contains(entry.lineupSlotId) : activeSlotsOrder.contains(entry.lineupSlotId)
 		 } ?? []
 	  } else {
-		 // Sleeper league
+		 // APPLY: Update Sleeper league logic
 		 let sleeperMatchup = teamIndex == 0 ? matchup.sleeperData?.0 : matchup.sleeperData?.1
-		 guard let playerIds = isBench ? sleeperMatchup?.players : sleeperMatchup?.starters else {
-			print("DP - Error: No \(isBench ? "bench" : "starter") players found for Sleeper matchup")
+		 guard let starters = sleeperMatchup?.starters, let allPlayers = sleeperMatchup?.players else {
+			print("DP - Error: No players found for Sleeper matchup")
 			return []
 		 }
+
+		 // APPLY: Filter players based on whether they are starters or bench
+		 let playerIds = isBench ? allPlayers.filter { !starters.contains($0) } : starters
+
 		 return playerIds.compactMap { createPlayerEntry(from: $0) }
 	  }
    }
+
 
    // Add this function to create a default player entry when a player is not found
    func createDefaultPlayerEntry(playerId: String) -> FantasyScores.FantasyModel.Team.PlayerEntry {

@@ -133,7 +133,7 @@ class FantasyMatchupViewModel: ObservableObject {
    }
    
    func getScore(for matchup: AnyFantasyMatchup, teamIndex: Int) -> Double {
-	  // TODO: Implement this method
+	  
 	  if leagueID == AppConstants.ESPNLeagueID[0] {
 		 // ESPN scoring
 		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
@@ -690,7 +690,8 @@ class FantasyMatchupViewModel: ObservableObject {
 			   let newESPNLeagues = espnLeagues.map {
 				  FantasyScores.AnyLeagueResponse(
 					 id: $0.id,
-					 name: "\($0.teamName) - \($0.name)",
+					 name: "\($0.teamName)", // - \($0.name)",
+//					 name: "\($0.teamName) - \($0.name)",
 					 type: .espn
 				  )
 			   }

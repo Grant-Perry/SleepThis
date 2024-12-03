@@ -49,7 +49,6 @@ struct FantasyPlayerCard: View {
 
 		 // MARK: Jersey number #
 		 VStack {
-			//			Spacer()
 			HStack {
 			   Spacer() // Push the ZStack to the trailing edge
 			   ZStack(alignment: .topTrailing) {
@@ -59,14 +58,6 @@ struct FantasyPlayerCard: View {
 					 .italic()
 					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
 					 .opacity(0.35)
-
-				  //                  // APPLY: Position '#' symbol at the top of the jersey number
-				  //                  Text("#")
-				  //                     .font(.system(size: 85, weight: .bold))
-				  //                     .italic()
-				  //                     .foregroundColor(teamColor.adjustBrightness(by: 0.5))
-				  //                     .opacity(0.35)
-				  //                     .offset(y: -40) // Adjust this value to fine-tune the position
 			   }
 			}
 			.padding(.trailing, 8)
@@ -85,53 +76,58 @@ struct FantasyPlayerCard: View {
 					 image
 						.resizable()
 						.aspectRatio(contentMode: .fill)
+						.frame(width: 95, height: 95)
+						.clipped()
 				  case .failure:
 					 Image(systemName: "person.fill")
 						.resizable()
 						.aspectRatio(contentMode: .fit)
+						.frame(width: 95, height: 95)
 				  @unknown default:
 					 EmptyView()
 			   }
 			}
-			.frame(width: 95, height: 95)
-			.clipShape(RoundedRectangle(cornerRadius: 15)) // Clip the image
-			.offset(x: -20, y: -5) // Add this line to offset the image
-			.zIndex(2) // Set z-index to be in front of team logo
+//			.clipShape(RoundedRectangle(cornerRadius: 15))
+			.offset(x: -20, y: -5)
+			.zIndex(2)
 
-			VStack(alignment: .trailing, spacing: 4) {
-			   // Player name taking up entire top row
-			   Text(player.playerPoolEntry.player.fullName)
-				  .font(.headline)
-				  .fontWeight(.bold)
-				  .foregroundColor(.white)
-				  .lineLimit(1)
-				  .minimumScaleFactor(0.8)
-				  .frame(maxWidth: .infinity, alignment: .trailing)
-				  .padding(.top, 4)
-				  .zIndex(3)
-
+			VStack(alignment: .trailing, spacing: 0) {
 			   Text(getPositionString())
 				  .font(.system(size: 15))
 				  .foregroundColor(.white.opacity(0.8))
-				  .padding(.top, 4) // Add this line to move the position down
+				  .offset(x: -5, y: 42)
 
 			   Spacer()
 
 			   HStack(alignment: .bottom, spacing: 4) {
-				  // Player Score
+				  Spacer()
 				  Text(String(format: "%.2f", getPlayerScore()))
 					 .font(.system(size: 22, weight: .bold))
 					 .foregroundColor(.white)
 					 .lineLimit(1)
-					 .minimumScaleFactor(0.85)
+					 .minimumScaleFactor(0.95)
 					 .scaledToFit()
 			   }
+			   .frame(maxWidth: .infinity, alignment: .trailing)
 			   .offset(y: -9)
 			}
 			.padding(.vertical, 8)
 			.padding(.trailing, 8)
 			.zIndex(3)
 		 }
+
+		 // APPLY: Add an overlay for the player's full name
+		 Text(player.playerPoolEntry.player.fullName)
+			.font(.system(size: 18, weight: .bold))
+			.foregroundColor(.white)
+			.lineLimit(2)
+			.minimumScaleFactor(0.9)
+			.frame(maxWidth: .infinity, alignment: .trailing)
+			.padding(.top, 6)
+			.padding(.trailing, 14)
+			.padding(.leading, 45) // Add some padding to avoid overlapping with the player image
+//			.background(Color.black.opacity(0.2)) // Add a semi-transparent background
+			.zIndex(4) // Ensure it's on top of other elements
 	  }
 	  .frame(height: 95)
 	  .cornerRadius(15)
