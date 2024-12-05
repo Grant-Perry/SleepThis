@@ -159,7 +159,7 @@ struct FantasyMatchupListView: View {
 		 Picker("League", selection: $fantasyViewModel.leagueID) {
 			ForEach(fantasyViewModel.currentManagerLeagues, id: \.id) { league in
 			   HStack {
-				  // APPLY: Add image based on league type
+				  //MARK: APPLY: ESPN : Sleeper logo image based on league type
 				  Image(league.type == .espn ? "espn_logo" : "sleeper_logo")
 					 .resizable()
 					 .scaledToFit()

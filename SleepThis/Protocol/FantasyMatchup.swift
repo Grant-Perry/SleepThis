@@ -203,10 +203,17 @@ enum FantasyScores {
 	  case espn
 	  case sleeper
    }
-
-
-
 }
+
+struct GameInfo {
+   let awayTeam: String
+   let homeTeam: String
+   let gameDay: String
+   let gameTime: String
+   let awayScore: Int
+   let homeScore: Int
+}
+
 
 struct SleeperUser: Codable {
    let user_id: String
@@ -302,5 +309,7 @@ struct League: Hashable {
 	  case espn
    }
 }
+
+
 
 
