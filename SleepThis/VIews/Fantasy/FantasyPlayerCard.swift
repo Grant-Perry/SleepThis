@@ -6,9 +6,11 @@ struct FantasyPlayerCard: View {
    @State private var teamColor: Color = .gray
    @State private var nflPlayer: NFLRosterModel.NFLPlayer?
 
+   // New state object for the game matchup
+   @StateObject private var fantasyGameMatchupViewModel = FantasyGameMatchupViewModel()
+
    var body: some View {
 	  ZStack(alignment: .topLeading) {
-		 // Background gradient
 		 RoundedRectangle(cornerRadius: 15)
 			.fill(LinearGradient(
 			   gradient: Gradient(colors: [teamColor, .clear]),
@@ -16,9 +18,10 @@ struct FantasyPlayerCard: View {
 			   endPoint: .bottom
 			))
 			.frame(height: 95)
+		 // If live, outline in green, otherwise gray
 			.overlay(
 			   RoundedRectangle(cornerRadius: 15)
-				  .stroke(Color.gray, lineWidth: 1) // Add 1px gray stroke
+				  .stroke(fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen : Color.gray, lineWidth: fantasyGameMatchupViewModel.liveMatchup ? 2 : 1)
 			)
 
 		 // Team Logo
@@ -40,24 +43,21 @@ struct FantasyPlayerCard: View {
 			   }
 			}
 			.frame(width: 80, height: 80)
-			.offset(x: 20, y: -4) // Adjusted offset
-			.zIndex(0) // Set z-index to be behind player image
-			.opacity(0.6) // Add opacity to the team logo
-						  // Add glow effect
+			.offset(x: 20, y: -4)
+			.zIndex(0)
+			.opacity(0.6)
 			.shadow(color: teamColor.opacity(0.5), radius: 10, x: 0, y: 0)
 		 }
 
-		 // MARK: Jersey number #
+		 // Jersey Number
 		 VStack {
 			HStack {
-			   Spacer() // Push the ZStack to the trailing edge
+			   Spacer()
 			   ZStack(alignment: .topTrailing) {
-				  // APPLY: Separate jersey number and '#' symbol
 				  Text(nflPlayer?.jersey ?? "")
 					 .font(.system(size: 85, weight: .bold))
 					 .italic()
-					 .foregroundColor(teamColor.adjustBrightness(by: 0.5))
-					 .opacity(0.35)
+					 .foregroundColor(teamColor.opacity(0.35))
 			   }
 			}
 			.padding(.trailing, 8)
@@ -87,7 +87,6 @@ struct FantasyPlayerCard: View {
 					 EmptyView()
 			   }
 			}
-//			.clipShape(RoundedRectangle(cornerRadius: 15))
 			.offset(x: -20, y: -5)
 			.zIndex(2)
 
@@ -116,7 +115,7 @@ struct FantasyPlayerCard: View {
 			.zIndex(3)
 		 }
 
-		 // APPLY: Add an overlay for the player's full name
+		 // Player Name
 		 Text(player.playerPoolEntry.player.fullName)
 			.font(.system(size: 18, weight: .bold))
 			.foregroundColor(.white)
@@ -125,9 +124,20 @@ struct FantasyPlayerCard: View {
 			.frame(maxWidth: .infinity, alignment: .trailing)
 			.padding(.top, 6)
 			.padding(.trailing, 14)
-			.padding(.leading, 45) // Add some padding to avoid overlapping with the player image
-//			.background(Color.black.opacity(0.2)) // Add a semi-transparent background
-			.zIndex(4) // Ensure it's on top of other elements
+			.padding(.leading, 45)
+			.zIndex(4)
+
+		 // Insert FantasyGameMatchupView below player name
+		 VStack {
+			Spacer()
+			HStack {
+			   Spacer()
+			   FantasyGameMatchupView(gameMatchupViewModel: fantasyGameMatchupViewModel)
+				  .padding(.trailing, 20)
+				  .padding(.bottom, 4)
+			}
+		 }
+		 .zIndex(5)
 	  }
 	  .frame(height: 95)
 	  .cornerRadius(15)
@@ -135,6 +145,13 @@ struct FantasyPlayerCard: View {
 	  .onAppear {
 		 self.nflPlayer = NFLRosterModel.getPlayerInfo(by: player.playerPoolEntry.player.fullName, from: fantasyViewModel.nflRosterViewModel.players)
 		 teamColor = Color(hex: nflPlayer?.team?.color ?? "008C96")
+
+		 // Configure the game matchup view model
+		 if let teamAbbrev = nflPlayer?.team?.abbreviation {
+			// Retrieve the refresh interval from UserDefaults or from a passed property
+			let interval = UserDefaults.standard.integer(forKey: "autoRefreshInterval")
+			fantasyGameMatchupViewModel.configure(teamAbbreviation: teamAbbrev, refreshInterval: interval)
+		 }
 	  }
    }
 
@@ -155,7 +172,6 @@ struct FantasyPlayerCard: View {
 	  if fantasyViewModel.leagueID == AppConstants.ESPNLeagueID[1] {
 		 return fantasyViewModel.getPlayerScore(for: player, week: fantasyViewModel.selectedWeek)
 	  } else {
-		 // For Sleeper, use the calculateSleeperPlayerScore function
 		 return fantasyViewModel.calculateSleeperPlayerScore(playerId: String(player.playerPoolEntry.player.id))
 	  }
    }

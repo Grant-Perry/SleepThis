@@ -5,25 +5,23 @@ struct FantasyMatchupListView: View {
    @StateObject private var draftViewModel: DraftViewModel
    @State private var selectedTimerInterval: Int = 0
    @AppStorage("selectedLeagueID") private var selectedLeagueID: String = AppConstants.ESPNLeagueID[1]
-   
+
    private var leaguesUpdated: Bool {
 	  fantasyViewModel.currentManagerLeagues.count > 0
    }
-   
+
    init() {
-	  // Initialize fantasyViewModel
 	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel())
-	  // Initialize draftViewModel with a placeholder value
 	  _draftViewModel = StateObject(wrappedValue: DraftViewModel(leagueID: ""))
    }
-   
+
    var body: some View {
 	  NavigationStack {
 		 ZStack {
 			Color(.systemGroupedBackground)
 			   .ignoresSafeArea()
-			
-			VStack(spacing: 8) { // Reduce spacing here
+
+			VStack(spacing: 8) {
 			   HStack {
 				  AsyncImage(url: draftViewModel.managerAvatar(for: fantasyViewModel.selectedManagerID)) { image in
 					 image
@@ -36,16 +34,16 @@ struct FantasyMatchupListView: View {
 						.fill(Color.gray.opacity(0.3))
 						.frame(width: 40, height: 40)
 				  }
-				  
+
 				  Text(draftViewModel.managerName(for: fantasyViewModel.selectedManagerID))
 					 .font(.system(size: 18))
 					 .foregroundColor(.gpGray)
 			   }
 			   .padding(.top, 2)
-			   .padding(.bottom, 4) // Add bottom padding
-			   
-			   controlsSection // add the pickers
-			   
+			   .padding(.bottom, 4)
+
+			   controlsSection
+
 			   if fantasyViewModel.isLoading {
 				  loadingView
 			   } else if let errorMessage = fantasyViewModel.errorMessage {
@@ -66,31 +64,22 @@ struct FantasyMatchupListView: View {
 			}
 		 }
 	  }
-	  
 	  .onAppear {
-		 // reset the timer 
 		 fantasyViewModel.setupRefreshTimer(with: 0)
 		 selectedTimerInterval = 0
-		 // Fetch ESPN and Sleeper leagues
 		 fantasyViewModel.fetchESPNManagerLeagues(forUserID: AppConstants.GpESPNID)
-		 // Use Task to call the async function
 		 Task {
 			await fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
 		 }
-		 
-		 // Deduplicate after fetching
+
 		 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
 			fantasyViewModel.currentManagerLeagues = Array(Set(fantasyViewModel.currentManagerLeagues))
 			fantasyViewModel.objectWillChange.send()
-			
-			// Debug print leagues
 			fantasyViewModel.debugPrintLeagues()
 		 }
 	  }
-	  
    }
-   
-   // MARK: - Header Controls Section
+
    var controlsSection: some View {
 	  VStack(spacing: 12) {
 		 HStack(spacing: 16) {
@@ -98,7 +87,7 @@ struct FantasyMatchupListView: View {
 			weekPickerView
 		 }
 		 .padding(.horizontal)
-		 
+
 		 HStack(spacing: 16) {
 			yearPickerView
 			refreshPickerView
@@ -107,7 +96,7 @@ struct FantasyMatchupListView: View {
 	  }
 	  .padding(.top)
    }
-   
+
    private var yearPickerView: some View {
 	  Menu {
 		 Picker("Year", selection: $fantasyViewModel.selectedYear) {
@@ -130,7 +119,7 @@ struct FantasyMatchupListView: View {
 		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
 	  }
    }
-   
+
    private var weekPickerView: some View {
 	  Menu {
 		 Picker("Week", selection: $fantasyViewModel.selectedWeek) {
@@ -153,32 +142,28 @@ struct FantasyMatchupListView: View {
 		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
 	  }
    }
-   
+
    private var leaguePickerView: some View {
 	  Menu {
 		 Picker("League", selection: $fantasyViewModel.leagueID) {
 			ForEach(fantasyViewModel.currentManagerLeagues, id: \.id) { league in
 			   HStack {
-				  //MARK: APPLY: ESPN : Sleeper logo image based on league type
 				  Image(league.type == .espn ? "espn_logo" : "sleeper_logo")
 					 .resizable()
 					 .scaledToFit()
 					 .frame(width: 10, height: 10)
-				  
 				  Text(league.name).tag(league.id)
 			   }
 			}
 		 }
 	  } label: {
 		 HStack {
-			// APPLY: Add image based on selected league type
 			if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
 			   Image(selectedLeague.type == .espn ? "espn_logo" : "sleeper_logo")
 				  .resizable()
 				  .scaledToFit()
 				  .frame(width: 10, height: 10)
 			}
-			
 			Text(fantasyViewModel.leagueName.isEmpty ? "Select League" : fantasyViewModel.leagueName)
 			Image(systemName: "chevron.down")
 			   .font(.caption)
@@ -189,7 +174,6 @@ struct FantasyMatchupListView: View {
 		 .cornerRadius(8)
 	  }
 	  .onChange(of: fantasyViewModel.leagueID) { newValue in
-		 // Update this section
 		 fantasyViewModel.handlePickerChange(newLeagueID: newValue)
 		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == newValue }) {
 			fantasyViewModel.leagueName = selectedLeague.name
@@ -206,7 +190,7 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
    }
-   
+
    private var refreshPickerView: some View {
 	  Menu {
 		 Picker("Refresh", selection: $selectedTimerInterval) {
@@ -231,8 +215,7 @@ struct FantasyMatchupListView: View {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
-   
-   // MARK: - Loading & Error Views
+
    private var loadingView: some View {
 	  VStack {
 		 Spacer()
@@ -241,7 +224,7 @@ struct FantasyMatchupListView: View {
 		 Spacer()
 	  }
    }
-   
+
    private func errorView(message: String) -> some View {
 	  VStack {
 		 Spacer()
@@ -250,8 +233,7 @@ struct FantasyMatchupListView: View {
 		 Spacer()
 	  }
    }
-   
-   // MARK: - Matchups List
+
    private var matchupsListView: some View {
 	  ScrollView {
 		 LazyVStack(spacing: 16) {
@@ -261,7 +243,6 @@ struct FantasyMatchupListView: View {
 					 matchup: matchup,
 					 fantasyViewModel: fantasyViewModel
 				  )
-				  // Add tap gestures for avatars
 				  .overlay(
 					 HStack {
 						avatarOverlay(for: matchup.homeTeamID.description)
@@ -290,9 +271,7 @@ struct FantasyMatchupListView: View {
 		 )
 	  }
    }
-   
-   // MARK: - Helper Functions
-   
+
    private func avatarOverlay(for managerID: String) -> some View {
 	  Circle()
 		 .fill(Color.clear)
@@ -301,28 +280,4 @@ struct FantasyMatchupListView: View {
 			fantasyViewModel.updateSelectedManager(managerID)
 		 }
    }
-   
-   private func getLeagueName() -> String {
-	  // Add this debug print
-	  print("DP - getLeagueName: currentManagerLeagues count: \(fantasyViewModel.currentManagerLeagues.count)")
-	  if let league = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
-		 return league.name
-	  } else {
-		 return "Select League"
-	  }
-   }
-   
-   private func updateLeagueName() {
-	  // Add this debug print
-	  print("DP - updateLeagueName: currentManagerLeagues count: \(fantasyViewModel.currentManagerLeagues.count)")
-	  if let league = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
-		 fantasyViewModel.leagueName = league.name
-		 // Add this debug print
-		 print("DP - updateLeagueName: League name updated to \(league.name)")
-	  } else {
-		 // Add this debug print
-		 print("DP - updateLeagueName: No matching league found for ID \(fantasyViewModel.leagueID)")
-	  }
-   }
-   
 }
