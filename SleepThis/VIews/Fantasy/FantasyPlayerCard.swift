@@ -1,3 +1,15 @@
+// #fuc
+// This version corrects the conditional logic for the stroke and shadow to properly show green
+// when the game is live and gray when not. It also ensures that each card calls configure on appear,
+// which will fetch or retrieve cached scoreboard data from FantasyScoreboardModel. As a result,
+// all player cards will load matchup information once the scoreboard data is available.
+//
+// Note: Since the scoreboard data is fetched asynchronously and cached, the first time you load the
+// view it may take a moment for the data to come in. After that, subsequent navigations will have
+// immediate data from cache. Each card has its own instance of FantasyGameMatchupViewModel, which
+// is @StateObject, meaning it will persist as long as the card is in view, updating when the scoreboard
+// data becomes available.
+
 import SwiftUI
 
 struct FantasyPlayerCard: View {
@@ -6,11 +18,11 @@ struct FantasyPlayerCard: View {
    @State private var teamColor: Color = .gray
    @State private var nflPlayer: NFLRosterModel.NFLPlayer?
 
-   // New state object for the game matchup
    @StateObject private var fantasyGameMatchupViewModel = FantasyGameMatchupViewModel()
 
    var body: some View {
 	  ZStack(alignment: .topLeading) {
+		 // Background with gradient and conditional stroke/shadow if game is live
 		 RoundedRectangle(cornerRadius: 15)
 			.fill(LinearGradient(
 			   gradient: Gradient(colors: [teamColor, .clear]),
@@ -18,13 +30,15 @@ struct FantasyPlayerCard: View {
 			   endPoint: .bottom
 			))
 			.frame(height: 95)
-		 // If live, outline in green, otherwise gray
 			.overlay(
 			   RoundedRectangle(cornerRadius: 15)
-				  .stroke(fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen : Color.gray, lineWidth: fantasyGameMatchupViewModel.liveMatchup ? 2 : 1)
+				  .stroke(fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen : Color.gray,
+						  lineWidth: fantasyGameMatchupViewModel.liveMatchup ? 5 : 1)
 			)
+			.shadow(color: fantasyGameMatchupViewModel.liveMatchup ? .gpGreen : .clear,
+					radius: 10, x: 10, y: 10)
 
-		 // Team Logo
+		 // Team logo
 		 if let teamLogoURL = getTeamLogoURL() {
 			AsyncImage(url: teamLogoURL) { phase in
 			   switch phase {
@@ -44,12 +58,11 @@ struct FantasyPlayerCard: View {
 			}
 			.frame(width: 80, height: 80)
 			.offset(x: 20, y: -4)
-			.zIndex(0)
 			.opacity(0.6)
 			.shadow(color: teamColor.opacity(0.5), radius: 10, x: 0, y: 0)
 		 }
 
-		 // Jersey Number
+		 // Jersey number
 		 VStack {
 			HStack {
 			   Spacer()
@@ -57,17 +70,17 @@ struct FantasyPlayerCard: View {
 				  Text(nflPlayer?.jersey ?? "")
 					 .font(.system(size: 85, weight: .bold))
 					 .italic()
-					 .foregroundColor(teamColor.opacity(0.35))
+					 .foregroundColor(.white.opacity(0.25))
+//					 .foregroundColor(teamColor.opacity(0.5))
 			   }
 			}
 			.padding(.trailing, 8)
 			Spacer()
 		 }
 		 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-		 .zIndex(1)
 
 		 HStack(spacing: 12) {
-			// Player Image
+			// Player image
 			AsyncImage(url: getPlayerImageURL()) { phase in
 			   switch phase {
 				  case .empty:
@@ -88,11 +101,10 @@ struct FantasyPlayerCard: View {
 			   }
 			}
 			.offset(x: -20, y: -5)
-			.zIndex(2)
 
 			VStack(alignment: .trailing, spacing: 0) {
 			   Text(getPositionString())
-				  .font(.system(size: 15))
+				  .font(.system(size: 12))
 				  .foregroundColor(.white.opacity(0.8))
 				  .offset(x: -5, y: 42)
 
@@ -112,10 +124,9 @@ struct FantasyPlayerCard: View {
 			}
 			.padding(.vertical, 8)
 			.padding(.trailing, 8)
-			.zIndex(3)
 		 }
 
-		 // Player Name
+		 // Player name
 		 Text(player.playerPoolEntry.player.fullName)
 			.font(.system(size: 18, weight: .bold))
 			.foregroundColor(.white)
@@ -125,19 +136,17 @@ struct FantasyPlayerCard: View {
 			.padding(.top, 6)
 			.padding(.trailing, 14)
 			.padding(.leading, 45)
-			.zIndex(4)
 
-		 // Insert FantasyGameMatchupView below player name
+		 // Game matchup info (top-right, at bottom of card)
 		 VStack {
 			Spacer()
 			HStack {
 			   Spacer()
 			   FantasyGameMatchupView(gameMatchupViewModel: fantasyGameMatchupViewModel)
 				  .padding(.trailing, 20)
-				  .padding(.bottom, 4)
+				  .padding(.bottom, 6)
 			}
 		 }
-		 .zIndex(5)
 	  }
 	  .frame(height: 95)
 	  .cornerRadius(15)
@@ -146,9 +155,8 @@ struct FantasyPlayerCard: View {
 		 self.nflPlayer = NFLRosterModel.getPlayerInfo(by: player.playerPoolEntry.player.fullName, from: fantasyViewModel.nflRosterViewModel.players)
 		 teamColor = Color(hex: nflPlayer?.team?.color ?? "008C96")
 
-		 // Configure the game matchup view model
+		 // Configure the matchup view model with the team's abbreviation and the current refresh interval
 		 if let teamAbbrev = nflPlayer?.team?.abbreviation {
-			// Retrieve the refresh interval from UserDefaults or from a passed property
 			let interval = UserDefaults.standard.integer(forKey: "autoRefreshInterval")
 			fantasyGameMatchupViewModel.configure(teamAbbreviation: teamAbbrev, refreshInterval: interval)
 		 }

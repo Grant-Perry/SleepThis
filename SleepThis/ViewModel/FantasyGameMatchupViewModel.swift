@@ -85,7 +85,7 @@ class FantasyGameMatchupViewModel: ObservableObject {
 
 				  switch state {
 					 case "pre":
-						quarterTime = "Not Started"
+						quarterTime = "" // was "Not Started"
 						liveMatchup = false
 					 case "in":
 						quarterTime = detail
