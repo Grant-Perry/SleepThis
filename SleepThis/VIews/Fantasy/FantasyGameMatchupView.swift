@@ -1,41 +1,54 @@
 import SwiftUI
 
-// A view that displays the game matchup info provided by FantasyGameMatchupViewModel.
 struct FantasyGameMatchupView: View {
    @ObservedObject var gameMatchupViewModel: FantasyGameMatchupViewModel
 
    var body: some View {
-	  VStack(alignment: .leading, spacing: 2) {
-		 HStack {
-			// Display matchup teams and scores
+	  VStack(alignment: .leading, spacing: 1) {
+		 HStack(spacing: 4) {
 			Text("\(gameMatchupViewModel.awayTeamAbbrev)")
-			   .font(.system(size: 12))
+			   .font(.system(size: 10))
 			   .fontWeight(.bold)
-+
-			Text(" VS ")
-			   .font(.system(size: 8)) +
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+			   .scaledToFit()
+
+			Text("vs")
+			   .font(.system(size: 8))
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+			   .scaledToFit()
 
 			Text("\(gameMatchupViewModel.homeTeamAbbrev)")
-			   .font(.system(size: 12))
+			   .font(.system(size: 10))
 			   .fontWeight(.bold)
-			Spacer()
-			Text("\(gameMatchupViewModel.awayScore)-\(gameMatchupViewModel.homeScore)")
-			   .font(.footnote)
-			   .fontWeight(.semibold)
-		 }
-		 .opacity(0.7)
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+			   .scaledToFit()
 
-		 Text(gameMatchupViewModel.quarterTime)
-			.font(.caption2)
+			Text("\(gameMatchupViewModel.awayScore)-\(gameMatchupViewModel.homeScore)")
+			   .font(.system(size: 10))
+			   .fontWeight(.semibold)
+			   .lineLimit(1)
+			   .minimumScaleFactor(0.5)
+			   .scaledToFit()
+		 }
+
+		 Text(gameMatchupViewModel.quarterTime.isEmpty ? "Final" : gameMatchupViewModel.quarterTime)
+			.font(.system(size: 8))
 			.foregroundColor(.secondary)
+			.lineLimit(1)
+			.minimumScaleFactor(0.5)
+			.scaledToFit()
+			.padding(.leading, 0)
 
 		 Text(gameMatchupViewModel.dayTime)
-			.font(.caption2)
+			.font(.system(size: 8))
 			.foregroundColor(.secondary)
+			.lineLimit(1)
+			.minimumScaleFactor(0.5)
+			.scaledToFit()
+			.padding(.leading, 0)
 	  }
-	  .padding(4)
-	  .offset(x: 55, y: 0)
-	  //	  .background(Color(.systemGray6).opacity(0.4))
-	  .cornerRadius(8)
    }
 }

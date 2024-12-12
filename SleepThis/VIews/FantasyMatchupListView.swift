@@ -194,7 +194,7 @@ struct FantasyMatchupListView: View {
    private var refreshPickerView: some View {
 	  Menu {
 		 Picker("Refresh", selection: $selectedTimerInterval) {
-			ForEach([0, 10, 20, 30, 40, 50, 60], id: \.self) { interval in
+			ForEach([0, 20, 45, 60, 90, 120], id: \.self) { interval in
 			   Text("\(interval == 0 ? "Off" : "\(interval) sec")").tag(interval)
 			}
 		 }
