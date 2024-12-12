@@ -155,7 +155,8 @@ struct FantasyPlayerCard: View {
 	  .frame(height: 95)
 	  .cornerRadius(15)
 	  .shadow(radius: 5)
-	  .onAppear {
+
+	  .task {
 		 self.nflPlayer = NFLRosterModel.getPlayerInfo(
 			by: player.playerPoolEntry.player.fullName,
 			from: fantasyViewModel.nflRosterViewModel.players
@@ -172,6 +173,7 @@ struct FantasyPlayerCard: View {
 			)
 		 }
 	  }
+
    }
 
    func getPlayerImageURL() -> URL? {
