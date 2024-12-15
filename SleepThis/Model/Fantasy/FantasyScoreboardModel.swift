@@ -53,13 +53,14 @@ enum FantasyMatchups {
 
 	  private init() {}
 
-	  func getScoreboardData(forWeek week: Int, forceRefresh: Bool = false, completion: @escaping (ScoreboardResponse?) -> Void) {
+	  func getScoreboardData(forWeek week: Int, forYear year: Int, forceRefresh: Bool = false, completion: @escaping (ScoreboardResponse?) -> Void) {
 		 if !forceRefresh, let cache = cache {
 			completion(cache)
 			return
 		 }
 
-		 guard let url = URL(string: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=\(week)") else {
+		 guard let url = URL(string: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week=\(week)&dates=\(year)") else {
+//		 guard let url = URL(string: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=\(week)") else {
 			completion(nil)
 			return
 		 }

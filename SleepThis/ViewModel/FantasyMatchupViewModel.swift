@@ -18,16 +18,21 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var errorMessage: String? = nil
    @Published var leagueID: String = AppConstants.ESPNLeagueID[1]
    @Published var sleeperLeagues: [FantasyScores.SleeperLeagueResponse] = []
-   @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
    @Published var userAvatars: [String: URL] = [:] // Cache for user avatars
    @Published var espnManagerID: String?
    @Published var nflRosterViewModel = NFLRosterViewModel()
-   
+   @Published var selectedYear: Int = Calendar.current.component(.year, from: Date()) {
+	  didSet {
+		 FantasyMatchups.FantasyScoreboardModel.shared.getScoreboardData(forWeek: selectedWeek, forYear: selectedYear, forceRefresh: true) { [weak self] response in
+		 }
+	  }
+   }
+
    @Published var selectedWeek: Int = {
 	  let firstWeek = 36 // NFL season typically starts around week 36
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
 	  var offset = currentWeek >= firstWeek ? currentWeek - firstWeek + 1 : 0
-	  
+
 	  // Check if it's Sunday or Monday - if so, stay on current week
 	  let today = Date()
 	  let weekday = Calendar.current.component(.weekday, from: today) // 1 = Sunday, 2 = Monday
@@ -35,8 +40,13 @@ class FantasyMatchupViewModel: ObservableObject {
 		 offset = max(1, offset - 1) // Stay on current week
 	  }
 	  return min(max(1, offset), 17) // Clamp between 1 and 17
-   }()
-   
+   }() {
+	  didSet {
+		 FantasyMatchups.FantasyScoreboardModel.shared.getScoreboardData(forWeek: selectedWeek, forYear: selectedYear, forceRefresh: true) { [weak self] response in
+		 }
+	  }
+   }
+
    var sleeperScoringSettings: [String: Double] = [:]
    var sleeperPlayers: [String: FantasyScores.SleeperPlayer] = [:]
    var rosterIDToManagerName: [Int: String] = [:]

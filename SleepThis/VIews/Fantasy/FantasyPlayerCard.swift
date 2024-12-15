@@ -166,9 +166,11 @@ struct FantasyPlayerCard: View {
 		 if let teamAbbrev = nflPlayer?.team?.abbreviation {
 			let interval = UserDefaults.standard.integer(forKey: "autoRefreshInterval")
 			let week = fantasyViewModel.selectedWeek
+			let year = fantasyViewModel.selectedYear
 			fantasyGameMatchupViewModel.configure(
 			   teamAbbreviation: teamAbbrev,
 			   week: week,
+			   year: year,
 			   refreshInterval: interval
 			)
 		 }

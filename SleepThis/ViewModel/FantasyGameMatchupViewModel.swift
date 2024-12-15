@@ -15,22 +15,22 @@ class FantasyGameMatchupViewModel: ObservableObject {
    var refreshTimer: AnyCancellable?
    var refreshInterval: Int = 0
 
-   func configure(teamAbbreviation: String, week: Int, refreshInterval: Int = 0) {
+   func configure(teamAbbreviation: String, week: Int, year: Int, refreshInterval: Int = 0) {
 	  self.teamAbbreviation = teamAbbreviation
 	  self.refreshInterval = refreshInterval
-	  fetchData(forWeek: week)
+	  fetchData(forWeek: week, forYear: year)
 
 	  refreshTimer?.cancel()
 	  guard refreshInterval > 0 else { return }
 	  refreshTimer = Timer.publish(every: TimeInterval(refreshInterval), on: .main, in: .common)
 		 .autoconnect()
 		 .sink { [weak self] _ in
-			self?.fetchData(forWeek: week, forceRefresh: true)
+			self?.fetchData(forWeek: week, forYear: year, forceRefresh: true)
 		 }
    }
 
-   func fetchData(forWeek week: Int, forceRefresh: Bool = false) {
-	  FantasyMatchups.FantasyScoreboardModel.shared.getScoreboardData(forWeek: week, forceRefresh: forceRefresh) { [weak self] response in
+   func fetchData(forWeek week: Int, forYear year: Int, forceRefresh: Bool = false) {
+	  FantasyMatchups.FantasyScoreboardModel.shared.getScoreboardData(forWeek: week, forYear: year, forceRefresh: forceRefresh) { [weak self] response in
 		 guard let self = self, let response = response else { return }
 		 self.processScoreboard(response: response)
 	  }

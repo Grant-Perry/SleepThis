@@ -173,9 +173,9 @@ struct FantasyMatchupListView: View {
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.leagueID) { newValue in
-		 fantasyViewModel.handlePickerChange(newLeagueID: newValue)
-		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == newValue }) {
+	  .onChange(of: fantasyViewModel.leagueID) {
+		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
+		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
 			fantasyViewModel.leagueName = selectedLeague.name
 			switch selectedLeague.type {
 			   case .espn:
