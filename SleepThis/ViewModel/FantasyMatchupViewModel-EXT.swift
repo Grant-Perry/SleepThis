@@ -210,10 +210,151 @@ extension FantasyMatchupViewModel {
 
 	  print("DP - Processed stats for \(playerStats.count) players")
    }
-}
 
-// Add this function to get ESPN avatar URLs
-func getESPNAvatarURL(for teamId: Int) -> URL? {
-   // ESPN avatar URL format
-   return URL(string: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/\(teamId).png")
+   func scoreDifferenceText(matchup: AnyFantasyMatchup) -> String {
+	  let awayTeamScore = getScore(for: matchup, teamIndex: 0)
+	  let homeTeamScore = getScore(for: matchup, teamIndex: 1)
+	  return String(format: "%.2f", abs(awayTeamScore - homeTeamScore))
+   }
+
+   func getManagerName(for matchup: AnyFantasyMatchup, teamIndex: Int) -> String {
+	  if leagueID == AppConstants.ESPNLeagueID[1] {
+		 return matchup.managerNames[teamIndex]
+	  } else {
+		 return matchup.managerNames[teamIndex == 0 ? 1 : 0]
+	  }
+   }
+
+   func getAvatarURL(for matchup: AnyFantasyMatchup, teamIndex: Int) -> URL? {
+	  if leagueID == AppConstants.ESPNLeagueID[1] {
+		 return matchup.avatarURLs[teamIndex]
+	  } else {
+		 return matchup.avatarURLs[teamIndex == 0 ? 1 : 0]
+	  }
+   }
+
+   func teamHeaderView(for matchup: AnyFantasyMatchup, index: Int, isWinning: Bool) -> FantasyTeamHeaderView {
+	  FantasyTeamHeaderView(
+		 managerName: getManagerName(for: matchup, teamIndex: index),
+		 score: getScore(for: matchup, teamIndex: index),
+		 avatarURL: getAvatarURL(for: matchup, teamIndex: index),
+		 isWinning: isWinning
+	  )
+   }
+
+   func formattedScore(_ score: Double) -> String {
+	  return String(format: "%.2f", score)
+   }
+
+   func activeRosterSection(matchup: AnyFantasyMatchup) -> some View {
+	  VStack(alignment: .leading, spacing: 12) {
+		 Text("Active Roster")
+			.font(.headline)
+			.padding(.horizontal)
+
+		 HStack(alignment: .top, spacing: 16) {
+			// Away/Visitor Team Active Roster
+			VStack(spacing: 8) {
+			   let awayActiveRoster = getRoster(for: matchup, teamIndex: 0, isBench: false)
+			   ForEach(awayActiveRoster, id: \.playerPoolEntry.player.id) { player in
+				  FantasyPlayerCard(player: player, fantasyViewModel: self)
+			   }
+
+			   Text("Active Total: \(formattedScore(getScore(for: matchup, teamIndex: 0)))")
+				  .font(.subheadline)
+				  .fontWeight(.semibold)
+				  .frame(maxWidth: .infinity)
+				  .padding(.vertical, 8)
+				  .background(
+					 LinearGradient(
+						gradient: Gradient(colors: [Color(.secondarySystemBackground), Color.clear]),
+						startPoint: .top,
+						endPoint: .bottom
+					 )
+				  )
+			}
+
+			// Home Team Active Roster
+			VStack(spacing: 8) {
+			   let homeActiveRoster = getRoster(for: matchup, teamIndex: 1, isBench: false)
+			   ForEach(homeActiveRoster, id: \.playerPoolEntry.player.id) { player in
+				  FantasyPlayerCard(player: player, fantasyViewModel: self)
+			   }
+
+			   Text("Active Total: \(formattedScore(getScore(for: matchup, teamIndex: 1)))")
+				  .font(.subheadline)
+				  .fontWeight(.semibold)
+				  .frame(maxWidth: .infinity)
+				  .padding(.vertical, 8)
+				  .background(
+					 LinearGradient(
+						gradient: Gradient(colors: [Color(.secondarySystemBackground), Color.clear]),
+						startPoint: .top,
+						endPoint: .bottom
+					 )
+				  )
+			}
+		 }
+		 .padding(.horizontal)
+	  }
+   }
+
+   func benchSection(matchup: AnyFantasyMatchup) -> some View {
+	  VStack(alignment: .leading, spacing: 12) {
+		 Text("Bench")
+			.font(.headline)
+			.padding(.horizontal)
+
+		 HStack(alignment: .top, spacing: 16) {
+			// Away/Visitor Team Bench
+			VStack(spacing: 8) {
+			   let awayBenchRoster = getRoster(for: matchup, teamIndex: 0, isBench: true)
+			   ForEach(awayBenchRoster, id: \.playerPoolEntry.player.id) { player in
+				  FantasyPlayerCard(player: player, fantasyViewModel: self)
+			   }
+
+			   Text("Bench Total: \(formattedScore(awayBenchRoster.reduce(0.0) { $0 + getPlayerScore(for: $1, week: selectedWeek) }))")
+				  .font(.subheadline)
+				  .fontWeight(.semibold)
+				  .frame(maxWidth: .infinity)
+				  .padding(.vertical, 8)
+				  .background(
+					 LinearGradient(
+						gradient: Gradient(colors: [Color(.secondarySystemBackground), Color.clear]),
+						startPoint: .top,
+						endPoint: .bottom
+					 )
+				  )
+			}
+
+			// Home Team Bench
+			VStack(spacing: 8) {
+			   let homeBenchRoster = getRoster(for: matchup, teamIndex: 1, isBench: true)
+			   ForEach(homeBenchRoster, id: \.playerPoolEntry.player.id) { player in
+				  FantasyPlayerCard(player: player, fantasyViewModel: self)
+			   }
+
+			   Text("Bench Total: \(formattedScore(homeBenchRoster.reduce(0.0) { $0 + getPlayerScore(for: $1, week: selectedWeek) }))")
+				  .font(.subheadline)
+				  .fontWeight(.semibold)
+				  .frame(maxWidth: .infinity)
+				  .padding(.vertical, 8)
+				  .background(
+					 LinearGradient(
+						gradient: Gradient(colors: [Color(.secondarySystemBackground), Color.clear]),
+						startPoint: .top,
+						endPoint: .bottom
+					 )
+				  )
+			}
+		 }
+		 .padding(.horizontal)
+	  }
+   }
+
+   // get ESPN avatar URLs
+   func getESPNAvatarURL(for teamId: Int) -> URL? {
+	  // ESPN avatar URL format
+	  return URL(string: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/\(teamId).png")
+   }
 }

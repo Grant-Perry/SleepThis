@@ -7,7 +7,7 @@ struct FantasyTeamHeaderView: View {
    let isWinning: Bool
 
    var body: some View {
-	  VStack(spacing: 12) {
+	  VStack(spacing: 8) {
 		 ZStack {
 			// Avatar
 			if let url = avatarURL {
@@ -15,37 +15,37 @@ struct FantasyTeamHeaderView: View {
 				  image
 					 .resizable()
 					 .aspectRatio(contentMode: .fill)
-					 .frame(width: 60, height: 60)
+					 .frame(width: 40, height: 40)
 					 .clipShape(Circle())
 			   } placeholder: {
 				  Image(systemName: "person.crop.circle.fill")
 					 .resizable()
-					 .frame(width: 60, height: 60)
+					 .frame(width: 40, height: 40)
 					 .foregroundColor(.gray)
 			   }
 			} else {
 			   Image(systemName: "person.crop.circle.fill")
 				  .resizable()
-				  .frame(width: 60, height: 60)
+				  .frame(width: 40, height: 40)
 				  .foregroundColor(.gray)
 			}
 
 			if isWinning {
 			   Circle()
-				  .strokeBorder(Color.green, lineWidth: 3)
-				  .frame(width: 66, height: 66)
+				  .strokeBorder(Color.green, lineWidth: 2)
+				  .frame(width: 44, height: 44)
 			}
 		 }
 
-		 VStack(spacing: 4) {
+		 VStack(spacing: 2) {
 			Text(managerName)
-			   .font(.headline)
+			   .font(.system(size: 13))
 			   .fontWeight(.medium)
 			   .lineLimit(1)
 			   .minimumScaleFactor(0.8)
 			   .foregroundColor(.gpYellow)
 			Text(String(format: "%.2f", score))
-			   .font(.title2)
+			   .font(.title3)
 			   .fontWeight(.bold)
 			   .foregroundColor(isWinning ? .green : .gpRedLight)
 		 }
