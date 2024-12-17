@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct FantasyMatchupCardView: View {
+   @StateObject private var fantasyGameMatchupViewModel = FantasyGameMatchupViewModel()
    let matchup: AnyFantasyMatchup
    let fantasyViewModel: FantasyMatchupViewModel
+   var isLive: Bool {
+	  fantasyGameMatchupViewModel.liveMatchup
+   }
 
    var body: some View {
 	  VStack(spacing: 0) {
@@ -84,7 +88,6 @@ struct FantasyMatchupCardView: View {
 		 )
 		 .frame(height: 135) // Add this to reduce height
 	  }
-	  // CHANGE: Reduce vertical padding
 	  .padding(.vertical, 4) // Changed from 8
    }
 

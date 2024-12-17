@@ -142,14 +142,10 @@ struct FantasyPlayerCard: View {
 			HStack {
 			   Spacer()
 			   FantasyGameMatchupView(gameMatchupViewModel: fantasyGameMatchupViewModel)
-				  .padding(EdgeInsets(top: 0,
-									  leading: 0,
-									  bottom: 22,
-									  trailing: 39))
-//				  .padding(.trailing, 20)
-//				  .padding(.bottom, 4)
+				  .padding(EdgeInsets(top: 8, leading: 0, bottom: 22, trailing: 42))
 			}
 		 }
+		 .offset(y: 6)
 		 .zIndex(5)
 	  }
 	  .frame(height: 95)

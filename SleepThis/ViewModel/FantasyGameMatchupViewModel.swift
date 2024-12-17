@@ -81,7 +81,7 @@ class FantasyGameMatchupViewModel: ObservableObject {
 		 formatter.dateFormat = "E MM/dd @ h a"
 		 dayTime = formatter.string(from: date)
 	  } else {
-		 dayTime = "TBD"
+		 dayTime = " "
 	  }
 
 	  switch state {

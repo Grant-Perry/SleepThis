@@ -4,10 +4,15 @@ struct FantasyGameMatchupView: View {
    @ObservedObject var gameMatchupViewModel: FantasyGameMatchupViewModel
 
    var body: some View {
+	  let awayIsWinning = gameMatchupViewModel.awayScore > gameMatchupViewModel.homeScore
+	  let homeIsWinning = gameMatchupViewModel.homeScore > gameMatchupViewModel.awayScore
+
 	  VStack(alignment: .leading, spacing: 1) {
+		 // HStack for Team Names and Scores
 		 HStack(spacing: 0) {
 			Text("\(gameMatchupViewModel.awayTeamAbbrev)")
 			   .font(.system(size: 10))
+			   .foregroundColor(awayIsWinning ? .gpGreen : .gpWhite)
 			   .fontWeight(.bold)
 			   .lineLimit(1)
 			   .minimumScaleFactor(0.5)
@@ -21,13 +26,13 @@ struct FantasyGameMatchupView: View {
 
 			Text("\(gameMatchupViewModel.homeTeamAbbrev): ")
 			   .font(.system(size: 10))
+			   .foregroundColor(homeIsWinning ? .gpGreen : .gpWhite)
 			   .fontWeight(.bold)
 			   .lineLimit(1)
 			   .minimumScaleFactor(0.5)
 			   .scaledToFit()
-
-			let awayIsWinning = gameMatchupViewModel.awayScore > gameMatchupViewModel.homeScore
-			let homeIsWinning = gameMatchupViewModel.homeScore > gameMatchupViewModel.awayScore
+		 }
+		 HStack {
 
 			Text("\(gameMatchupViewModel.awayScore)")
 			   .font(.system(size: 10))
@@ -51,8 +56,17 @@ struct FantasyGameMatchupView: View {
 			   .minimumScaleFactor(0.5)
 			   .scaledToFit()
 			   .foregroundColor(homeIsWinning ? .gpGreen : .white)
-		 }
 
+			// Line for Score Difference (awayScore - homeScore)
+			Text("(\(abs(gameMatchupViewModel.awayScore - gameMatchupViewModel.homeScore)))")
+			   .font(.system(size: 8))
+			   .foregroundColor(.gpGreen)
+			   .fontWeight(.semibold)
+
+			   .padding(.trailing)
+//			Spacer()
+		 }
+		 // Quarter Time or Final
 		 Text(gameMatchupViewModel.quarterTime.isEmpty ? "Final" : gameMatchupViewModel.quarterTime)
 			.font(.system(size: 8))
 			.foregroundColor(.secondary)
@@ -61,6 +75,7 @@ struct FantasyGameMatchupView: View {
 			.scaledToFit()
 			.padding(.leading, 0)
 
+		 // Day and Time
 		 Text(gameMatchupViewModel.dayTime)
 			.font(.system(size: 8))
 			.foregroundColor(.secondary)
@@ -69,6 +84,7 @@ struct FantasyGameMatchupView: View {
 			.scaledToFit()
 			.padding(.leading, 0)
 	  }
+
    }
 }
 
