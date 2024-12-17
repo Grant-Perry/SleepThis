@@ -137,17 +137,18 @@ class DraftViewModel: ObservableObject {
    // Fetch all manager details with a completion handler
    func fetchAllManagerDetails(completion: @escaping (Bool) -> Void) {
 	  let managerIDs = Array(groupedPicks.keys)
-	  var fetchCount = 0
+	  guard !managerIDs.isEmpty else {
+		 print("[fetchAllManagerDetails]: No manager IDs to fetch.")
+		 completion(true) // or completion(false) if you want to indicate no managers found
+		 return
+	  }
 
+	  var fetchCount = 0
 	  for managerID in managerIDs {
 		 fetchManagerDetails(managerID: managerID) { success in
 			fetchCount += 1
-			if !success {
-			   print("[fetchAllManagerDetails]: Failed to fetch manager details for ID: \(managerID)")
-			}
-			// When all manager details have been fetched, call the completion handler
 			if fetchCount == managerIDs.count {
-			   completion(true) // All tasks finished successfully
+			   completion(true)
 			}
 		 }
 	  }

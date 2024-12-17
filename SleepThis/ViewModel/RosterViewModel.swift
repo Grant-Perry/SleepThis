@@ -3,80 +3,101 @@ import SwiftUI
 import Combine
 import Observation
 
-@Observable
-
+//@Observable
 class RosterViewModel: ObservableObject {
-   var rosters: [RosterModel] = []
-   var selectedRosterSettings: RosterSettings?
-   var draftViewModel: DraftViewModel
+   @Published var rosters: [RosterModel] = []
+   @Published var selectedRosterSettings: RosterSettings?
+   @Published var isLoading = false
+   @Published var errorMessage: String?
 
-   var leagueID = AppConstants.leagueID // TwoBrothersID
+   var draftViewModel: DraftViewModel
+   var leagueID = AppConstants.leagueID
+
 
    init(leagueID: String, draftViewModel: DraftViewModel) {
 	  self.leagueID = leagueID
 	  self.draftViewModel = draftViewModel
-	  fetchRoster()
+	  print("[RosterViewModel] Initialized with leagueID: \(leagueID)")
    }
 
    func fetchRoster(completion: (() -> Void)? = nil) {
+	  print("[RosterViewModel] Starting roster fetch for leagueID: \(leagueID)")
+	  isLoading = true
+	  errorMessage = nil
+
 	  guard !leagueID.isEmpty else {
+		 print("[RosterViewModel] Empty leagueID")
+		 isLoading = false
+		 errorMessage = "Invalid league ID"
 		 completion?()
 		 return
 	  }
 
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/rosters") else {
-		 print("[RosterViewModel] Invalid URL.")
+		 print("[RosterViewModel] Invalid URL")
+		 isLoading = false
+		 errorMessage = "Invalid URL"
 		 completion?()
 		 return
 	  }
 
+	  print("[RosterViewModel] Fetching from URL: \(url.absoluteString)")
+
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-		 if let error = error {
-			print("[RosterViewModel] Error fetching rosters: \(error)")
-			completion?()
-			return
-		 }
-		 guard let data = data else {
-			print("[RosterViewModel] No data returned.")
-			completion?()
-			return
-		 }
-		 do {
-			let decoder = JSONDecoder()
-			let decodedRosters = try decoder.decode([RosterModel].self, from: data)
+		 guard let self = self else { completion?(); return }
 
-			DispatchQueue.main.async {
-			   self?.rosters = decodedRosters
-			   if let firstRoster = decodedRosters.first {
-				  print("DP - firstRoster.settings: \(firstRoster.settings)")
-
-				  // Assign settings directly, ensuring the type matches
-				  self?.selectedRosterSettings = firstRoster.settings
-				  print("DP - selectedRosterSettings successfully assigned: \(firstRoster.settings)")
-			   }
-			   completion?() // Call completion handler here
+		 DispatchQueue.main.async {
+			if let error = error {
+			   print("[RosterViewModel] Network error: \(error.localizedDescription)")
+			   self.errorMessage = error.localizedDescription
+			   self.isLoading = false
+			   completion?()
+			   return
 			}
-		 } catch {
-			print("[RosterViewModel] Failed to decode rosters: \(error)")
-			completion?()
+
+			if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+			   self.errorMessage = "Server error: \(httpResponse.statusCode)"
+			   self.isLoading = false
+			   completion?()
+			   return
+			}
+
+			guard let data = data else {
+			   print("[RosterViewModel] No data returned")
+			   self.errorMessage = "No data received"
+			   self.isLoading = false
+			   completion?()
+			   return
+			}
+
+			do {
+			   let decodedRosters = try JSONDecoder().decode([RosterModel].self, from: data)
+			   print("[RosterViewModel] Successfully decoded \(decodedRosters.count) rosters")
+			   self.rosters = decodedRosters
+			   if let firstRoster = decodedRosters.first {
+				  print("[RosterViewModel] First roster settings: \(firstRoster.settings)")
+				  self.selectedRosterSettings = firstRoster.settings
+			   }
+			   self.isLoading = false
+			   completion?()
+			} catch {
+			   print("[RosterViewModel] Decoding error: \(error.localizedDescription)")
+			   self.errorMessage = "Failed to decode roster data"
+			   self.isLoading = false
+			   completion?()
+			}
 		 }
 	  }.resume()
    }
 
 
-
-
    func getManagerSettings(managerID: String) -> RosterSettings? {
 	  return rosters.first(where: { $0.ownerID == managerID })?.settings
    }
-
-   func managerStarters(managerID: String) -> [String] {
-	  return rosters.first(where: { $0.ownerID == managerID })?.starters ?? []
-   }
-
    func sortStartersByDraftOrder(managerID: String) -> [String] {
+	  print("[RosterViewModel] Sorting starters by draft order for manager: \(managerID)")
 	  let starters = managerStarters(managerID: managerID)
-	  return starters.sorted { player1, player2 in
+	  let sortedStarters = starters.sorted { player1, player2 in
 		 let draft1 = draftViewModel.getDraftDetails(for: player1)
 		 let draft2 = draftViewModel.getDraftDetails(for: player2)
 		 if let draft1 = draft1, let draft2 = draft2 {
@@ -85,10 +106,24 @@ class RosterViewModel: ObservableObject {
 			return false
 		 }
 	  }
+	  print("[RosterViewModel] Sorted starters count: \(sortedStarters.count)")
+	  return sortedStarters
+   }
+
+   func managerStarters(managerID: String) -> [String] {
+	  print("[RosterViewModel] Getting starters for managerID: \(managerID)")
+	  let roster = rosters.first(where: { $0.ownerID == managerID })
+	  print("[RosterViewModel] Found roster: \(roster != nil)")
+	  let starters = roster?.starters ?? []
+	  print("[RosterViewModel] Number of starters found: \(starters.count)")
+	  return starters
    }
 
    func sortBenchPlayersByDraftOrder(managerID: String, allPlayers: [String], starters: [String]) -> [String] {
-	  return allPlayers.filter { !starters.contains($0) }.sorted { player1, player2 in
+	  print("[RosterViewModel] Sorting bench players. All players count: \(allPlayers.count), Starters count: \(starters.count)")
+	  let benchPlayers = allPlayers.filter { !starters.contains($0) }
+	  print("[RosterViewModel] Bench players count: \(benchPlayers.count)")
+	  return benchPlayers.sorted { player1, player2 in
 		 let draft1 = draftViewModel.getDraftDetails(for: player1)
 		 let draft2 = draftViewModel.getDraftDetails(for: player2)
 		 if let draft1 = draft1, let draft2 = draft2 {
@@ -98,18 +133,15 @@ class RosterViewModel: ObservableObject {
 		 }
 	  }
    }
-
-
 
    func getBackgroundColor(for playerID: String, draftViewModel: DraftViewModel) -> Color {
 	  if let draftDetails = draftViewModel.getDraftDetails(for: playerID) {
 		 let managerID = draftDetails.picked_by
-		 print("DP - Draft Details: \(draftDetails)\nManagerID: \(managerID)\nPlayerID: \(playerID)\n----------------------------\n ")
+		 print("[RosterViewModel] Player \(playerID) was drafted by \(managerID)")
 		 return draftViewModel.getManagerColor(for: managerID)
 	  } else {
-		 print("DP - Player \(playerID) was not drafted.")
-		 // If the player was not drafted, return .gpBlueDarkL
-		 return .gpUndrafted // RIGHT HERE
+		 print("[RosterViewModel] Player \(playerID) was not drafted")
+		 return .gpUndrafted
 	  }
    }
 }

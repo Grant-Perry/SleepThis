@@ -3,14 +3,19 @@ import SwiftUI
 struct ManagerRowView: View {
    let managerID: String
    let leagueID: String
-   @StateObject var draftViewModel: DraftViewModel
-   @StateObject var rosterViewModel: RosterViewModel  // Added this line
+   @ObservedObject var draftViewModel: DraftViewModel
+   @ObservedObject var rosterViewModel: RosterViewModel
    let thisBackgroundColor: Color
    let viewType: ManagerViewType
    @State private var showLeagueListView = false
 
+   // A computed property to find the matching roster
+   private var matchingRoster: RosterModel? {
+	  rosterViewModel.rosters.first { $0.ownerID == managerID }
+   }
+
    var body: some View {
-	  NavigationLink(destination: destinationView) {
+	  NavigationLink(destination: destinationView(for: matchingRoster)) {
 		 HStack {
 			// Manager's avatar
 			if let avatarURL = draftViewModel.managerAvatar(for: managerID) {
@@ -33,15 +38,12 @@ struct ManagerRowView: View {
 				  .padding(.leading, 16)
 			}
 
-			// Manager's name and draft pick
 			VStack(alignment: .leading) {
-			   // Manager's name navigates to RosterDetailView via NavigationLink
 			   Text(draftViewModel.managerName(for: managerID))
 				  .font(.title2)
 				  .foregroundColor(.gpDark2)
 				  .bold()
 
-			   // Manager's ID opens LeagueListView in a sheet
 			   Button(action: {
 				  showLeagueListView = true
 			   }) {
@@ -50,7 +52,6 @@ struct ManagerRowView: View {
 					 .foregroundColor(.blue)
 			   }
 
-			   // Draft pick information
 			   if let draftSlot = draftViewModel.groupedPicks[managerID]?.first?.draft_slot {
 				  Text("Draft Pick #:\(draftSlot)")
 					 .font(.caption2)
@@ -65,14 +66,11 @@ struct ManagerRowView: View {
 
 			Spacer()
 
-			//   to indicate more details
 			Image(systemName: "chevron.right")
 			   .resizable()
 			   .frame(width: 8, height: 8)
 			   .padding(.trailing, 10)
 			   .foregroundColor(.gpDark1)
-
-
 		 }
 		 .padding(.vertical, 15)
 		 .padding(.horizontal, 16)
@@ -91,36 +89,61 @@ struct ManagerRowView: View {
 		 .padding(.vertical, 4)
 		 .padding(.horizontal, 4)
 	  }
-	  .sheet(isPresented: $showLeagueListView) {  // Present LeagueListView as a sheet
+	  .sheet(isPresented: $showLeagueListView) {
 		 LeagueListView(
 			managerID: managerID,
 			draftViewModel: draftViewModel
 		 )
 	  }
+	  .onAppear {
+		 // Debug prints when the view appears
+		 print("DP - ManagerRowView appeared for managerID:", managerID)
+		 print("DP - Available rosters count:", rosterViewModel.rosters.count)
+		 for (index, roster) in rosterViewModel.rosters.enumerated() {
+			print("DP - Roster \(index): ownerID = \(roster.ownerID), players count = \(roster.players.count)")
+		 }
+
+		 if let matchingRoster = matchingRoster {
+			print("DP - Found matching roster for managerID \(managerID): ownerID = \(matchingRoster.ownerID)")
+		 } else {
+			print("DP - No matching roster found for managerID \(managerID)")
+		 }
+
+		 let managerName = draftViewModel.managerName(for: managerID)
+		 print("DP - managerName for \(managerID): \(managerName)")
+	  }
    }
 
-   // Dynamic destination view based on the view type
    @ViewBuilder
-   var destinationView: some View {
+   private func destinationView(for roster: RosterModel?) -> some View {
 	  if viewType == .draft {
 		 DraftListView(
 			managerID: managerID,
 			draftViewModel: draftViewModel,
 			backgroundColor: thisBackgroundColor
 		 )
-	  } else {
-		 let managerName = draftViewModel.managerName(for: managerID)
-		 let managerAvatarURL = draftViewModel.managerAvatar(for: managerID)
-
+	  } else if let roster = roster {
 		 RosterDetailView(
 			leagueID: leagueID,
-			managerID: managerID,
-			managerName: managerName,
-			managerAvatarURL: managerAvatarURL,
+			managerID: roster.ownerID,
+			managerName: draftViewModel.managerName(for: managerID),
+			managerAvatarURL: draftViewModel.managerAvatar(for: managerID),
 			draftViewModel: draftViewModel,
-			rosterViewModel: rosterViewModel  
+			rosterViewModel: rosterViewModel
 		 )
-		 .preferredColorScheme(.dark)
+		 .onAppear {
+			print("DP - RosterDetailView onAppear for managerID:", managerID)
+			print("DP - Checking roster detail. ownerID:", roster.ownerID)
+			let foundRoster = rosterViewModel.rosters.first { $0.ownerID == roster.ownerID }
+			if let foundRoster = foundRoster {
+			   print("DP - Found roster in RosterDetailView: players count =", foundRoster.players.count)
+			} else {
+			   print("DP - No roster found in RosterDetailView for ownerID \(roster.ownerID)")
+			}
+		 }
+	  } else {
+		 Text("Roster not found for this manager.")
+			.foregroundColor(.red)
 	  }
    }
 }

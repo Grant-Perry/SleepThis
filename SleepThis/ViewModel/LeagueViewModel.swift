@@ -36,36 +36,34 @@ class LeagueViewModel: ObservableObject {
 
 
    func fetchLeague(leagueID: String, completion: @escaping (LeagueModel?) -> Void) {
-	  // Check if cached data exists and is valid
-	  if let cachedLeague = loadLeagueFromCache(leagueID: leagueID), !isCacheExpired(leagueID: leagueID) {
-		 print("[LeagueViewModel] Loaded league from cache.")
-		 completion(cachedLeague)
-		 return
-	  }
-
-	  // If no valid cache, fetch from API
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)") else {
-		 print("[LeagueViewModel] Invalid URL.")
 		 completion(nil)
 		 return
 	  }
 
-	  URLSession.shared.dataTaskPublisher(for: url)
-		 .map { $0.data }
-		 .decode(type: LeagueModel.self, decoder: JSONDecoder())
-		 .receive(on: DispatchQueue.main)
-		 .sink(receiveCompletion: { completionStatus in
-			if case let .failure(error) = completionStatus {
-			   print("[LeagueViewModel] Error fetching league: \(error)")
-			   completion(nil)
-			}
-		 }, receiveValue: { [weak self] league in
-			self?.saveLeagueToCache(leagueID: leagueID, league: league)
-			print("[LeagueViewModel] Fetched league from API and saved to cache.")
-			completion(league)
-		 })
-		 .store(in: &cancellables)
+	  URLSession.shared.dataTask(with: url) { data, response, error in
+		 if let error = error {
+			print("[LeagueViewModel] Error fetching league: \(error)")
+			DispatchQueue.main.async { completion(nil) }
+			return
+		 }
+
+		 guard let data = data else {
+			print("[LeagueViewModel] No data received for league")
+			DispatchQueue.main.async { completion(nil) }
+			return
+		 }
+
+		 do {
+			let league = try JSONDecoder().decode(LeagueModel.self, from: data)
+			DispatchQueue.main.async { completion(league) }
+		 } catch {
+			print("[LeagueViewModel] Failed to decode league data: \(error)")
+			DispatchQueue.main.async { completion(nil) }
+		 }
+	  }.resume()
    }
+
 
    // Add caching methods for single league
    private func getCacheFileURL(leagueID: String) -> URL? {
