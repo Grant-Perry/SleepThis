@@ -37,17 +37,35 @@ struct FantasyPlayerCard: View {
 			   )
 			)
 			.frame(height: 95)
-			.overlay(
-			   RoundedRectangle(cornerRadius: 15)
-				  .stroke(
-					 fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen : Color.gray,
-					 lineWidth: fantasyGameMatchupViewModel.liveMatchup ? 5 : 1
-				  )
-			)
-			.shadow(
-			   color: fantasyGameMatchupViewModel.liveMatchup ? .gpGreen : .clear,
-			   radius: 10, x: 0, y: 0
-			)
+
+//			.overlay(
+//			   RoundedRectangle(cornerRadius: 15)
+//				  .fill(
+//					 LinearGradient(
+//						gradient: Gradient(colors: [teamColor, .clear]),
+//						startPoint: .top,
+//						endPoint: .bottom
+//					 )
+//				  )
+//				  .frame(height: 95)
+////				  .shadow(color: Color.green.opacity(0.9), radius: 20, x: 0, y: 0) // Green glow
+//				  .shadow(
+//					 color: !fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen.opacity(0.9) : .clear,
+//					 radius: !fantasyGameMatchupViewModel.liveMatchup ? 20 : 0,
+//					 x: 0,
+//					 y: 0
+//				  )
+////			   RoundedRectangle(cornerRadius: 15)
+////				  .stroke(
+////					 fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen : Color.gray,
+////					 lineWidth: fantasyGameMatchupViewModel.liveMatchup ? 5 : 1
+////				  )
+//			)
+
+//			.shadow(
+//			   color: fantasyGameMatchupViewModel.liveMatchup ? .gpGreen : .clear,
+//			   radius: 10, x: 0, y: 0
+//			)
 
 		 // 3. Team Logo
 		 if let teamLogoURL = getTeamLogoURL() {
@@ -128,7 +146,7 @@ struct FantasyPlayerCard: View {
 		 Text(player.playerPoolEntry.player.fullName)
 			.font(.system(size: 18, weight: .bold))
 			.foregroundColor(.white)
-			.lineLimit(2)
+			.lineLimit(1)
 			.minimumScaleFactor(0.9)
 			.frame(maxWidth: .infinity, alignment: .trailing)
 			.padding(.top, 10) // More padding at top as requested
@@ -136,7 +154,7 @@ struct FantasyPlayerCard: View {
 			.padding(.leading, 45)
 			.zIndex(4) // Player name above jersey number
 
-		 // 6. FantasyGameMatchupView
+		 // 6. Show the team matchups, scores and start time/time remaining
 		 VStack {
 			Spacer()
 			HStack {
@@ -145,12 +163,18 @@ struct FantasyPlayerCard: View {
 				  .padding(EdgeInsets(top: 8, leading: 0, bottom: 22, trailing: 42))
 			}
 		 }
-		 .offset(y: 6)
+		 .offset(x: -12, y: -2)
 		 .zIndex(5)
 	  }
 	  .frame(height: 95)
 	  .cornerRadius(15)
 	  .shadow(radius: 5)
+//	  .shadow(
+//		 color: !fantasyGameMatchupViewModel.liveMatchup ? Color.gpGreen.opacity(0.9) : .clear,
+//		 radius: !fantasyGameMatchupViewModel.liveMatchup ? 20 : 0,
+//		 x: 0,
+//		 y: 0
+//	  )
 
 	  .task {
 		 self.nflPlayer = NFLRosterModel.getPlayerInfo(

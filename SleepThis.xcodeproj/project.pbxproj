@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9B296F742CECE99900F79681 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B296F732CECE99900F79681 /* PythonKit */; };
+		9B95FD172D1233E000CF5C5B /* greenGlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B95FD162D1233E000CF5C5B /* greenGlow.swift */; };
 		9BA8B7802C8BA5DF00726D3F /* SleepThisApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 		9B4B88252C753A290026E11B /* SleepThis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SleepThis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B88352C753A2A0026E11B /* SleepThisTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4B883F2C753A2A0026E11B /* SleepThisUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SleepThisUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B95FD162D1233E000CF5C5B /* greenGlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = greenGlow.swift; sourceTree = "<group>"; };
 		9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepThisApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -95,6 +97,7 @@
 		9B4B881C2C753A290026E11B = {
 			isa = PBXGroup;
 			children = (
+				9B95FD162D1233E000CF5C5B /* greenGlow.swift */,
 				9BA8B7582C8BA5DF00726D3F /* SleepThisApp.swift */,
 				9B4B88262C753A290026E11B /* Products */,
 				9B4B88272C753A290026E11B /* SleepThis */,
@@ -262,6 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9BA8B7802C8BA5DF00726D3F /* SleepThisApp.swift in Sources */,
+				9B95FD172D1233E000CF5C5B /* greenGlow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,7 +440,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.51;
+				MARKETING_VERSION = 3.52;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -467,7 +471,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.51;
+				MARKETING_VERSION = 3.52;
 				PRODUCT_BUNDLE_IDENTIFIER = com.grantperry.SleepThis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

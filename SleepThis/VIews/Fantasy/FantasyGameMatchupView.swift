@@ -8,7 +8,6 @@ struct FantasyGameMatchupView: View {
 	  let homeIsWinning = gameMatchupViewModel.homeScore > gameMatchupViewModel.awayScore
 
 	  VStack(alignment: .leading, spacing: 1) {
-		 // HStack for Team Names and Scores
 		 HStack(spacing: 0) {
 			Text("\(gameMatchupViewModel.awayTeamAbbrev)")
 			   .font(.system(size: 10))
@@ -32,8 +31,8 @@ struct FantasyGameMatchupView: View {
 			   .minimumScaleFactor(0.5)
 			   .scaledToFit()
 		 }
-		 HStack {
 
+		 HStack {
 			Text("\(gameMatchupViewModel.awayScore)")
 			   .font(.system(size: 10))
 			   .fontWeight(.semibold)
@@ -57,34 +56,37 @@ struct FantasyGameMatchupView: View {
 			   .scaledToFit()
 			   .foregroundColor(homeIsWinning ? .gpGreen : .white)
 
-			// Line for Score Difference (awayScore - homeScore)
 			Text("(\(abs(gameMatchupViewModel.awayScore - gameMatchupViewModel.homeScore)))")
 			   .font(.system(size: 8))
 			   .foregroundColor(.gpGreen)
 			   .fontWeight(.semibold)
-
 			   .padding(.trailing)
-//			Spacer()
 		 }
-		 // Quarter Time or Final
-		 Text(gameMatchupViewModel.quarterTime.isEmpty ? "Final" : gameMatchupViewModel.quarterTime)
+
+		 // Day and Time
+		 Text(gameMatchupViewModel.dayTime)
 			.font(.system(size: 8))
-			.foregroundColor(.secondary)
+			.fontWeight(.semibold)
+			.foregroundColor(.gpWhite)
 			.lineLimit(1)
 			.minimumScaleFactor(0.5)
 			.scaledToFit()
 			.padding(.leading, 0)
 
-		 // Day and Time
-		 Text(gameMatchupViewModel.dayTime)
+		 // Quarter Time or Final
+		 Text(gameMatchupViewModel.quarterTime.isEmpty ? " " : gameMatchupViewModel.quarterTime)
 			.font(.system(size: 8))
-			.foregroundColor(.secondary)
+			.fontWeight(.semibold)
+			.foregroundColor(.gpWhite)
 			.lineLimit(1)
 			.minimumScaleFactor(0.5)
 			.scaledToFit()
 			.padding(.leading, 0)
 	  }
-
+	  .padding(4) // Optional padding if needed
+	  .background(
+		 RoundedRectangle(cornerRadius: 8)
+			.fill(Color.secondary.opacity(0.25))
+	  )
    }
 }
-

@@ -100,7 +100,7 @@ struct FantasyMatchupListView: View {
    private var yearPickerView: some View {
 	  Menu {
 		 Picker("Year", selection: $fantasyViewModel.selectedYear) {
-			ForEach(2015...Calendar.current.component(.year, from: Date()), id: \.self) { year in
+			ForEach(2020...Calendar.current.component(.year, from: Date()), id: \.self) { year in
 			   Text(String(format: "%d", year)).tag(year)
 			}
 		 }

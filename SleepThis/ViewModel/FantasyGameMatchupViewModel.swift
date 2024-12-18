@@ -60,13 +60,11 @@ class FantasyGameMatchupViewModel: ObservableObject {
 	  let comps = competition.competitors
 	  guard comps.count == 2 else { return }
 
-	  // Identify away and home teams based on homeAway property
 	  guard let awayComp = comps.first(where: { $0.homeAway == "away" }),
 			let homeComp = comps.first(where: { $0.homeAway == "home" }) else {
 		 return
 	  }
 
-	  // Assign them correctly: away on the left, home on the right
 	  awayTeamAbbrev = awayComp.team.abbreviation
 	  homeTeamAbbrev = homeComp.team.abbreviation
 	  awayScore = Int(awayComp.score) ?? 0
@@ -76,12 +74,26 @@ class FantasyGameMatchupViewModel: ObservableObject {
 	  let detail = competition.status.type.detail
 	  let completed = competition.status.type.completed
 
-	  if let date = ISO8601DateFormatter().date(from: competition.date) {
+	  // Try parsing the date with ISO8601 first
+	  let isoFormatter = ISO8601DateFormatter()
+	  isoFormatter.formatOptions = [.withInternetDateTime]
+
+	  var gameDate: Date? = isoFormatter.date(from: competition.date)
+
+	  // If ISO8601 fails, try a fallback format (adjust pattern if needed)
+	  if gameDate == nil {
+		 let fallbackFormatter = DateFormatter()
+		 fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mmZ" // Adjust based on the actual date format
+		 gameDate = fallbackFormatter.date(from: competition.date)
+	  }
+
+	  if let date = gameDate {
 		 let formatter = DateFormatter()
 		 formatter.dateFormat = "E MM/dd @ h a"
 		 dayTime = formatter.string(from: date)
 	  } else {
-		 dayTime = " "
+		 // If still no date, set to "TBD"
+		 dayTime = "TBD"
 	  }
 
 	  switch state {
