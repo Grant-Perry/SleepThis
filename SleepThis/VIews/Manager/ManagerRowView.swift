@@ -75,17 +75,32 @@ struct ManagerRowView: View {
 		 .padding(.vertical, 15)
 		 .padding(.horizontal, 16)
 		 .background(
-			RoundedRectangle(cornerRadius: 15)
-			   .fill(LinearGradient(
-				  gradient: Gradient(colors: [
-					 thisBackgroundColor,
-					 thisBackgroundColor.blended(withFraction: 0.55, of: .white)
-				  ]),
-				  startPoint: .top,
-				  endPoint: .bottom
-			   ))
-			   .shadow(radius: 4)
+			ZStack {
+			   // Bokeh image scaled and clipped by the same rounded rectangle
+			   Image("bokeh")
+				  .resizable()
+				  .scaledToFill()
+				  .opacity(0.8)
+				  .saturation(0.5)
+				  .clipShape(RoundedRectangle(cornerRadius: 15))
+
+			   // Apply the gradient and stroke on top of the image
+			   RoundedRectangle(cornerRadius: 15)
+				  .fill(
+					 LinearGradient(
+						gradient: Gradient(colors: [thisBackgroundColor, .clear]),
+						startPoint: .top,
+						endPoint: .bottom
+					 )
+				  )
+				  .overlay(
+					 RoundedRectangle(cornerRadius: 15)
+						.stroke(Color.gray, lineWidth: 1)
+				  )
+			}
 		 )
+		 .clipShape(RoundedRectangle(cornerRadius: 15))
+		 .shadow(radius: 4)
 		 .padding(.vertical, 4)
 		 .padding(.horizontal, 4)
 	  }

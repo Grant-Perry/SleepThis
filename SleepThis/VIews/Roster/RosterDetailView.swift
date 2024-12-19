@@ -71,17 +71,31 @@ struct RosterDetailView: View {
 				  }
 				  .padding(.leading)
 				  .background(
-					 RoundedRectangle(cornerRadius: 15)
-						.fill(LinearGradient(
-						   gradient: Gradient(colors: [
-							  draftViewModel.getManagerColor(for: managerID),
-							  draftViewModel.getManagerColor(for: managerID).blended(withFraction: 0.55, of: .white)
-						   ]),
-						   startPoint: .top,
-						   endPoint: .bottom
-						))
-						.shadow(radius: 4)
+					 ZStack {
+						// Bokeh image in the background
+						Image("bokeh")
+						   .resizable()
+						   .scaledToFill()
+						   .opacity(0.8)
+						   .saturation(0.5)
+						   .clipShape(RoundedRectangle(cornerRadius: 15))
+
+						// The gradient and shadow over the image
+						RoundedRectangle(cornerRadius: 15)
+						   .fill(
+							  LinearGradient(
+								 gradient: Gradient(colors: [
+									draftViewModel.getManagerColor(for: managerID),
+									.clear
+								 ]),
+								 startPoint: .top,
+								 endPoint: .bottom
+							  )
+						   )
+						   .shadow(radius: 4)
+					 }
 				  )
+				  .clipShape(RoundedRectangle(cornerRadius: 15))
 				  .frame(maxWidth: .infinity)
 
 				  // Toggle to sort by draft order

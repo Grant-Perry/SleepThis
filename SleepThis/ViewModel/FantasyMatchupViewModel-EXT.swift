@@ -8,68 +8,40 @@ extension FantasyMatchupViewModel {
 	  // Remove the guard statement that checks for a specific leagueID
 	  guard let url = URL(string: "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/\(selectedYear)/segments/0/leagues/\(leagueID)?view=mMatchupScore&view=mLiveScoring&view=mRoster&view=mStats&scoringPeriodId=\(week)") else {
 		 print("DP - Invalid URL for ESPN data fetch.")
-
 		 isLoading = false
-
 		 return
-
 	  }
 
 	  var request = URLRequest(url: url)
-
 	  request.addValue("application/json", forHTTPHeaderField: "Accept")
-
 	  request.addValue("SWID=\(AppConstants.SWID); espn_s2=\(AppConstants.ESPN_S2)", forHTTPHeaderField: "Cookie")
-
 	  print("DP - Sending request to ESPN API: \(url)")
-
 	  URLSession.shared.dataTaskPublisher(for: request)
-
 		 .map { $0.data }
-
 		 .decode(type: FantasyScores.FantasyModel.self, decoder: JSONDecoder())
-
 		 .receive(on: DispatchQueue.main)
-
 		 .sink(receiveCompletion: { [weak self] completion in
-
 			self?.isLoading = false
-
 			if case .failure(let error) = completion {
-
 			   print("DP - Error fetching ESPN data: \(error)")
-
 			   self?.errorMessage = "Error fetching ESPN data: \(error.localizedDescription)"
-
 			}
-
 		 }, receiveValue: { [weak self] model in
-
 			guard let self = self else { return }
-
 			print("DP - Received ESPN data successfully")
-
 			self.fantasyModel = model
-
 			print("DP - Number of teams: \(model.teams.count)")
-
 			print("DP - Number of schedules: \(model.schedule.count)")
-
 			self.processESPNMatchups(model: model)
-
 			self.isLoading = false
-
 		 })
-
 		 .store(in: &cancellables)
-
    }
 
    // Update the processESPNMatchups function
    func processESPNMatchups(model: FantasyScores.FantasyModel) {
 	  print("DP - Processing ESPN matchups")
-
-	  var processedMatchups: [AnyFantasyMatchup] = []
+		  var processedMatchups: [AnyFantasyMatchup] = []
 	  for matchup in model.schedule.filter({ $0.matchupPeriodId == selectedWeek }) {
 		 let awayTeamId = matchup.away.teamId
 		 let homeTeamId = matchup.home.teamId

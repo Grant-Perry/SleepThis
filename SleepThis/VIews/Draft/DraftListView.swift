@@ -43,17 +43,29 @@ struct DraftListView: View {
 			.frame(maxWidth: .infinity)
 			.padding(.leading)
 			.background(
-			   RoundedRectangle(cornerRadius: 15)
-				  .fill(LinearGradient(
-					 gradient: Gradient(colors: [
-						backgroundColor,
-						backgroundColor.blended(withFraction: 0.55, of: .white)
-					 ]),
-					 startPoint: .top,
-					 endPoint: .bottom
-				  ))
-				  .shadow(radius: 4)
+			   ZStack {
+				  Image("bokeh")
+					 .resizable()
+					 .scaledToFill()
+					 .opacity(0.8)
+					 .saturation(0.5)
+					 .clipShape(RoundedRectangle(cornerRadius: 15))
+
+				  RoundedRectangle(cornerRadius: 15)
+					 .fill(
+						LinearGradient(
+						   gradient: Gradient(colors: [
+							  backgroundColor,
+							  .clear
+						   ]),
+						   startPoint: .top,
+						   endPoint: .bottom
+						)
+					 )
+					 .shadow(radius: 4)
+			   }
 			)
+			.clipShape(RoundedRectangle(cornerRadius: 15))
 			.padding()
 		 }
 
