@@ -101,12 +101,6 @@ struct RosterDetailListView: View {
 						   .padding(.trailing, 10)
 					 }
 				  }
-
-
-//				  .padding(.vertical, 8)
-//				  .padding(.horizontal)
-//				  .border(.red)
-
 				  .background(
 					 ZStack {
 						Image("bokeh")

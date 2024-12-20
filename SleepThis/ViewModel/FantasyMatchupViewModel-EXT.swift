@@ -294,9 +294,7 @@ extension FantasyMatchupViewModel {
 					 LinearGradient(
 						gradient: Gradient(colors: [Color(.secondarySystemBackground), Color.clear]),
 						startPoint: .top,
-						endPoint: .bottom
-					 )
-				  )
+						endPoint: .bottom))
 			}
 
 			// Home Team Bench
@@ -329,4 +327,41 @@ extension FantasyMatchupViewModel {
 	  // ESPN avatar URL format
 	  return URL(string: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/\(teamId).png")
    }
+
+   func getNFLPlayer(for player: FantasyScores.FantasyModel.Team.PlayerEntry) -> NFLRosterModel.NFLPlayer? {
+	  NFLRosterModel.getPlayerInfo(
+		 by: player.playerPoolEntry.player.fullName,
+		 from: self.nflRosterViewModel.players
+	  )
+   }
+
+   func getPlayerImageURL(for player: FantasyScores.FantasyModel.Team.PlayerEntry) -> URL? {
+	  let playerId = String(player.playerPoolEntry.player.id)
+	  if leagueID == AppConstants.ESPNLeagueID[1] {
+		 return URL(string: "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/\(playerId).png&w=200&h=145")
+	  } else {
+		 return URL(string: "https://sleepercdn.com/content/nfl/players/thumb/\(playerId).jpg")
+	  }
+   }
+
+   func getTeamLogoURL(for player: FantasyScores.FantasyModel.Team.PlayerEntry) -> URL? {
+	  let nflPlayer = getNFLPlayer(for: player)
+	  return URL(string: nflPlayer?.team?.logo ?? "")
+   }
+
+   func getPlayerScore(for player: FantasyScores.FantasyModel.Team.PlayerEntry) -> Double {
+	  let week = selectedWeek
+	  if leagueID == AppConstants.ESPNLeagueID[1] {
+		 return getPlayerScore(for: player, week: week)
+	  } else {
+		 return calculateSleeperPlayerScore(playerId: String(player.playerPoolEntry.player.id))
+	  }
+   }
+
+   func getPositionString(for player: FantasyScores.FantasyModel.Team.PlayerEntry) -> String {
+	  return positionString(player.lineupSlotId)
+   }
+
+   
+
 }
