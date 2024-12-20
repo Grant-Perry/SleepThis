@@ -228,12 +228,14 @@ struct FantasyMatchupListView: View {
    private func errorView(message: String) -> some View {
 	  VStack {
 		 Spacer()
-		 Text("Error: \(message)")
-			.foregroundColor(.red)
+		 Text(message)
+			.font(.system(size: 18, weight: .semibold))
+			.foregroundColor(.gpOrange)
+			.multilineTextAlignment(.center)
+			.padding(.horizontal, 20)
 		 Spacer()
 	  }
    }
-
    private var matchupsListView: some View {
 	  ScrollView {
 		 LazyVStack(spacing: 16) {
