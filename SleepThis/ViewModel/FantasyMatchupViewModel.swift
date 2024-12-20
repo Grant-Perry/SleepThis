@@ -212,16 +212,53 @@ class FantasyMatchupViewModel: ObservableObject {
 			.decode(type: [FantasyScores.SleeperMatchup].self, decoder: JSONDecoder())
 			.receive(on: DispatchQueue.main)
 			.sink(receiveCompletion: { [weak self] completion in
-			   self?.isLoading = false
+			   guard let self = self else { return }
+			   self.isLoading = false
+
 			   if case .failure(let error) = completion {
 				  print("Error decoding Sleeper data: \(error)")
-				  self?.errorMessage = "Error fetching Sleeper data: \(error.localizedDescription)"
+
+				  if error.localizedDescription.contains("matchup_id") && error.localizedDescription.contains("null") {
+					 // No matchups available for this league/week
+					 self.errorMessage = "No matchups available for this league and week."
+
+					 // Store the current leagueID before removal
+					 let currentLeagueID = self.leagueID
+
+					 // Remove this league from currentManagerLeagues
+					 if let index = self.currentManagerLeagues.firstIndex(where: { $0.id == currentLeagueID }) {
+						self.currentManagerLeagues.remove(at: index)
+					 }
+
+					 // If the removed league was the currently selected league, reset leagueID
+					 if self.leagueID == currentLeagueID {
+						// Try to pick another valid league
+						if let firstValidLeague = self.currentManagerLeagues.first {
+						   self.leagueID = firstValidLeague.id
+						   self.updateLeagueName()
+						   self.fetchFantasyMatchupViewModelMatchups()
+						} else {
+						   // No leagues left that have matchups
+						   self.leagueID = ""
+						   self.leagueName = "No Valid Leagues"
+						   // We’ve already set errorMessage above
+						}
+					 }
+
+					 // Trigger UI update
+					 self.objectWillChange.send()
+
+				  } else {
+					 // Other decoding errors
+					 self.errorMessage = "Error fetching Sleeper data: \(error.localizedDescription)"
+				  }
 			   }
 			}, receiveValue: { [weak self] sleeperMatchups in
 			   guard let self = self else { return }
+			   // Valid matchups found, process them
 			   self.processSleeperMatchups(sleeperMatchups)
 			})
-			.store(in: &self.cancellables)
+			.store(in: &cancellables)
 	  }
    }
    
