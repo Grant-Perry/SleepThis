@@ -22,25 +22,25 @@ struct FantasyMatchupListView: View {
 			   .ignoresSafeArea()
 
 			VStack(spacing: 8) {
-			   HStack {
-				  AsyncImage(url: draftViewModel.managerAvatar(for: fantasyViewModel.selectedManagerID)) { image in
-					 image
-						.resizable()
-						.scaledToFit()
-						.frame(width: 40, height: 40)
-						.clipShape(Circle())
-				  } placeholder: {
-					 Circle()
-						.fill(Color.gray.opacity(0.3))
-						.frame(width: 40, height: 40)
-				  }
-
-				  Text(draftViewModel.managerName(for: fantasyViewModel.selectedManagerID))
-					 .font(.system(size: 18))
-					 .foregroundColor(.gpGray)
-			   }
-			   .padding(.top, 2)
-			   .padding(.bottom, 4)
+//			   HStack {
+//				  AsyncImage(url: draftViewModel.managerAvatar(for: fantasyViewModel.selectedManagerID)) { image in
+//					 image
+//						.resizable()
+//						.scaledToFit()
+//						.frame(width: 40, height: 40)
+//						.clipShape(Circle())
+//				  } placeholder: {
+//					 Circle()
+//						.fill(Color.gray.opacity(0.3))
+//						.frame(width: 40, height: 40)
+//				  }
+//
+//				  Text(draftViewModel.managerName(for: fantasyViewModel.selectedManagerID))
+//					 .font(.system(size: 18))
+//					 .foregroundColor(.gpGray)
+//			   }
+//			   .padding(.top, 2)
+//			   .padding(.bottom, 4)
 
 			   controlsSection
 
@@ -80,21 +80,55 @@ struct FantasyMatchupListView: View {
 	  }
    }
 
-   var controlsSection: some View {
-	  VStack(spacing: 12) {
-		 HStack(spacing: 16) {
-			leaguePickerView
-			weekPickerView
-		 }
-		 .padding(.horizontal)
+   @State private var showControls = false
 
-		 HStack(spacing: 16) {
-			yearPickerView
-			refreshPickerView
+   var controlsSection: some View {
+	  VStack {
+		 // Toggle button to expand/collapse the dropdown
+		 Button(action: {
+			withAnimation {
+			   showControls.toggle()
+			}
+		 }) {
+			HStack {
+			   Text(showControls ? "Hide Filters" : "Show Filters")
+				  .font(.headline)
+				  .foregroundColor(.white)
+			   Image(systemName: showControls ? "chevron.up" : "chevron.down")
+				  .foregroundColor(.white)
+			}
+			.padding()
 		 }
-		 .padding(.horizontal)
+
+		 // Conditionally show pickers if showControls is true
+		 if showControls {
+			VStack(spacing: 12) {
+			   HStack(spacing: 16) {
+				  leaguePickerView
+				  weekPickerView
+			   }
+			   .padding(.horizontal)
+
+			   HStack(spacing: 16) {
+				  yearPickerView
+				  refreshPickerView
+			   }
+			   .padding(.horizontal)
+			   .padding(.bottom, 8) // some extra padding at bottom
+			}
+			.transition(.slide) // animate appearance
+		 }
 	  }
 	  .padding(.top)
+//	  .background(
+//		 LinearGradient(
+//			gradient: Gradient(colors: [.gpDeltaPurple, .clear]),
+//			startPoint: .top,
+//			endPoint: .bottom
+//		 )
+//	  )
+	  .cornerRadius(10)
+	  .padding(.horizontal)
    }
 
    private var yearPickerView: some View {
@@ -138,8 +172,12 @@ struct FantasyMatchupListView: View {
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) {
-		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
+	  .onChange(of: fantasyViewModel.selectedWeek) { newWeek in
+		 // Just restore from original
+		 fantasyViewModel.currentManagerLeagues = fantasyViewModel.originalManagerLeagues
+
+		 // If you need to apply filtering or checks, you can do it here
+		 // fantasyViewModel.currentManagerLeagues = fantasyViewModel.currentManagerLeagues.filter { ... }
 	  }
    }
 

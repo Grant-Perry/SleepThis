@@ -3,7 +3,7 @@ import Combine
 
 class FantasyMatchupViewModel: ObservableObject {
    // Your imports remain the same
-   
+
    @Published var fantasyModel: FantasyScores.FantasyModel?
    @Published var selectedManagerID: String = AppConstants.GpSleeperID
    @Published var selectedSleeperManagerID: String = AppConstants.GpSleeperID
@@ -47,6 +47,7 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
    }
 
+   var originalManagerLeagues: [FantasyScores.AnyLeagueResponse] = []
    var sleeperScoringSettings: [String: Double] = [:]
    var sleeperPlayers: [String: FantasyScores.SleeperPlayer] = [:]
    var rosterIDToManagerName: [Int: String] = [:]
@@ -711,7 +712,16 @@ class FantasyMatchupViewModel: ObservableObject {
 					 type: .espn
 				  )
 			   }
+			   // After fetching ESPN and Sleeper leagues and combining them
 			   self.currentManagerLeagues += newESPNLeagues
+			   print("DP - Added \(newESPNLeagues.count) ESPN leagues to currentManagerLeagues")
+			   self.objectWillChange.send()
+			   self.isLoading = false
+			   print("DP - Total Leagues in currentManagerLeagues: \(self.currentManagerLeagues.count)")
+			   self.debugPrintLeagues()
+
+			   // If you haven't already done so, save them:
+			   self.originalManagerLeagues = self.currentManagerLeagues
 			   print("DP - Added \(newESPNLeagues.count) ESPN leagues to currentManagerLeagues")
 			   self.objectWillChange.send()
 			   self.isLoading = false
