@@ -22,26 +22,6 @@ struct FantasyMatchupListView: View {
 			   .ignoresSafeArea()
 
 			VStack(spacing: 8) {
-//			   HStack {
-//				  AsyncImage(url: draftViewModel.managerAvatar(for: fantasyViewModel.selectedManagerID)) { image in
-//					 image
-//						.resizable()
-//						.scaledToFit()
-//						.frame(width: 40, height: 40)
-//						.clipShape(Circle())
-//				  } placeholder: {
-//					 Circle()
-//						.fill(Color.gray.opacity(0.3))
-//						.frame(width: 40, height: 40)
-//				  }
-//
-//				  Text(draftViewModel.managerName(for: fantasyViewModel.selectedManagerID))
-//					 .font(.system(size: 18))
-//					 .foregroundColor(.gpGray)
-//			   }
-//			   .padding(.top, 2)
-//			   .padding(.bottom, 4)
-
 			   controlsSection
 
 			   if fantasyViewModel.isLoading {
@@ -67,6 +47,7 @@ struct FantasyMatchupListView: View {
 	  .onAppear {
 		 fantasyViewModel.setupRefreshTimer(with: 0)
 		 selectedTimerInterval = 0
+		 // set the userID for each league
 		 fantasyViewModel.fetchESPNManagerLeagues(forUserID: AppConstants.GpESPNID)
 		 Task {
 			await fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
@@ -120,13 +101,6 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
 	  .padding(.top)
-//	  .background(
-//		 LinearGradient(
-//			gradient: Gradient(colors: [.gpDeltaPurple, .clear]),
-//			startPoint: .top,
-//			endPoint: .bottom
-//		 )
-//	  )
 	  .cornerRadius(10)
 	  .padding(.horizontal)
    }
@@ -151,6 +125,14 @@ struct FantasyMatchupListView: View {
 	  }
 	  .onChange(of: fantasyViewModel.selectedYear) {
 		 fantasyViewModel.handlePickerChange(newLeagueID: fantasyViewModel.leagueID)
+		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
+			switch selectedLeague.type {
+			   case .espn:
+				  fantasyViewModel.fetchFantasyData(forWeek: fantasyViewModel.selectedWeek)
+			   case .sleeper:
+				  fantasyViewModel.fetchSleeperMatchups()
+			}
+		 }
 	  }
    }
 
@@ -172,12 +154,42 @@ struct FantasyMatchupListView: View {
 		 .background(Color(.secondarySystemBackground))
 		 .cornerRadius(8)
 	  }
-	  .onChange(of: fantasyViewModel.selectedWeek) { newWeek in
-		 // Just restore from original
+	  .onChange(of: fantasyViewModel.selectedWeek) { newValue in
+		 fantasyViewModel.matchups = []
+		 fantasyViewModel.errorMessage = nil
 		 fantasyViewModel.currentManagerLeagues = fantasyViewModel.originalManagerLeagues
-
-		 // If you need to apply filtering or checks, you can do it here
-		 // fantasyViewModel.currentManagerLeagues = fantasyViewModel.currentManagerLeagues.filter { ... }
+		 if let selectedLeague = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
+			fantasyViewModel.leagueName = selectedLeague.name
+			fantasyViewModel.isLoading = true
+			DispatchQueue.main.async {
+			   switch selectedLeague.type {
+				  case .espn:
+					 print("Fetching ESPN matchups for week \(newValue)")
+					 fantasyViewModel.matchups = []
+					 fantasyViewModel.fetchFantasyData(forWeek: newValue)
+				  case .sleeper:
+					 print("Fetching Sleeper matchups for week \(newValue)")
+					 fantasyViewModel.matchups = []
+					 fantasyViewModel.fetchSleeperMatchups()
+			   }
+			}
+		 } else {
+			if let firstLeague = fantasyViewModel.currentManagerLeagues.first {
+			   fantasyViewModel.leagueID = firstLeague.id
+			   fantasyViewModel.leagueName = firstLeague.name
+			   fantasyViewModel.isLoading = true
+			   DispatchQueue.main.async {
+				  switch firstLeague.type {
+					 case .espn:
+						fantasyViewModel.matchups = []
+						fantasyViewModel.fetchFantasyData(forWeek: newValue)
+					 case .sleeper:
+						fantasyViewModel.matchups = []
+						fantasyViewModel.fetchSleeperMatchups()
+				  }
+			   }
+			}
+		 }
 	  }
    }
 
