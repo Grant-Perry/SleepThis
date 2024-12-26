@@ -6,8 +6,8 @@ struct FantasyMatchupDetailView: View {
    let leagueName: String
 
    var body: some View {
-	  let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 1)
-	  let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+	  let awayTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 0)
+	  let homeTeamScore = fantasyViewModel.getScore(for: matchup, teamIndex: 1)
 	  let awayTeamIsWinning = awayTeamScore > homeTeamScore
 	  let homeTeamIsWinning = homeTeamScore > awayTeamScore
 

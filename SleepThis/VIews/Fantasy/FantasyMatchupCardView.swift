@@ -8,24 +8,28 @@ struct FantasyMatchupCardView: View {
 	  fantasyGameMatchupViewModel.liveMatchup
    }
    
+   private var isSleeperLeague: Bool {
+	  if let league = fantasyViewModel.currentManagerLeagues.first(where: { $0.id == fantasyViewModel.leagueID }) {
+		 return league.type == .sleeper
+	  }
+	  return false
+   }
+   
    var body: some View {
 	  VStack(spacing: 0) {
 		 VStack {
 			HStack(spacing: 16) {
-			   // Home team
-			   VStack {
-				  FantasyTeamHeaderView(
-					 managerName: matchup.managerNames[0],
-					 score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
-					 avatarURL: matchup.avatarURLs[0],
-					 isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 0) > fantasyViewModel.getScore(for: matchup, teamIndex: 1)
-				  )
-				  .frame(height: 60)
-				  Text(fantasyViewModel.getManagerRecord(managerID: matchup.awayTeamID.description))
-					 .font(.system(size: 10))
-					 .foregroundColor(.gray)
-					 .padding(.top, 2)
-			   }
+			   // MARK: Away team
+			   FantasyManagerDetails(
+				  managerName: matchup.managerNames[0],
+				  managerRecord: fantasyViewModel.getManagerRecord(managerID: matchup.awayTeamID.description),
+				  score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
+				  isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 0) > fantasyViewModel.getScore(for: matchup, teamIndex: 1),
+				  avatarURL: matchup.avatarURLs[0],
+				  fantasyViewModel: fantasyViewModel,
+				  rosterID: matchup.awayTeamID,
+				  selectedYear: fantasyViewModel.selectedYear
+			   )
 			   
 			   VStack(spacing: 2) {
 				  Text("VS")
@@ -36,7 +40,7 @@ struct FantasyMatchupCardView: View {
 					 .font(.system(size: 10))
 					 .foregroundColor(.gray)
 				  
-				  Text(String(format: "%.2f", abs(fantasyViewModel.getScore(for: matchup, teamIndex: 0) - fantasyViewModel.getScore(for: matchup, teamIndex: 1))))
+				  Text(fantasyViewModel.scoreDifferenceText(matchup: matchup))
 					 .font(.system(size: 10, weight: .bold))
 					 .foregroundColor(.gpGreen)
 					 .padding(.horizontal, 6)
@@ -48,20 +52,17 @@ struct FantasyMatchupCardView: View {
 			   }
 			   .padding(.vertical, 2)
 			   
-			   // Away team
-			   VStack {
-				  FantasyTeamHeaderView(
-					 managerName: matchup.managerNames[1],
-					 score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
-					 avatarURL: matchup.avatarURLs[1],
-					 isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 1) > fantasyViewModel.getScore(for: matchup, teamIndex: 0)
-				  )
-				  .frame(height: 60)
-				  Text(fantasyViewModel.getManagerRecord(managerID: matchup.homeTeamID.description))
-					 .font(.system(size: 10))
-					 .foregroundColor(.gray)
-					 .padding(.top, 2)
-			   }
+			   // Home team
+			   FantasyManagerDetails(
+				  managerName: matchup.managerNames[1],
+				  managerRecord: fantasyViewModel.getManagerRecord(managerID: matchup.homeTeamID.description),
+				  score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
+				  isWinning: fantasyViewModel.getScore(for: matchup, teamIndex: 1) > fantasyViewModel.getScore(for: matchup, teamIndex: 0),
+				  avatarURL: matchup.avatarURLs[1],
+				  fantasyViewModel: fantasyViewModel,
+				  rosterID: matchup.homeTeamID,
+				  selectedYear: fantasyViewModel.selectedYear
+			   )
 			}
 			.padding()
 			.background(Color(.secondarySystemBackground))

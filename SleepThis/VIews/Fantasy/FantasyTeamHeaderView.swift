@@ -5,7 +5,9 @@ struct FantasyTeamHeaderView: View {
    let score: Double
    let avatarURL: URL?
    let isWinning: Bool
-
+   var fantasyViewModel: FantasyMatchupViewModel? = nil
+   var rosterID: Int? = nil
+   
    var body: some View {
 	  VStack(spacing: 8) {
 		 ZStack {
@@ -29,14 +31,14 @@ struct FantasyTeamHeaderView: View {
 				  .frame(width: 40, height: 40)
 				  .foregroundColor(.gray)
 			}
-
+			
 			if isWinning {
 			   Circle()
 				  .strokeBorder(Color.green, lineWidth: 2)
 				  .frame(width: 44, height: 44)
 			}
 		 }
-
+		 
 		 VStack(spacing: 2) {
 			Text(managerName)
 			   .font(.system(size: 13))

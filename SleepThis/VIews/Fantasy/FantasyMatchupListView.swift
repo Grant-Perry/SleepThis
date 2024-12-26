@@ -5,31 +5,31 @@ struct FantasyMatchupListView: View {
    @StateObject private var draftViewModel: DraftViewModel
    @State private var selectedTimerInterval: Int = 0
    @AppStorage("selectedLeagueID") private var selectedLeagueID: String = AppConstants.ESPNLeagueID[1]
-   
+
    private var leaguesUpdated: Bool {
 	  fantasyViewModel.currentManagerLeagues.count > 0
    }
-   
+
    init() {
 	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel())
 	  _draftViewModel = StateObject(wrappedValue: DraftViewModel(leagueID: ""))
    }
-   
+
    var body: some View {
 	  NavigationStack {
 		 ZStack {
 			Color(.systemGroupedBackground)
 			   .ignoresSafeArea()
-			
+
 			VStack(spacing: 8) {
 			   controlsSection
-			   
+
 			   if fantasyViewModel.isLoading {
 				  loadingView
 			   } else if let errorMessage = fantasyViewModel.errorMessage {
 				  errorView(message: errorMessage)
 			   } else {
-				  matchupsListView
+				  FantasyMatchupsListView(fantasyViewModel: fantasyViewModel)
 			   }
 			}
 		 }
@@ -52,7 +52,7 @@ struct FantasyMatchupListView: View {
 		 Task {
 			await fantasyViewModel.fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
 		 }
-		 
+
 		 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
 			fantasyViewModel.currentManagerLeagues = Array(Set(fantasyViewModel.currentManagerLeagues))
 			fantasyViewModel.objectWillChange.send()
@@ -60,9 +60,9 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
    }
-   
+
    @State private var showControls = false
-   
+
    var controlsSection: some View {
 	  VStack {
 		 // Toggle button to expand/collapse the dropdown
@@ -80,7 +80,7 @@ struct FantasyMatchupListView: View {
 			}
 			.padding()
 		 }
-		 
+
 		 // Conditionally show pickers if showControls is true
 		 if showControls {
 			VStack(spacing: 12) {
@@ -89,7 +89,7 @@ struct FantasyMatchupListView: View {
 				  weekPickerView
 			   }
 			   .padding(.horizontal)
-			   
+
 			   HStack(spacing: 16) {
 				  yearPickerView
 				  refreshPickerView
@@ -104,7 +104,7 @@ struct FantasyMatchupListView: View {
 	  .cornerRadius(10)
 	  .padding(.horizontal)
    }
-   
+
    private var yearPickerView: some View {
 	  Menu {
 		 Picker("Year", selection: $fantasyViewModel.selectedYear) {
@@ -135,7 +135,7 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
    }
-   
+
    private var weekPickerView: some View {
 	  Menu {
 		 Picker("Week", selection: $fantasyViewModel.selectedWeek) {
@@ -192,7 +192,7 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
    }
-   
+
    private var leaguePickerView: some View {
 	  Menu {
 		 Picker("League", selection: $fantasyViewModel.leagueID) {
@@ -240,7 +240,7 @@ struct FantasyMatchupListView: View {
 		 }
 	  }
    }
-   
+
    private var refreshPickerView: some View {
 	  Menu {
 		 Picker("Refresh", selection: $selectedTimerInterval) {
@@ -265,7 +265,7 @@ struct FantasyMatchupListView: View {
 		 fantasyViewModel.fetchFantasyMatchupViewModelMatchups()
 	  }
    }
-   
+
    private var loadingView: some View {
 	  VStack {
 		 Spacer()
@@ -274,7 +274,7 @@ struct FantasyMatchupListView: View {
 		 Spacer()
 	  }
    }
-   
+
    private func errorView(message: String) -> some View {
 	  VStack {
 		 Spacer()
@@ -285,51 +285,5 @@ struct FantasyMatchupListView: View {
 			.padding(.horizontal, 20)
 		 Spacer()
 	  }
-   }
-   private var matchupsListView: some View {
-	  ScrollView {
-		 LazyVStack(spacing: 16) {
-			ForEach(fantasyViewModel.matchups, id: \.self) { matchup in
-			   NavigationLink(value: matchup) {
-				  FantasyMatchupCardView(
-					 matchup: matchup,
-					 fantasyViewModel: fantasyViewModel
-				  )
-				  .overlay(
-					 HStack {
-						avatarOverlay(for: matchup.awayTeamID.description)
-						Spacer()
-						avatarOverlay(for: matchup.homeTeamID.description)
-					 }
-				  )
-			   }
-			   .contextMenu {
-				  Button("View \(matchup.managerNames[0])'s Leagues") {
-					 fantasyViewModel.updateSelectedManager(matchup.homeTeamID.description)
-				  }
-				  Button("View \(matchup.managerNames[1])'s Leagues") {
-					 fantasyViewModel.updateSelectedManager(matchup.awayTeamID.description)
-				  }
-			   }
-			}
-		 }
-		 .padding(.vertical)
-	  }
-	  .navigationDestination(for: AnyFantasyMatchup.self) { matchup in
-		 FantasyMatchupDetailView(
-			matchup: matchup,
-			fantasyViewModel: fantasyViewModel,
-			leagueName: fantasyViewModel.leagueName
-		 )
-	  }
-   }
-   
-   private func avatarOverlay(for managerID: String) -> some View {
-	  Circle()
-		 .fill(Color.clear)
-		 .frame(width: 40, height: 40)
-		 .onTapGesture {
-			fantasyViewModel.updateSelectedManager(managerID)
-		 }
    }
 }

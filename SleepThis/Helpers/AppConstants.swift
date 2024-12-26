@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AppConstants {
+   static let debug = true
    static let maxCacheDays = 5.0
    static let verSize = 11.0
    static let verColor = Color.gpGreen

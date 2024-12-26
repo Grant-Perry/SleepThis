@@ -6,7 +6,7 @@ struct FantasyDetailHeaderView: View {
    let awayTeamIsWinning: Bool
    let homeTeamIsWinning: Bool
    @ObservedObject var fantasyViewModel: FantasyMatchupViewModel
-   
+
    var body: some View {
 	  ZStack {
 		 LinearGradient(
@@ -15,38 +15,41 @@ struct FantasyDetailHeaderView: View {
 			endPoint: .top
 		 )
 		 .frame(height: 80)
-		 
+
 		 RoundedRectangle(cornerRadius: 16)
 			.fill(Color.black.opacity(0.2))
-		 
+
 		 VStack(spacing: 4) {
 			Text(leagueName)
 			   .font(.system(size: 12))
 			   .foregroundColor(.gray)
 			   .padding(.top, 4)
-			
+
 			HStack(spacing: 16) {
-			   // Away team
+			   // Away team (left side)
 			   FantasyManagerDetails(
 				  managerName: matchup.managerNames[0],
 				  managerRecord: fantasyViewModel.getManagerRecord(managerID: matchup.awayTeamID.description),
 				  score: fantasyViewModel.getScore(for: matchup, teamIndex: 0),
 				  isWinning: awayTeamIsWinning,
-				  avatarURL: matchup.avatarURLs[0]
+				  avatarURL: matchup.avatarURLs[0],
+				  fantasyViewModel: fantasyViewModel,
+				  rosterID: matchup.awayTeamID,
+				  selectedYear: fantasyViewModel.selectedYear
 			   )
 			   .onTapGesture {
 				  fantasyViewModel.updateSelectedManager(matchup.awayTeamID.description)
 			   }
-			   
+
 			   VStack(spacing: 2) {
 				  Text("VS")
 					 .font(.system(size: 13, weight: .semibold))
 					 .foregroundColor(.gray)
-				  
+
 				  Text("Week \(fantasyViewModel.selectedWeek)")
 					 .font(.system(size: 10))
 					 .foregroundColor(.gray)
-				  
+
 				  Text(fantasyViewModel.scoreDifferenceText(matchup: matchup))
 					 .font(.system(size: 10, weight: .bold))
 					 .foregroundColor(.gpGreen)
@@ -58,14 +61,17 @@ struct FantasyDetailHeaderView: View {
 					 )
 			   }
 			   .padding(.vertical, 2)
-			   
-			   // Home team
+
+			   // Home team (right side)
 			   FantasyManagerDetails(
 				  managerName: matchup.managerNames[1],
 				  managerRecord: fantasyViewModel.getManagerRecord(managerID: matchup.homeTeamID.description),
 				  score: fantasyViewModel.getScore(for: matchup, teamIndex: 1),
 				  isWinning: homeTeamIsWinning,
-				  avatarURL: matchup.avatarURLs[1]
+				  avatarURL: matchup.avatarURLs[1],
+				  fantasyViewModel: fantasyViewModel,
+				  rosterID: matchup.homeTeamID,
+				  selectedYear: fantasyViewModel.selectedYear
 			   )
 			   .onTapGesture {
 				  fantasyViewModel.updateSelectedManager(matchup.homeTeamID.description)

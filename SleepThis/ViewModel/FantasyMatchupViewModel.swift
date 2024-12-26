@@ -7,6 +7,7 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var managerRecords: [String: (wins: Int, losses: Int, ties: Int)] = [:]
    @Published var managerRanks: [String: Int] = [:]
 
+   @Published var sleeperTeamRecords: [Int: TeamRecord] = [:]
 
    @Published var fantasyModel: FantasyScores.FantasyModel?
    @Published var selectedManagerID: String = AppConstants.GpSleeperID
@@ -33,6 +34,11 @@ class FantasyMatchupViewModel: ObservableObject {
    }
 
    @Published var selectedWeek: Int = {
+	  // Check debug mode first
+	  if AppConstants.debug {
+		 return 16 // Default to week 16 in debug mode
+	  }
+
 	  let firstWeek = 36 // NFL season typically starts around week 36
 	  let currentWeek = Calendar.current.component(.weekOfYear, from: Date())
 	  var offset = currentWeek >= firstWeek ? currentWeek - firstWeek + 1 : 0
@@ -56,9 +62,9 @@ class FantasyMatchupViewModel: ObservableObject {
    var sleeperPlayers: [String: FantasyScores.SleeperPlayer] = [:]
    var rosterIDToManagerName: [Int: String] = [:]
    var rosterIDToTeamName: [Int: String] = [:]
-    var rosterIDToManagerID: [Int: String] = [:]
-    var userIDs: [String: String] = [:]
-   
+   var rosterIDToManagerID: [Int: String] = [:]
+   var userIDs: [String: String] = [:]
+
    private var weeklyStats: [String: [String: Double]] = [:]
    private var sleeperLeagueSettings: [String: Any]? = nil
    var cancellables = Set<AnyCancellable>()
@@ -67,74 +73,74 @@ class FantasyMatchupViewModel: ObservableObject {
    private var lastLoadedWeek: Int?
    private let playerViewModel: PlayerViewModel
    private var rosterIDToManager: [Int: SleeperFantasy.Manager] = [:]
-   
+
    init(playerViewModel: PlayerViewModel = PlayerViewModel()) {
 	  // Initialize leagueID directly during initialization
 	  self.leagueID = AppConstants.ESPNLeagueID[1]
 	  self.playerViewModel = playerViewModel
-	  
+
 	  // Initialize data
 	  playerViewModel.loadPlayersFromCache()
 	  if playerViewModel.players.isEmpty {
 		 playerViewModel.fetchAllPlayers()
 	  }
-	  
+
 	  // Now fetch data
 	  DispatchQueue.main.async {
 		 self.fetchESPNManagerLeagues(forUserID: self.selectedManagerID)
 	  }
-	  
+
 	  // Call this method to fetch NFL roster data
 	  fetchNFLRosterData()
    }
-   
+
    func setupRefreshTimer(with interval: Int) {
 	  refreshTimer?.cancel()
 	  guard interval > 0 else { return }
-	  
+
 	  refreshTimer = Timer.publish(every: TimeInterval(interval), on: .main, in: .common)
 		 .autoconnect()
 		 .sink { [weak self] _ in
 			self?.fetchFantasyMatchupViewModelMatchups()
 		 }
    }
-   
+
    func handlePickerChange(newLeagueID: String) {
 	  // Cancel existing timer
 	  refreshTimer?.cancel()
-	  
+
 	  // Update leagueID
 	  self.leagueID = newLeagueID
 	  print("DP - League ID changed to: \(newLeagueID)")
-	  
+
 	  // Update leagueName
 	  updateLeagueName()
-	  
+
 	  // Clear existing matchups
 	  matchups = []
-	  
+
 	  // Fetch new data immediately
 	  fetchFantasyMatchupViewModelMatchups()
-	  
+
 	  // Do not restart the timer here
 	  // The timer will be set up when the user changes the refresh interval
-	  
+
 	  // Trigger UI update
 	  objectWillChange.send()
    }
-   
+
    func fetchFantasyMatchupViewModelMatchups() {
 	  guard !leagueID.isEmpty else {
 		 print("DP - Error: League ID is empty.")
 		 return
 	  }
-	  
+
 	  isLoading = true
 	  errorMessage = nil
-	  
+
 	  if let league = currentManagerLeagues.first(where: { $0.id == leagueID }) {
 		 print("DP - Fetching data for league: \(league.name)")
-		 
+
 		 switch league.type {
 			case .espn:
 			   fetchFantasyData(forWeek: selectedWeek)
@@ -146,9 +152,9 @@ class FantasyMatchupViewModel: ObservableObject {
 		 isLoading = false
 	  }
    }
-   
+
    func getScore(for matchup: AnyFantasyMatchup, teamIndex: Int) -> Double {
-	  
+
 	  if leagueID == AppConstants.ESPNLeagueID[0] {
 		 // ESPN scoring
 		 let teamId = teamIndex == 0 ? matchup.awayTeamID : matchup.homeTeamID
@@ -160,29 +166,29 @@ class FantasyMatchupViewModel: ObservableObject {
 		 return calculateSleeperTeamScore(matchup: sleeperMatchup)
 	  }
    }
-   
+
    func calculateESPNTeamActiveScore(team: FantasyScores.FantasyModel.Team?, week: Int) -> Double {
 	  guard let team = team else { return 0.0 }
 	  let activeSlotsOrder: [Int] = [0, 2, 3, 4, 5, 6, 23, 16, 17]
-	  
+
 	  return team.roster?.entries
 		 .filter { activeSlotsOrder.contains($0.lineupSlotId) }
 		 .reduce(0.0) { sum, entry in
 			sum + getPlayerScore(for: entry, week: week)
 		 } ?? 0.0
    }
-   
+
    func calculateSleeperTeamScore(matchup: FantasyScores.SleeperMatchup?) -> Double {
 	  guard let matchup = matchup, let starters = matchup.starters else { return 0.0 }
-	  
+
 	  return starters.reduce(0.0) { total, playerId in
 		 total + getSleeperPlayerScore(for: playerId, week: selectedWeek)
 	  }
    }
-   
+
    func getSleeperPlayerScore(for playerId: String, week: Int) -> Double {
 	  guard let playerStats = playerStats[playerId] else { return 0.0 }
-	  
+
 	  var totalScore = 0.0
 	  for (statKey, statValue) in playerStats {
 		 if let scoring = sleeperLeagueSettings?[statKey] as? Double {
@@ -236,10 +242,10 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
    }
 
-   
-   
-   
-   
+
+
+
+
    func getPlayerScore(for player: FantasyScores.FantasyModel.Team.PlayerEntry, week: Int) -> Double {
 	  if leagueID == AppConstants.ESPNLeagueID[1] {
 		 return player.playerPoolEntry.player.stats.first { $0.scoringPeriodId == week && $0.statSourceId == 0 }?.appliedTotal ?? 0.0
@@ -248,7 +254,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 return calculateSleeperPlayerScore(playerId: playerId)
 	  }
    }
-   
+
    // Add function to calculate Sleeper player scores
    func calculateSleeperPlayerScore(playerId: String) -> Double {
 	  // Use the weeklyStats and sleeperLeagueSettings to calculate the score
@@ -256,7 +262,7 @@ class FantasyMatchupViewModel: ObservableObject {
 			let scoringSettings = sleeperLeagueSettings else {
 		 return 0.0
 	  }
-	  
+
 	  var totalScore = 0.0
 	  for (statKey, statValue) in playerStats {
 		 if let scoring = scoringSettings[statKey] as? Double {
@@ -266,15 +272,15 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
 	  return totalScore
    }
-   
-   
+
+
    func createPlayerEntry(from playerId: String) -> FantasyScores.FantasyModel.Team.PlayerEntry {
 	  // Get player details from PlayerViewModel
 	  if let player = playerViewModel.players.first(where: { $0.id == playerId }) {
 		 let fullName = "\(player.firstName ?? "") \(player.lastName ?? "")"
 		 let position = player.position ?? "FLEX"
 		 let slotId = getPositionSlotId(position: position)
-		 
+
 		 return FantasyScores.FantasyModel.Team.PlayerEntry(
 			playerPoolEntry: .init(
 			   player: .init(
@@ -290,7 +296,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 return createDefaultPlayerEntry(playerId: playerId)
 	  }
    }
-   
+
    // Helper function for position slot IDs
    private func getPositionSlotId(position: String) -> Int {
 	  switch position {
@@ -303,7 +309,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 default: return 23 // FLEX
 	  }
    }
-   
+
    private func calculateESPNTeamScore(team: FantasyScores.FantasyModel.Team?, week: Int) -> Double {
 	  guard let team = team else { return 0.0 }
 	  return team.roster?.entries.reduce(0.0) { sum, entry in
@@ -312,26 +318,26 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }?.appliedTotal ?? 0.0)
 	  } ?? 0.0
    }
-   
+
    func updateSelectedManager(_ managerID: String) {
 	  self.selectedManagerID = managerID
 	  updateLeagueName()
    }
-   
+
    func fetchSleeperLeagues(forUserID userID: String) async {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(selectedYear)") else {
 		 print("DP - Invalid Sleeper leagues URL")
 		 return
 	  }
-	  
+
 	  do {
 		 let (data, _) = try await URLSession.shared.data(from: url)
 		 let leagues = try JSONDecoder().decode([FantasyScores.SleeperLeagueResponse].self, from: data)
-		 
+
 		 let sleeperLeagues = leagues.map {
 			FantasyScores.AnyLeagueResponse(id: $0.leagueID, name: $0.name, type: .sleeper)
 		 }
-		 
+
 		 DispatchQueue.main.async {
 			self.currentManagerLeagues.append(contentsOf: sleeperLeagues)
 			self.sleeperLeagues = leagues
@@ -341,17 +347,17 @@ class FantasyMatchupViewModel: ObservableObject {
 		 print("DP - Error decoding Sleeper leagues: \(error)")
 	  }
    }
-   
+
    private func fetchSleeperScoringSettings() {
 	  print("Fetching scoring settings for league: \(leagueID)")
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)") else { return }
-	  
+
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
 		 guard let data = data else {
 			print("No scoring settings data received")
 			return
 		 }
-		 
+
 		 do {
 			let _ = JSONDecoder()
 			if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -367,17 +373,17 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
-   
+
    private func fetchSleeperWeeklyStats() {
 	  print("Fetching Sleeper weekly stats for week \(selectedWeek)")
 	  guard let url = URL(string: "https://api.sleeper.app/v1/stats/nfl/regular/\(selectedYear)/\(selectedWeek)") else { return }
-	  
+
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
 		 guard let data = data else {
 			print("No weekly stats data received")
 			return
 		 }
-		 
+
 		 do {
 			let statsData = try JSONDecoder().decode([String: [String: Double]].self, from: data)
 			DispatchQueue.main.async {
@@ -390,8 +396,8 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
-   
-   
+
+
    private func getSleeperAvatarURL(userID: String) -> URL? {
 	  if let avatarID = userAvatars[userID] {
 		 return URL(string: "https://sleepercdn.com/avatars/\(avatarID)")
@@ -400,10 +406,10 @@ class FantasyMatchupViewModel: ObservableObject {
 	  fetchSleeperUser(userID: userID)
 	  return nil
    }
-   
+
    private func calculateSleeperTeamScore(matchup: FantasyScores.SleeperMatchup) -> Double {
 	  guard let starters = matchup.starters else { return 0.0 }
-	  
+
 	  return starters.reduce(0.0) { total, playerId in
 		 if let playerStats = weeklyStats[playerId] {
 			var playerScore = 0.0
@@ -417,84 +423,27 @@ class FantasyMatchupViewModel: ObservableObject {
 		 return total
 	  }
    }
-   
-   func fetchSleeperLeagueUsersAndRosters(completion: @escaping () -> Void) {
-	  print("DP - Starting roster fetch for league: \(leagueID)")
 
-	  guard let rostersURL = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/rosters") else {
-		 print("DP - Invalid rosters URL")
-		 completion()
-		 return
-	  }
 
-	  URLSession.shared.dataTask(with: rostersURL) { [weak self] data, response, error in
-		 if let error = error {
-			print("DP - Error fetching rosters: \(error)")
-			completion()
-			return
-		 }
 
-		 guard let data = data else {
-			print("DP - No roster data received")
-			completion()
-			return
-		 }
 
-		 do {
-			let rosters = try JSONDecoder().decode([SleeperRoster].self, from: data)
-			print("DP - Successfully decoded \(rosters.count) rosters")
-
-			// Sort rosters by wins (descending) to determine rank
-			let sortedRosters = rosters.sorted {
-			   ($0.settings?.wins ?? 0) > ($1.settings?.wins ?? 0)
-			}
-
-			DispatchQueue.main.async {
-			   // Process rosters and rankings
-			   for (index, roster) in sortedRosters.enumerated() {
-				  if let ownerID = roster.owner_id,
-					 let settings = roster.settings {
-					 // Store record
-					 self?.managerRecords[ownerID] = (
-						wins: settings.wins,
-						losses: settings.losses,
-						ties: settings.ties
-					 )
-					 // Store rank (1-based index)
-					 self?.managerRanks[ownerID] = index + 1
-					 // Store roster ID mapping
-					 self?.rosterIDToManagerID[roster.roster_id] = ownerID
-				  }
-			   }
-
-			   // Now proceed with user data fetch
-			   self?.fetchSleeperUsers(completion: completion)
-			}
-		 } catch {
-			print("DP - Error decoding rosters: \(error)")
-			completion()
-		 }
-	  }.resume()
-   }
-
-   
    func fetchSleeperLeagueRosters(leagueID: String, completion: @escaping (Result<[SleeperRoster], Error>) -> Void) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/rosters") else {
 		 completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
 		 return
 	  }
-	  
+
 	  URLSession.shared.dataTask(with: url) { data, response, error in
 		 if let error = error {
 			completion(.failure(error))
 			return
 		 }
-		 
+
 		 guard let data = data else {
 			completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
 			return
 		 }
-		 
+
 		 do {
 			let rosters = try JSONDecoder().decode([SleeperRoster].self, from: data)
 			completion(.success(rosters))
@@ -504,13 +453,13 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
-   
+
    func fetchSleeperLeagueUsers(leagueID: String, completion: @escaping (Result<[SleeperUser], Error>) -> Void) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/league/\(leagueID)/users") else {
 		 completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
 		 return
 	  }
-	  
+
 	  URLSession.shared.dataTask(with: url) { data, response, error in
 		 if let error = error {
 			completion(.failure(error))
@@ -528,7 +477,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
-   
+
    func getPlayerName(for playerId: String) -> String {
 	  // Get player name from cached player data
 	  if let playerData = playerViewModel.players.first(where: { $0.id == playerId }) {
@@ -536,7 +485,7 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
 	  return "Unknown Player"
    }
-   
+
    func getPositionSlotId(for playerId: String) -> Int {
 	  // Map Sleeper positions to our slot IDs
 	  if let playerData = playerViewModel.players.first(where: { $0.id == playerId }) {
@@ -554,11 +503,11 @@ class FantasyMatchupViewModel: ObservableObject {
    }
    private func fetchSleeperUser(userID: String) {
 	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)") else { return }
-	  
+
 	  URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
 		 guard let data = data,
 			   let user = try? JSONDecoder().decode(SleeperUser.self, from: data) else { return }
-		 
+
 		 DispatchQueue.main.async {
 			if let avatar = user.avatar {
 			   self?.userAvatars[userID] = URL(string: "https://sleepercdn.com/avatars/\(avatar)")
@@ -568,7 +517,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
-   
+
    func positionString(_ lineupSlotId: Int) -> String {
 	  switch lineupSlotId {
 		 case 0: return "QB"
@@ -581,12 +530,12 @@ class FantasyMatchupViewModel: ObservableObject {
 		 default: return "Unknown"
 	  }
    }
-   
+
    // MARK: This is where it all starts
    func fetchESPNManagerLeagues(forUserID userID: String) {
 	  isLoading = true
 	  print("DP - Fetching manager leagues for userID: \(userID)")
-	  
+
 	  // Fetch both ESPN and Sleeper leagues
 	  Task {
 		 do {
@@ -595,16 +544,16 @@ class FantasyMatchupViewModel: ObservableObject {
 			   print("DP - Invalid ESPN URL.")
 			   return
 			}
-			
+
 			var request = URLRequest(url: url)
 			request.httpMethod = "GET"
 			request.addValue("application/json", forHTTPHeaderField: "Accept")
 			request.addValue("SWID=\(AppConstants.SWID); espn_s2=\(AppConstants.ESPN_S2)", forHTTPHeaderField: "Cookie")
-			
+
 			print("DP - Sending request to ESPN API")
 			let (responseData, response) = try await URLSession.shared.data(for: request)
 			print("DP - Received response from ESPN API")
-			
+
 			// Check for HTTP status code
 			if let httpResponse = response as? HTTPURLResponse {
 			   print("DP - HTTP Status Code: \(httpResponse.statusCode)")
@@ -613,21 +562,21 @@ class FantasyMatchupViewModel: ObservableObject {
 				  return
 			   }
 			}
-			
+
 			// Parse ESPN leagues
 			let espnLeagues = parseESPNLeagues(from: responseData)
 			print("DP - Parsed \(espnLeagues.count) ESPN leagues")
-			
+
 			// Fetch Sleeper leagues
 			await fetchSleeperLeagues(forUserID: AppConstants.GpSleeperID)
-			
+
 			DispatchQueue.main.async {
 			   // Combine ESPN and Sleeper leagues
 			   let newESPNLeagues = espnLeagues.map {
 				  FantasyScores.AnyLeagueResponse(
 					 id: $0.id,
 					 name: "\($0.teamName)", // - \($0.name)",
-//					 name: "\($0.teamName) - \($0.name)",
+					 //					 name: "\($0.teamName) - \($0.name)",
 					 type: .espn
 				  )
 			   }
@@ -646,7 +595,7 @@ class FantasyMatchupViewModel: ObservableObject {
 			   self.isLoading = false
 			   print("DP - Total Leagues in currentManagerLeagues: \(self.currentManagerLeagues.count)")
 			   self.debugPrintLeagues()
-			   
+
 			   // Fetch fantasy data for the first league if available
 			   if let firstLeague = self.currentManagerLeagues.first {
 				  self.leagueID = firstLeague.id
@@ -661,7 +610,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }
    }
-   
+
    func parseESPNLeagues(from data: Data) -> [FantasyScores.ESPNLeagueResponse] {
 	  var leagues: [FantasyScores.ESPNLeagueResponse] = []
 	  do {
@@ -704,7 +653,7 @@ class FantasyMatchupViewModel: ObservableObject {
 	  print("DP - Parsed \(leagues.count) ESPN leagues")
 	  return leagues
    }
-   
+
    func FetchManagerLeagues(from jsonData: Data) -> [Int: Int] {
 	  var leagueTeamMapping: [Int: Int] = [:]
 	  do {
@@ -728,19 +677,19 @@ class FantasyMatchupViewModel: ObservableObject {
 	  }
 	  return leagueTeamMapping
    }
-   
+
    func updateCurrentManagerLeagues() {
 	  // Combine ESPN and Sleeper leagues
 	  let allLeagues = espnLeagues.map { FantasyScores.AnyLeagueResponse(id: String($0.id), name: $0.name, type: .espn) } +
 	  sleeperLeagues.map { FantasyScores.AnyLeagueResponse(id: $0.leagueID, name: $0.name, type: .sleeper) }
-	  
+
 	  // Update currentManagerLeagues
 	  currentManagerLeagues = allLeagues
-	  
+
 	  // Add debug print
 	  print("Current Manager Leagues updated: \(currentManagerLeagues)")
    }
-   
+
    func updateLeagueName() {
 	  if leagueID == AppConstants.ESPNLeagueID[1] {
 		 leagueName = "ESPN League"
@@ -750,7 +699,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 leagueName = "Fantasy Football"
 	  }
    }
-   
+
    // Add this method to debug the currentManagerLeagues
    func debugPrintLeagues() {
 	  print("DP - Debug printing all leagues:")
@@ -758,52 +707,52 @@ class FantasyMatchupViewModel: ObservableObject {
 		 print("DP - League \(index + 1): ID = \(league.id), Name = \(league.name)")
 	  }
    }
-   
+
    // fetch the all of the ESPN leagues for a manager
    func FetchManagerLeagues(forUserID userID: String) {
 	  isLoading = true
 	  print("DP - Fetching ESPN manager leagues for userID: \(userID)")
-	  
+
 	  // Construct the URL
 	  guard let url = URL(string: "https://fan.api.espn.com/apis/v2/fans/\(userID)?configuration=SITE_DEFAULT&displayEvents=true&displayNow=true&displayRecs=true&displayHiddenPrefs=true&featureFlags=expandAthlete&featureFlags=isolateEvents&featureFlags=challengeEntries&platform=web&recLimit=5&coreData=logos&showAirings=buy%2Clive%2Creplay&authorizedNetworks=espn3&entitlements=ESPN_PLUS&zipcode=23607") else {
 		 print("DP - Invalid ESPN URL.")
 		 return
 	  }
-	  
+
 	  var request = URLRequest(url: url)
 	  request.httpMethod = "GET"
 	  request.addValue("application/json", forHTTPHeaderField: "Accept")
 	  request.addValue("SWID=\(AppConstants.SWID); espn_s2=\(AppConstants.ESPN_S2)", forHTTPHeaderField: "Cookie")
-	  
+
 	  // Perform the network request
 	  URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
 		 guard let self = self else { return }
-		 
+
 		 if let error = error {
 			print("DP - Error fetching ESPN leagues: \(error)")
 			self.isLoading = false
 			return
 		 }
-		 
+
 		 guard let data = data else {
 			print("DP - No data received from ESPN leagues API.")
 			self.isLoading = false
 			return
 		 }
-		 
+
 		 // Parse the data to extract leagueID and teamID
 		 let leagueTeamMapping = self.FetchManagerLeagues(from: data)
-		 
+
 		 // Debug print the fetched leagues
 		 print("DP - Fetched ESPN Leagues:")
 		 for (leagueID, teamID) in leagueTeamMapping {
 			print("DP - League ID: \(leagueID), Team ID: \(teamID)")
 		 }
-		 
+
 		 // Map leagueID and teamID to currentManagerLeagues
 		 // Remove the FantasyScores.SleeperLeagueResponse initializer
 		 let espnLeagues = leagueTeamMapping.map { FantasyScores.AnyLeagueResponse(id: String($0.key), name: "ESPN League \($0.key)", type: .espn) }
-		 
+
 		 DispatchQueue.main.async {
 			// Remove the additional mapping and directly append espnLeagues
 			self.currentManagerLeagues += espnLeagues
@@ -813,7 +762,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
 	  }.resume()
    }
-   
+
    func fetchNFLRosterData() {
 	  nflRosterViewModel.fetchPlayersForAllTeams {}
    }
