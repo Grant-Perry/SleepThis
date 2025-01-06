@@ -44,14 +44,14 @@ class FantasyMatchupViewModel: ObservableObject {
    private var rosterIDToManagerID: [Int: String] = [:]
    private var userIDs: [String: String] = [:]
    
-   private var weeklyStats: [String: [String: Double]] = [:]
-   private var sleeperLeagueSettings: [String: Any]? = nil
+   var weeklyStats: [String: [String: Double]] = [:]
+   var sleeperLeagueSettings: [String: Any]? = nil
    var cancellables = Set<AnyCancellable>()
-   private var refreshTimer: AnyCancellable?
-   private var lastLoadedLeagueID: String?
-   private var lastLoadedWeek: Int?
-   private let playerViewModel: PlayerViewModel
-   private var rosterIDToManager: [Int: SleeperFantasy.Manager] = [:]
+   var refreshTimer: AnyCancellable?
+   var lastLoadedLeagueID: String?
+   var lastLoadedWeek: Int?
+   let playerViewModel: PlayerViewModel
+   var rosterIDToManager: [Int: SleeperFantasy.Manager] = [:]
    
    init(playerViewModel: PlayerViewModel = PlayerViewModel()) {
 	  // Initialize leagueID directly during initialization
@@ -84,29 +84,29 @@ class FantasyMatchupViewModel: ObservableObject {
 		 }
    }
    
-   func handlePickerChange(newLeagueID: String) {
-	  // Cancel existing timer
-	  refreshTimer?.cancel()
-	  
-	  // Update leagueID
-	  self.leagueID = newLeagueID
-	  print("DP - League ID changed to: \(newLeagueID)")
-	  
-	  // Update leagueName
-	  updateLeagueName()
-	  
-	  // Clear existing matchups
-	  matchups = []
-	  
-	  // Fetch new data immediately
-	  fetchFantasyMatchupViewModelMatchups()
-	  
-	  // Do not restart the timer here
-	  // The timer will be set up when the user changes the refresh interval
-	  
-	  // Trigger UI update
-	  objectWillChange.send()
-   }
+//   func OLDhandlePickerChange(newLeagueID: String) {
+//	  // Cancel existing timer
+//	  refreshTimer?.cancel()
+//	  
+//	  // Update leagueID
+//	  self.leagueID = newLeagueID
+//	  print("DP - League ID changed to: \(newLeagueID)")
+//	  
+//	  // Update leagueName
+//	  updateLeagueName()
+//	  
+//	  // Clear existing matchups
+//	  matchups = []
+//	  
+//	  // Fetch new data immediately
+//	  fetchFantasyMatchupViewModelMatchups()
+//	  
+//	  // Do not restart the timer here
+//	  // The timer will be set up when the user changes the refresh interval
+//	  
+//	  // Trigger UI update
+//	  objectWillChange.send()
+//   }
    
    func fetchFantasyMatchupViewModelMatchups() {
 	  guard !leagueID.isEmpty else {

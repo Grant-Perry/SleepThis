@@ -16,6 +16,11 @@ struct SleepThisApp: App {
 				  Label("LIVE", systemImage: "livephoto.play")
 			   }
 
+			FantasyPlayerScores()
+			   .tabItem {
+				  Label("FanScore", systemImage: "atom")
+			   }
+
 			PlayerSearchView(nflRosterViewModel: NFLRosterViewModel())
 			   .tabItem {
 				  Label("Player Search", systemImage: "plus.magnifyingglass")

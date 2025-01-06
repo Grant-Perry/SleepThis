@@ -3,6 +3,8 @@ import SwiftUI
 struct FantasyMatchupCardView: View {
    let matchup: AnyFantasyMatchup
    let fantasyViewModel: FantasyMatchupViewModel
+   let nflScheduleViewModel: NFLScheduleViewModel
+
 
    var body: some View {
 	  VStack(spacing: 0) {

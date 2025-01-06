@@ -49,9 +49,9 @@ class DraftViewModel: ObservableObject {
 		 }
 
 		 // Log the raw JSON response for debugging
-		 if let jsonString = String(data: data, encoding: .utf8) {
-			print("[fetchDraftData]: Raw JSON Response: \(jsonString)")
-		 }
+//		 if let jsonString = String(data: data, encoding: .utf8) {
+//			print("[fetchDraftData]: Raw JSON Response: \(jsonString)")
+//		 }
 
 		 do {
 			// Decode the response to DraftModel

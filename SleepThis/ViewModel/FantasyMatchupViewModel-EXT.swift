@@ -210,6 +210,42 @@ extension FantasyMatchupViewModel {
 
 	  print("DP - Processed stats for \(playerStats.count) players")
    }
+
+   /// Calculates total season-to-date points for a given Sleeper player ID,
+   /// using the dictionary of stats in `playerStats[playerID]` plus `sleeperLeagueSettings`.
+   ///
+   /// - Parameter playerID: The Sleeper player ID (e.g. "3086").
+   /// - Returns: The total fantasy points if data is found; otherwise 0.
+   ///
+   /// Discussion:
+   /// If your `playerStats[playerID]` merges multiple weeks' stats, you'll get a season sum.
+   /// If it only holds one week's data, you'll get that single-week total.
+   /// Ensure you have called `fetchSleeperScoringSettings()` + `fetchSleeperWeeklyStats()`
+   /// or a multi-week approach before using this.
+   func calculateSeasonPoints(for playerID: String) -> Double {
+	  // Safely unwrap the dictionary for the given player
+	  guard let statsForPlayer = playerStats[playerID] else {
+		 // Means no data was found for that player
+		 return 0.0
+	  }
+
+	  // Safely cast your existing sleeperLeagueSettings to [String: Double]
+	  guard let scoringDict = sleeperLeagueSettings as? [String: Double] else {
+		 // Means we have no or invalid scoring rules
+		 return 0.0
+	  }
+
+	  var totalPoints = 0.0
+
+	  // Multiply each stat value by the corresponding scoring multiplier
+	  for (statKey, statValue) in statsForPlayer {
+		 if let multiplier = scoringDict[statKey] {
+			totalPoints += statValue * multiplier
+		 }
+	  }
+
+	  return totalPoints
+   }
 }
 
 // Add this function to get ESPN avatar URLs
