@@ -30,7 +30,7 @@ struct LeagueDetailView: View {
 				  .font(.title3)
 				  .foregroundColor(.gpBlue)
 			}
-			   .padding(.top, 5)
+			.padding(.top, 5)
 
 			Text("Total Rosters: \(league.totalRosters)")
 			   .font(.subheadline)
@@ -159,11 +159,11 @@ struct LeagueDetailView: View {
 
 			/// Navigation to Manager List
 			NavigationLink(destination: ManagerListView(
-			   draftViewModel: DraftViewModel(leagueID: league.leagueID), // Pass leagueID
-			   rosterViewModel: RosterViewModel(leagueID: league.leagueID, draftViewModel: DraftViewModel(leagueID: league.leagueID)),
 			   leagueID: league.leagueID,
 			   draftID: league.draftID ?? AppConstants.draftID,
-			   viewType: .roster
+			   viewType: .roster,
+			   draftViewModel: DraftViewModel(leagueID: league.leagueID),
+			   rosterViewModel: RosterViewModel(leagueID: league.leagueID, draftViewModel: DraftViewModel(leagueID: league.leagueID))
 			)) {
 			   Text("View Rosters")
 				  .font(.headline)

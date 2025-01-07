@@ -5,13 +5,18 @@ class FantasyViewModel: ObservableObject {
    @Published var matchups: [Fantasy.Matchup] = []
    @Published var isLoading = false
    @Published var errorMessage: String?
+   @Published var selectedYear: Int
 
    private var cancellables = Set<AnyCancellable>()
 
+   init(selectedYear: Int = Calendar.current.component(.year, from: Date())) {
+	  self.selectedYear = selectedYear
+   }
+
    // No cache - only network fetch
-   func fetchFantasyData(forWeek week: Int = 7) {
+   func fetchFantasyData(forWeek week: Int = 7, year: Int = 2024) {
 	  guard let url = URL(string:
-						  "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2024/segments/0/leagues/\(AppConstants.ESPNLeagueID)?view=mMatchup&view=mMatchupScore&view=mRoster&view=mScoreboard&view=mSettings&view=mStatus&view=mTeam&view=modular&view=mNav") else {
+						   "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/\(year)/segments/0/leagues/\(AppConstants.ESPNLeagueID)?view=mMatchup&view=mMatchupScore&view=mRoster&view=mScoreboard&view=mSettings&view=mStatus&view=mTeam&view=modular&view=mNav") else {
 		 self.errorMessage = "Invalid URL"
 		 return
 	  }

@@ -2,8 +2,10 @@ import SwiftUI
 
 struct ManagerListView: View {
    // MARK: - Properties
-   @StateObject var draftViewModel: DraftViewModel
-   @StateObject var rosterViewModel: RosterViewModel
+
+   @StateObject private var draftViewModel: DraftViewModel
+   @StateObject private var rosterViewModel: RosterViewModel
+   @StateObject private var leagueViewModel: LeagueViewModel
    @State private var leagueName: String = ""
    @State private var sortedManagerIDsState: [String] = []
    @State private var isLoading = true
@@ -11,16 +13,27 @@ struct ManagerListView: View {
    @State private var isRosterLoaded = false  // Add this
 
    // Your existing properties remain the same
-   let leagueID: String
-   let draftID: String
-   let viewType: ManagerViewType
-   let mgrColors: [Color] = [
+   private let leagueID: String
+   private let draftID: String
+   private let viewType: ManagerViewType
+   private let mgrColors: [Color] = [
 	  .mBG1, .mBG2, .mBG3, .mBG4, .mBG5, .mBG6,
 	  .mBG7, .mBG8, .mBG9, .mBG10, .mBG11, .mBG12
    ]
 
+   init(leagueID: String, draftID: String, viewType: ManagerViewType, draftViewModel: DraftViewModel, rosterViewModel: RosterViewModel) {
+	  self.leagueID = leagueID
+	  self.draftID = draftID
+	  self.viewType = viewType
+	  let fantasyVM = FantasyViewModel()
+	  self._leagueViewModel = StateObject(wrappedValue: LeagueViewModel(fantasyViewModel: fantasyVM))
+	  self._draftViewModel = StateObject(wrappedValue: draftViewModel)
+	  self._rosterViewModel = StateObject(wrappedValue: rosterViewModel)
+   }
+
    // MARK: - Body
    var body: some View {
+
 	  NavigationView {
 		 Group {
 			if isLoading {
@@ -73,63 +86,7 @@ struct ManagerListView: View {
 	  }
 	  .preferredColorScheme(.dark)
 	  .onAppear {
-		 isLoading = true
-		 errorMessage = nil
-		 isRosterLoaded = false
-
-		 print("[ManagerListView] Starting data load for leagueID: \(leagueID)")
-
-		 // First, fetch draft data
-		 draftViewModel.fetchDraftData(draftID: draftID) { draftSuccess in
-			guard draftSuccess else {
-			   print("[ManagerListView] Failed to fetch draft data.")
-			   DispatchQueue.main.async {
-				  self.errorMessage = "Failed to load draft data."
-				  self.isLoading = false
-			   }
-			   return
-			}
-
-			// With draft data loaded, we should have `groupedPicks` and manager IDs.
-			self.draftViewModel.fetchAllManagerDetails { managerSuccess in
-			   guard managerSuccess else {
-				  print("[ManagerListView] Failed to fetch manager details.")
-				  DispatchQueue.main.async {
-					 self.errorMessage = "Failed to load manager details."
-					 self.isLoading = false
-				  }
-				  return
-			   }
-
-			   print("[ManagerListView] Successfully fetched all manager details")
-			   DispatchQueue.main.async {
-				  self.sortedManagerIDsState = self.computeSortedManagerIDs()
-			   }
-
-			   // Now fetch roster data
-			   self.rosterViewModel.fetchRoster {
-				  print("[ManagerListView] Roster fetch completed. Count: \(self.rosterViewModel.rosters.count)")
-				  DispatchQueue.main.async {
-					 self.isRosterLoaded = true
-					 self.isLoading = false
-				  }
-			   }
-			}
-		 }
-
-		 // Fetch league name separately
-		 let leagueVM = LeagueViewModel()
-		 leagueVM.fetchLeague(leagueID: leagueID) { league in
-			DispatchQueue.main.async {
-			   if let league = league {
-				  self.leagueName = league.name
-				  print("[ManagerListView] League name set to: \(league.name)")
-			   } else {
-				  self.leagueName = "Unknown League"
-				  print("[ManagerListView] Failed to fetch league name")
-			   }
-			}
-		 }
+		 loadData()
 	  }
    }
 
@@ -141,32 +98,8 @@ struct ManagerListView: View {
 
 	  print("[ManagerListView] Starting data load for leagueID: \(leagueID)")
 
-	  // First, fetch draft details
-	  draftViewModel.fetchAllManagerDetails { success in
-		 if success {
-			print("[ManagerListView] Successfully fetched all manager details")
-			sortedManagerIDsState = computeSortedManagerIDs()
-
-			// Then fetch roster data
-			rosterViewModel.fetchRoster {
-			   print("[ManagerListView] Roster fetch completed. Count: \(rosterViewModel.rosters.count)")
-			   DispatchQueue.main.async {
-				  isRosterLoaded = true
-				  isLoading = false
-			   }
-			}
-		 } else {
-			print("[ManagerListView] Failed to fetch manager details")
-			DispatchQueue.main.async {
-			   errorMessage = "Failed to load manager data"
-			   isLoading = false
-			}
-		 }
-	  }
-
-	  // Fetch league name
-	  let leagueVM = LeagueViewModel()
-	  leagueVM.fetchLeague(leagueID: leagueID) { league in
+	  // Fetch league name first
+	  leagueViewModel.fetchLeague(leagueID: leagueID) { league in
 		 DispatchQueue.main.async {
 			if let league = league {
 			   self.leagueName = league.name
@@ -177,7 +110,46 @@ struct ManagerListView: View {
 			}
 		 }
 	  }
+
+	  // Fetch draft data
+	  draftViewModel.fetchDraftData(draftID: draftID) { draftSuccess in
+		 guard draftSuccess else {
+			print("[ManagerListView] Failed to fetch draft data.")
+			DispatchQueue.main.async {
+			   self.errorMessage = "Failed to load draft data."
+			   self.isLoading = false
+			}
+			return
+		 }
+
+		 // With draft data loaded, we should have `groupedPicks` and manager IDs.
+		 self.draftViewModel.fetchAllManagerDetails { managerSuccess in
+			guard managerSuccess else {
+			   print("[ManagerListView] Failed to fetch manager details.")
+			   DispatchQueue.main.async {
+				  self.errorMessage = "Failed to load manager details."
+				  self.isLoading = false
+			   }
+			   return
+			}
+
+			print("[ManagerListView] Successfully fetched all manager details")
+			DispatchQueue.main.async {
+			   self.sortedManagerIDsState = self.computeSortedManagerIDs()
+			}
+
+			// Now fetch roster data
+			self.rosterViewModel.fetchRoster {
+			   print("[ManagerListView] Roster fetch completed. Count: \(self.rosterViewModel.rosters.count)")
+			   DispatchQueue.main.async {
+				  self.isRosterLoaded = true
+				  self.isLoading = false
+			   }
+			}
+		 }
+	  }
    }
+
    private func computeSortedManagerIDs() -> [String] {
 	  let keys = Array(draftViewModel.groupedPicks.keys)
 	  return keys.sorted { key1, key2 in

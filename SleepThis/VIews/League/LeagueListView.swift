@@ -1,19 +1,21 @@
 import SwiftUI
 
 struct LeagueListView: View {
-   @Environment(\.dismiss) var dismiss
-   @StateObject var leagueViewModel = LeagueViewModel()
-   @StateObject var draftViewModel: DraftViewModel
+   @Environment(\.dismiss) private var dismiss
+   @StateObject private var leagueViewModel: LeagueViewModel
+   @StateObject private var draftViewModel: DraftViewModel
    @State private var showAlert = false
    @State private var alertMessage = ""
    @State private var isLoading = false
    @State private var searchLeagueID: String
    @State private var showNewLeagueList = false
-   @State private var hasFetchedManagerDetails = false // Flag to track if manager details have been fetched
-   var managerID: String
+   @State private var hasFetchedManagerDetails = false
+   private let managerID: String
 
    init(managerID: String, draftViewModel: DraftViewModel, currentLeagueID: String? = nil) {
 	  self.managerID = managerID
+	  let fantasyVM = FantasyViewModel()
+	  _leagueViewModel = StateObject(wrappedValue: LeagueViewModel(fantasyViewModel: fantasyVM))
 	  _draftViewModel = StateObject(wrappedValue: draftViewModel)
 	  _searchLeagueID = State(initialValue: currentLeagueID ?? AppConstants.leagueID)
    }
@@ -107,8 +109,8 @@ struct LeagueListView: View {
 		 }
 		 .sheet(isPresented: $showNewLeagueList) {
 			LeagueListView(
-			   managerID: searchLeagueID, // Use the value from the text field
-			   draftViewModel: DraftViewModel(leagueID: searchLeagueID) // Pass the leagueID from the search text
+			   managerID: searchLeagueID,
+			   draftViewModel: DraftViewModel(leagueID: searchLeagueID)
 			)
 		 }
 	  }

@@ -10,9 +10,21 @@ struct FantasyMatchupListView: View {
 	  fantasyViewModel.currentManagerLeagues.count > 0
    }
 
+   private var currentNFLYear: Int {
+	  let currentMonth = Calendar.current.component(.month, from: Date())
+	  let currentYear = Calendar.current.component(.year, from: Date())
+	  return currentMonth <= 2 ? currentYear - 1 : currentYear
+   }
+
    init() {
+	  let currentMonth = Calendar.current.component(.month, from: Date())
+	  let currentYear = Calendar.current.component(.year, from: Date())
+	  let nflYear = currentMonth <= 2 ? currentYear - 1 : currentYear
+
 	  _fantasyViewModel = StateObject(wrappedValue: FantasyMatchupViewModel())
 	  _draftViewModel = StateObject(wrappedValue: DraftViewModel(leagueID: ""))
+
+	  fantasyViewModel.selectedYear = nflYear
    }
 
    var body: some View {
@@ -108,7 +120,7 @@ struct FantasyMatchupListView: View {
    private var yearPickerView: some View {
 	  Menu {
 		 Picker("Year", selection: $fantasyViewModel.selectedYear) {
-			ForEach(2020...Calendar.current.component(.year, from: Date()), id: \.self) { year in
+			ForEach(2020...currentNFLYear, id: \.self) { year in
 			   Text(String(format: "%d", year)).tag(year)
 			}
 		 }

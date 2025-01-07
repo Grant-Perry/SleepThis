@@ -8,9 +8,9 @@ struct RosterDetailView: View {
    let managerID: String
    let managerName: String
    let managerAvatarURL: URL?
-//   var draftViewModel: DraftViewModel
-//   var rosterViewModel: RosterViewModel
-//   @StateObject var playerViewModel = PlayerViewModel()
+   //   var draftViewModel: DraftViewModel
+   //   var rosterViewModel: RosterViewModel
+   //   @StateObject var playerViewModel = PlayerViewModel()
    @State private var sortByDraftOrder = false
    @State private var leagueName: String = ""
    @State private var isLoading = true
@@ -168,7 +168,8 @@ struct RosterDetailView: View {
 	  .navigationBarTitleDisplayMode(.inline)
 	  .onAppear {
 		 isLoading = true  // Start loading
-		 let leagueVM = LeagueViewModel()
+		 let fantasyVM = FantasyViewModel()
+		 let leagueVM = LeagueViewModel(fantasyViewModel: fantasyVM)
 		 leagueVM.fetchLeague(leagueID: leagueID) { league in
 			DispatchQueue.main.async {
 			   self.leagueName = league?.name ?? "Unknown League"

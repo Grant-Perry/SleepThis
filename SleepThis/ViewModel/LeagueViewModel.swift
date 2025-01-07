@@ -6,12 +6,21 @@ import Observation
 
 class LeagueViewModel: ObservableObject {
    var leagues: [LeagueModel] = []
+   var fantasyViewModel: FantasyViewModel
+
+   var selectedYear: Int
+
    private var cancellables = Set<AnyCancellable>()
+
+   init(fantasyViewModel: FantasyViewModel, selectedYear: Int = Calendar.current.component(.year, from: Date())) {
+	  self.fantasyViewModel = fantasyViewModel
+	  self.selectedYear = selectedYear
+   }
 
    func fetchLeaguesForUser(userID: String) {
 	  // Construct the API URL to fetch all leagues for the user
-//	  print("url: https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/2024\n----====----====--\n")
-	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/2024") else {
+	  	  print("url: https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(self.selectedYear)\n----====----====--\n")
+	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(self.selectedYear)") else {
 		 print("[LeagueViewModel] Invalid URL.")
 		 return
 	  }
@@ -197,13 +206,17 @@ class LeagueViewModel: ObservableObject {
    // Modified fetch method to check cache
    func fetchLeagues(userID: String) {
 	  // Check if cached data exists and is valid
-//	  if let cachedLeagues = loadLeaguesFromCache(userID: userID), !isCacheExpired(userID: userID) {
-//		 print("[LeagueViewModel] Loaded leagues from cache.")
-//		 self.leagues = cachedLeagues
-//		 return
-//	  }
+	  if let cachedLeagues = loadLeaguesFromCache(userID: userID), !isCacheExpired(userID: userID) {
+		 print("[LeagueViewModel] Loaded leagues from cache.")
+		 self.leagues = cachedLeagues
+		 return
+	  }
 
 	  // If no valid cache, fetch from API
 	  fetchLeaguesForUser(userID: userID)
+   }
+
+   func updateYear(_ year: Int) {
+	  self.selectedYear = year
    }
 }

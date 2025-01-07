@@ -26,7 +26,19 @@ class FantasyMatchupViewModel: ObservableObject {
    @Published var userAvatars: [String: URL] = [:] // Cache for user avatars
    @Published var espnManagerID: String?
    @Published var nflRosterViewModel = NFLRosterViewModel()
-   @Published var selectedYear: Int = Calendar.current.component(.year, from: Date()) {
+   //   @Published var selectedYear: Int = Calendar.current.component(.year, from: Date()) {
+   //	  didSet {
+   //		 FantasyMatchups.FantasyScoreboardModel.shared.getScoreboardData(forWeek: selectedWeek, forYear: selectedYear, forceRefresh: true) { [weak self] response in
+   //		 }
+   //	  }
+   //   }
+   @Published var selectedYear: Int = {
+	  let calendar = Calendar.current
+	  let currentMonth = calendar.component(.month, from: Date())
+	  let currentYear = calendar.component(.year, from: Date())
+	  // If we're in January/February, we're still in the previous NFL season
+	  return currentMonth <= 2 ? currentYear - 1 : currentYear - 1
+   }() {
 	  didSet {
 		 FantasyMatchups.FantasyScoreboardModel.shared.getScoreboardData(forWeek: selectedWeek, forYear: selectedYear, forceRefresh: true) { [weak self] response in
 		 }
@@ -325,10 +337,12 @@ class FantasyMatchupViewModel: ObservableObject {
    }
 
    func fetchSleeperLeagues(forUserID userID: String) async {
-	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(selectedYear)") else {
+	  let nflYear = selectedYear // This will now be the correct NFL season year
+	  guard let url = URL(string: "https://api.sleeper.app/v1/user/\(userID)/leagues/nfl/\(nflYear)") else {
 		 print("DP - Invalid Sleeper leagues URL")
 		 return
 	  }
+	  print("---##--- HERE... Sleeping leagues URL: \(url)\n\n")
 
 	  do {
 		 let (data, _) = try await URLSession.shared.data(from: url)
@@ -341,7 +355,7 @@ class FantasyMatchupViewModel: ObservableObject {
 		 DispatchQueue.main.async {
 			self.currentManagerLeagues.append(contentsOf: sleeperLeagues)
 			self.sleeperLeagues = leagues
-			print("DP - Successfully fetched \(sleeperLeagues.count) Sleeper leagues")
+			print("DP - Successfully fetched \(sleeperLeagues.count) Sleeper leagues for NFL year \(nflYear)")
 		 }
 	  } catch {
 		 print("DP - Error decoding Sleeper leagues: \(error)")
@@ -573,12 +587,7 @@ class FantasyMatchupViewModel: ObservableObject {
 			DispatchQueue.main.async {
 			   // Combine ESPN and Sleeper leagues
 			   let newESPNLeagues = espnLeagues.map {
-				  FantasyScores.AnyLeagueResponse(
-					 id: $0.id,
-					 name: "\($0.teamName)", // - \($0.name)",
-					 //					 name: "\($0.teamName) - \($0.name)",
-					 type: .espn
-				  )
+				  FantasyScores.AnyLeagueResponse(id: $0.id, name: $0.name, type: .espn)
 			   }
 			   // After fetching ESPN and Sleeper leagues and combining them
 			   self.currentManagerLeagues += newESPNLeagues
